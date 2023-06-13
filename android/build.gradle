@@ -5,22 +5,86 @@ buildscript {
   }
 
   dependencies {
-    classpath "com.android.tools.build:gradle:7.2.1"
+    classpath "com.android.tools.build:gradle:7.4.1"
+    classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:1.8.10"
   }
 }
+
 
 def isNewArchitectureEnabled() {
   return rootProject.hasProperty("newArchEnabled") && rootProject.getProperty("newArchEnabled") == "true"
 }
 
 apply plugin: "com.android.library"
-
-
-def appProject = rootProject.allprojects.find { it.plugins.hasPlugin('com.android.application') }
-
-if (isNewArchitectureEnabled()) {
-  apply plugin: "com.facebook.react"
+apply plugin: "com.facebook.react"
+def projectRoot = rootDir.getAbsoluteFile().getParentFile().getAbsolutePath()
+def expoDebuggableVariants = ['debug']
+// Override `debuggableVariants` for expo-updates debugging
+if (System.getenv('EX_UPDATES_NATIVE_DEBUG') == "1") {
+  react {
+    expoDebuggableVariants = []
+  }
 }
+
+react {
+    entryFile = file(["node", "-e", "require('expo/scripts/resolveAppEntry')", projectRoot, "android", "absolute"].execute(null, rootDir).text.trim())
+    reactNativeDir = new File(["node", "--print", "require.resolve('react-native/package.json')"].execute(null, rootDir).text.trim()).getParentFile().getAbsoluteFile()
+    hermesCommand = new File(["node", "--print", "require.resolve('react-native/package.json')"].execute(null, rootDir).text.trim()).getParentFile().getAbsolutePath() + "/sdks/hermesc/%OS-BIN%/hermesc"
+    debuggableVariants = expoDebuggableVariants
+
+    /* Folders */
+    //   The root of your project, i.e. where "package.json" lives. Default is '..'
+    // root = file("../")
+    //   The folder where the react-native NPM package is. Default is ../node_modules/react-native
+    // reactNativeDir = file("../node_modules/react-native")
+    //   The folder where the react-native Codegen package is. Default is ../node_modules/react-native-codegen
+    // codegenDir = file("../node_modules/react-native-codegen")
+    //   The cli.js file which is the React Native CLI entrypoint. Default is ../node_modules/react-native/cli.js
+    // cliFile = file("../node_modules/react-native/cli.js")
+
+    /* Variants */
+    //   The list of variants to that are debuggable. For those we're going to
+    //   skip the bundling of the JS bundle and the assets. By default is just 'debug'.
+    //   If you add flavors like lite, prod, etc. you'll have to list your debuggableVariants.
+    // debuggableVariants = ["liteDebug", "prodDebug"]
+
+    /* Bundling */
+    //   A list containing the node command and its flags. Default is just 'node'.
+    // nodeExecutableAndArgs = ["node"]
+    //
+    //   The command to run when bundling. By default is 'bundle'
+    // bundleCommand = "ram-bundle"
+    //
+    //   The path to the CLI configuration file. Default is empty.
+    // bundleConfig = file(../rn-cli.config.js)
+    //
+    //   The name of the generated asset file containing your JS bundle
+    // bundleAssetName = "MyApplication.android.bundle"
+    //
+    //   The entry file for bundle generation. Default is 'index.android.js' or 'index.js'
+    // entryFile = file("../js/MyApplication.android.js")
+    //
+    //   A list of extra flags to pass to the 'bundle' commands.
+    //   See https://github.com/react-native-community/cli/blob/main/docs/commands.md#bundle
+    // extraPackagerArgs = []
+
+    /* Hermes Commands */
+    //   The hermes compiler command to run. By default it is 'hermesc'
+    // hermesCommand = "$rootDir/my-custom-hermesc/bin/hermesc"
+    //
+    //   The list of flags to pass to the Hermes compiler. By default is "-O", "-output-source-map"
+    // hermesFlags = ["-O", "-output-source-map"]
+}
+
+// Override `hermesEnabled` by `expo.jsEngine`
+ext {
+  hermesEnabled = (findProperty('expo.jsEngine') ?: "hermes") == "hermes"
+}
+// def appProject = rootProject.allprojects.find { it.plugins.hasPlugin('com.android.application') }
+
+// if (isNewArchitectureEnabled()) {
+//   apply plugin: "com.facebook.react"
+// }
 
 def getExtOrDefault(name) {
   return rootProject.ext.has(name) ? rootProject.ext.get(name) : project.properties["FppReactNativeModule_" + name]
@@ -29,18 +93,23 @@ def getExtOrDefault(name) {
 def getExtOrIntegerDefault(name) {
   return rootProject.ext.has(name) ? rootProject.ext.get(name) : (project.properties["FppReactNativeModule_" + name]).toInteger()
 }
-
+def reactNativeArchitectures() {
+    def value = project.getProperties().get("reactNativeArchitectures")
+    return value ? value.split(",") : ["armeabi-v7a", "x86", "x86_64", "arm64-v8a"]
+}
 android {
-  compileSdkVersion getExtOrIntegerDefault("compileSdkVersion")
+      ndkVersion rootProject.ext.ndkVersion
 
+  compileSdkVersion rootProject.ext.compileSdkVersion
+  namespace 'com.fppreactnativemodule'
   defaultConfig {
-    minSdkVersion getExtOrIntegerDefault("minSdkVersion")
-    targetSdkVersion getExtOrIntegerDefault("targetSdkVersion")
-    buildConfigField "boolean", "IS_NEW_ARCHITECTURE_ENABLED", isNewArchitectureEnabled().toString()
-  }
+        minSdkVersion rootProject.ext.minSdkVersion
+        targetSdkVersion rootProject.ext.targetSdkVersion
+        versionCode 1
+        versionName "1.0.0"  }
   buildTypes {
     release {
-      minifyEnabled false
+      minifyEnabled true
     }
   }
 
@@ -56,8 +125,28 @@ android {
 }
 
 repositories {
-  mavenCentral()
-  google()
+   maven {
+            // All of React Native (JS, Obj-C sources, Android binaries) is installed from npm
+            url(new File(['node', '--print', "require.resolve('react-native/package.json')"].execute(null, rootDir).text.trim(), '../android'))
+        }
+        maven {
+            // Android JSC is installed from npm
+            url(new File(['node', '--print', "require.resolve('jsc-android/package.json')"].execute(null, rootDir).text.trim(), '../dist'))
+        }
+
+        maven {
+             // expo-camera bundles a custom com.google.android:cameraview
+             url "$rootDir/../node_modules/expo-camera/android/maven"
+        }
+        flatDir { dirs 'libs' }
+        google()
+        mavenCentral()
+        maven { url 'https://www.jitpack.io' }
+              mavenCentral {
+            content {
+                excludeGroup("com.facebook.react")
+            }
+        }
 }
 
 
@@ -65,7 +154,34 @@ dependencies {
   // For < 0.71, this will be from the local maven repo
   // For > 0.71, this will be replaced by `com.facebook.react:react-android:$version` by react gradle plugin
   //noinspection GradleDynamicVersion
+  implementation("com.facebook.react:react-android")
   implementation "com.facebook.react:react-native:+"
+  implementation fileTree(dir: "libs", include: ["*.aar"])
+  implementation('org.apache.httpcomponents:httpmime:4.3') {
+        exclude module: "httpclient"
+    }
+  implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.3.9"
+  implementation 'com.android.volley:volley:1.2.1'
+  implementation 'com.jakewharton:butterknife:10.2.3'
+  implementation 'org.apache.httpcomponents:httpcore:4.3.3'
+  implementation project(':react-native-default-preference')
+  implementation 'com.android.support:appcompat-v7:25.3.1'
+  implementation 'com.android.support.constraint:constraint-layout:1.0.2'
+  testImplementation 'junit:junit:4.12'
+  implementation 'com.google.guava:guava:27.0.1-android'
+  implementation 'com.jakewharton:butterknife-compiler:10.2.3'
+  debugImplementation("com.facebook.flipper:flipper:${FLIPPER_VERSION}")
+    debugImplementation("com.facebook.flipper:flipper-network-plugin:${FLIPPER_VERSION}") {
+        exclude group:'com.squareup.okhttp3', module:'okhttp'
+    }
+    debugImplementation("com.facebook.flipper:flipper-fresco-plugin:${FLIPPER_VERSION}")
+
+    if (hermesEnabled.toBoolean()) {
+        implementation("com.facebook.react:hermes-android")
+    } else {
+        implementation jscFlavor
+    }
+
 }
 
 if (isNewArchitectureEnabled()) {
@@ -75,3 +191,7 @@ if (isNewArchitectureEnabled()) {
     codegenJavaPackageName = "com.fppreactnativemodule"
   }
 }
+
+
+// apply from: new File(["node", "--print", "require.resolve('@react-native-community/cli-platform-android/package.json')"].execute(null, rootDir).text.trim(), "../native_modules.gradle");
+// applyNativeModulesAppBuildGradle(project)

@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/activity_main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#ff000000"
+    android:gravity="center"
+    android:orientation="vertical"
+    tools:context="com.fppreactnativemodule.MainActivity">
+
+    <FrameLayout
+        android:id="@+id/frame"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#ff000000"
+        android:gravity="center">
+
+
+        <com.fppreactnativemodule.camera.CameraPreview
+            android:id="@+id/preview"
+            android:layout_width="900px"
+            android:layout_height="900px"
+            android:layout_gravity="center_vertical" />
+
+        <com.fppreactnativemodule.FaceView
+            android:id="@+id/fcview"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+
+    
+    </FrameLayout>
+</LinearLayout>

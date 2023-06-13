@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:padding="10dp"
+            android:text="录 脸"
+            android:textColor="@android:color/darker_gray"
+            android:textSize="20dp" />
+
+        <ImageView
+            android:id="@+id/iv_close"
+            android:layout_width="50dp"
+            android:clickable="true"
+            android:layout_height="50dp"
+            android:layout_alignParentRight="true"
+            android:src="@android:drawable/ic_menu_close_clear_cancel" />
+
+    </RelativeLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="2dp"
+        android:background="@android:color/darker_gray" />
+
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="2dp">
+        <Button
+            android:id="@+id/btn_add_face"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:background="@drawable/shape_btn_bg_blue"
+            android:text="添加人脸"
+            android:textColor="@android:color/white" />
+
+        <Button
+            android:id="@+id/btn_choose_picture"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_toLeftOf="@id/btn_add_face"
+            android:background="@drawable/shape_btn_bg_blue"
+            android:text="选取图片"
+            android:textColor="@android:color/white" />
+
+        <EditText
+            android:id="@+id/et_face_image_path"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignBottom="@id/btn_add_face"
+            android:layout_alignTop="@id/btn_add_face"
+            android:layout_toLeftOf="@id/btn_choose_picture"
+            android:background="@drawable/shape_bg_rect"
+            android:focusable="true"
+            android:text="/sdcard/test3.jpeg"
+            android:hint="添加图片地址" />
+
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="2dp">
+
+        <Button
+            android:id="@+id/btn_get_face_image"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:background="@drawable/shape_btn_bg_blue"
+            android:text="获取图片"
+            android:textColor="@android:color/white" />
+
+        <Button
+            android:id="@+id/btn_delete_face"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_toLeftOf="@id/btn_get_face_image"
+            android:background="@drawable/shape_btn_bg_blue"
+            android:text="删除"
+            android:textColor="@android:color/white" />
+
+        <EditText
+            android:id="@+id/et_face_token"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignBottom="@id/btn_delete_face"
+            android:layout_alignTop="@id/btn_delete_face"
+            android:layout_toLeftOf="@id/btn_delete_face"
+            android:background="@drawable/shape_bg_rect"
+            android:focusable="true"
+            android:hint="FaceToken" />
+
+
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="2dp">
+
+        <Button
+            android:id="@+id/btn_get_group_info"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:background="@drawable/shape_btn_bg_blue"
+            android:text="详细信息"
+            android:textColor="@android:color/white" />
+
+        <Button
+            android:id="@+id/btn_bind_group"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_toLeftOf="@id/btn_get_group_info"
+            android:background="@drawable/shape_btn_bg_blue"
+            android:text="绑定"
+            android:textColor="@android:color/white" />
+
+        <EditText
+            android:id="@+id/et_group_name"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignBottom="@id/btn_bind_group"
+            android:layout_alignTop="@id/btn_bind_group"
+            android:layout_toLeftOf="@id/btn_bind_group"
+            android:background="@drawable/shape_bg_rect"
+            android:focusable="true"
+            android:singleLine="true"
+            android:hint="请输入绑定的GroupName" />
+
+    </RelativeLayout>
+
+    <ListView
+        android:id="@+id/lv_group_info"
+        android:layout_width="match_parent"
+        android:layout_height="300dp"></ListView>
+
+
+</LinearLayout>

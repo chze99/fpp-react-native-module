@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:gravity="center_vertical"
+    android:paddingEnd="6dp"
+    android:paddingStart="6dp">
+
+    <TextView
+        android:id="@+id/tv_face_token"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:editable="false"
+        android:ellipsize="marquee"
+        android:longClickable="true"
+        android:marqueeRepeatLimit="marquee_forever"
+        android:singleLine="true"
+        android:text="sdsk234kjn$%$548==="
+        android:textIsSelectable="true"
+        android:textSize="20dp" />
+
+    <TextView
+        android:id="@+id/tv_face_unbind"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@drawable/shape_bg_rect"
+        android:clickable="true"
+        android:text="解绑"
+        android:textSize="24dp" />
+
+    <ImageView
+        android:id="@+id/iv_delete_face"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_gravity="center_vertical"
+        android:layout_marginLeft="6dp"
+        android:clickable="true"
+        android:visibility="gone"
+        android:src="@android:drawable/ic_delete" />
+
+</LinearLayout>
