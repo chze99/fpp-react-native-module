@@ -15,66 +15,76 @@ npm install react-native-default-preference
 **Android**
 
 - In android/settings.gradle
-
->...
->include ':fpp-react-native-module', ':app'
->project(':fpp-react-native-module').projectDir = new File(rootProject.projectDir, '../node_modules/fpp-react-native-module/android')
-
+```sh
+...
+include ':fpp-react-native-module', ':app'
+project(':fpp-react-native-module').projectDir = new File(rootProject.projectDir, '../node_modules/fpp-react-native-module/android')
+```
 - In android/app/build.gradle
 
->...
->dependencies{
->    ...
->    implementation project(":fpp-react-native-module")
->}
-
+```sh
+...
+dependencies{
+    ...
+    implementation project(":fpp-react-native-module")
+}
+```
 - In android/app/src/main/AndroidManifest.xml
-
->  <uses-feature
->        android:name="android.hardware.camera"
->        android:required="true" />
->  <uses-permission android:name="android.permission.CAMERA" />
->  <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
->  <uses-permission android:name="android.permission.MOUNT_UNMOUNT_FILESYSTEMS" />
-
+```sh
+  <uses-feature
+        android:name="android.hardware.camera"
+        android:required="true" />
+  <uses-permission android:name="android.permission.CAMERA" />
+  <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+  <uses-permission android:name="android.permission.MOUNT_UNMOUNT_FILESYSTEMS" />
+```
 - In MainActivity.java
 
->import com.fppreactnativemodule.FacePass;
->import com.facebook.react.bridge.ReactContext;
->import com.facebook.react.modules.core.DeviceEventManagerModule;
->import com.facebook.react.bridge.ReactApplicationContext;
+```sh
+import com.fppreactnativemodule.FacePass;
+import com.facebook.react.bridge.ReactContext;
+import com.facebook.react.modules.core.DeviceEventManagerModule;
+import com.facebook.react.bridge.ReactApplicationContext;
+```
 
 - Inside onCreate() of MainActivity.java
->  ReactInstanceManager mReactInstanceManager = getReactNativeHost().getReactInstanceManager();
->    if (null == mReactInstanceManager.getCurrentReactContext()) {
->      mReactInstanceManager.addReactInstanceEventListener(new ReactInstanceManager.ReactInstanceEventListener() {
->        public void onReactContextInitialized(ReactContext validContext) {
->          ReactApplicationContext context = (ReactApplicationContext) validContext;
->          facepass = new FacePass(context);
->          facepass.initData();
->        }
->      });
->    } else {
->      ReactApplicationContext context = (ReactApplicationContext)mReactInstanceManager.getCurrentReactContext();
->      facepass = new FacePass(context);
->      facepass.initData();
->    }
+```sh
+  ReactInstanceManager mReactInstanceManager = getReactNativeHost().getReactInstanceManager();
+    if (null == mReactInstanceManager.getCurrentReactContext()) {
+      mReactInstanceManager.addReactInstanceEventListener(new ReactInstanceManager.ReactInstanceEventListener() {
+        public void onReactContextInitialized(ReactContext validContext) {
+          ReactApplicationContext context = (ReactApplicationContext) validContext;
+          facepass = new FacePass(context);
+          facepass.initData();
+        }
+      });
+    } else {
+      ReactApplicationContext context = (ReactApplicationContext)mReactInstanceManager.getCurrentReactContext();
+      facepass = new FacePass(context);
+      facepass.initData();
+    }
+```
 
 ## Usage
 
 **React Native**
 
 - ViewManager.js(Can be any name)
+```sh
 import {requireNativeComponent} from 'react-native';
 
 export const FacePassViewManager =
   requireNativeComponent('FacePassViewManager');
+```
 
 - MainScreen.js(Can be any name)
+```sh
 import {UIManager,findNodeHandle,BackHandler, NativeEventEmitter} from 'react-native';
 import { FacePassViewManager } from '../components/ViewManager'; //ViewManager(.js) need to change to your file name if different
+```
 
 - Outside function MainScreen of MainScreen.js
+```sh
 const createFragment = viewId =>
   UIManager.dispatchViewManagerCommand(
     viewId,
@@ -89,9 +99,9 @@ const destroyFragment = viewId =>
     UIManager.FacePassViewManager.Commands.remove.toString(),
     [viewId],
   );
-
+```
 - Inside function MainScreen of MainScreen.js
- 
+ ```sh
   const eventEmitter = new NativeEventEmitter(FacePass);
   const ref = useRef(null);
 
@@ -106,6 +116,7 @@ const destroyFragment = viewId =>
       dataListener.remove();
     };
   }, []);
+
 
   function handleBackButtonClick() {
     const viewId = findNodeHandle(ref.current);
@@ -141,6 +152,7 @@ const destroyFragment = viewId =>
       />
 
   );
+```
 
 - If you use @react-navigation/native, then on MainScreen.js
 ```sh
@@ -227,7 +239,7 @@ const destroyFragment = viewId =>
             //Error message
         })
 
-        
+
 ```
 
 ## Contributing
