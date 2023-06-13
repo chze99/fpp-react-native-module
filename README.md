@@ -69,6 +69,23 @@ import com.facebook.react.bridge.ReactApplicationContext;
 
 **React Native**
 
+- App.js/Index.js
+```sh
+import DefaultPreference from 'react-native-default-preference';
+
+//Inside 
+export default function App(){
+
+  useEffect(()=>{
+    async function setPreferenceName(){
+      await DefaultPreference.setName("fppreactnative")
+      }
+      setPreferenceName()
+  },[])
+ 
+  }
+```
+
 - ViewManager.js(Can be any name)
 ```sh
 import {requireNativeComponent} from 'react-native';
@@ -167,27 +184,58 @@ const destroyFragment = viewId =>
   }, [navigation])
 ```
 
-- Other function
+
+
+- Other function(FacePass related)
 ```sh
         const { FacePass } = NativeModules
 
+        //Get a list of group name
+        FacePass.getAllGroup((data) => {
+             //data=Array of list of group 
+        }, (failure) => {
+            //Error message
+        })
+
+        //Create a new group with provided name
+        FacePass.createGroup(name, (success) => {
+            //success message
+        }, (failure) => {
+            //Error message
+        })
+
+        //Delete the group with provided name
+        FacePass.deleteGroup(name, (data) => {
+            //success message
+        }, (failure) => {
+            //Error message
+        })
+
+        //Open file explorer and choose image
         FacePass.select_image((uri) => {
             //do something, uri=imagepath
         }, (err) => {
             //Error message
         })
 
-        const face =await FacePass.addFace(imagePath, 
+        //Add selected face into facial recognition
+        const faceToken =await FacePass.addFace(imagePath, 
             (success) => {
                //Success message
             }, (failure) => {
                //Error message
             }
         );
-        if (temp != "") {
-                DefaultPreference.set(face, "Face owner name");
+        if (face != "") {
+                //Here is to set the face owner name so that the app can know the face belong to who
+                //"Face owner name" need to be replace with own function to get name,e.g an text field
+                DefaultPreference.set(faceToken, "Face owner name");
         }
 
+
+        //Delete selected face
+        //faceToken is generated from addFace function
+        //groupName= Name of group with that Face added
         FacePass.deleteFace(faceToken, groupName, (success) => {
                 console.log(success);
             }, (failure) => {
@@ -195,51 +243,97 @@ const destroyFragment = viewId =>
           })
         await DefaultPreference.clear(faceToken);
 
+        //Get the face using faceToken, return an image in base64 format
         const image = await FacePass.getFace(faceToken, (success) => {
             //success message
         }, (failure) => {
             //Error message
         })
 
+        //Bind to face to a group using faceToken and groupName
         FacePass.bindGroup(faceToken, groupName, (success) => {
             //success message
         }, (failure) => {
             //Error message
         })
 
+        //Get all facetoken from the provided groupname
         FacePass.getGroupInfo(groupName, (data) => {
-            //data=Array of list of group 
+            //data=Array of list of facetoken
         }, (failure) => {
             //Error message
         }, 
 
-         FacePass.unbindFace(facetoken, groupName, (data) => {
-             //data=Array of list of group 
+        //Unbind the faceToken from provided group
+        FacePass.unbindFace(facetoken, groupName, (data) => {
+             //data=Array of list of facetoken 
           }, (success) => {
             //success message
           }, (failure) => {
             //Error message
           })
 
-          FacePass.getAllGroup((data) => {
-             //data=Array of list of group 
-        }, (failure) => {
-            //Error message
-        })
+```
 
-         FacePass.createGroup(name, (success) => {
-            //success message
-        }, (failure) => {
-            //Error message
-        })
-
-          FacePass.deleteGroup(name, (data) => {
-            //success message
-        }, (failure) => {
-            //Error message
-        })
-
-
+- Other function (Not relate to FacePass)
+```sh
+    //function name can be change to anything
+    //defaultGroupName need to get yourself
+    //e.g. a text field
+    //This default group is the group that will be
+    load on main screen
+    
+    async function changeDefaultGroup(){
+        DefaultPreference.set("group_name",defaultGroupName);
+    }
+```
+```sh
+      //function to save facial recognition parameter
+      //Restart is required for it to take effect
+        async function save() {
+        const data = {
+            rcAttributeAndOcclusionMode: rcAttributeAndOcclusionMode //0-5,whole number,Default:1,
+            searchThreshold: searchThreshold //0-100,Default:69,
+            livenessThreshold: livenessThreshold //0-100,Default:55,
+            livenessEnabled: livenessEnabled //true,false,Default:true,
+            rgbIrLivenessEnabled: false //Currently only can false,
+            poseThresholdRoll: poseThresholdRoll //0-90,Default:35,
+            poseThresholdPitch: poseThresholdPitch //0-90,Default:35,
+            poseThresholdYaw: poseThresholdYaw //0-90,Default:351,
+            blurThreshold: blurThreshold //0-1,Default:0.8,
+            lowBrightnessThreshold: lowBrightnessThreshold //0-255,Default:30,
+            highBrightnessThreshold: highBrightnessThreshold //0-255,Default:210,
+            brightnessSTDThreshold: brightnessSTDThreshold //0-255,Default:80,
+            faceMinThreshold: faceMinThreshold //0-512,whole number,Default:100,
+            retryCount: retryCount //1-unlimited,whole number,Default:2,
+            smileEnabled: smileEnabled //true/false,Default:false,
+            maxFaceEnabled: maxFaceEnabled //true/false,Default:true,
+            FacePoseThresholdPitch: FacePoseThresholdPitch //0-90,Default:35,
+            FacePoseThresholdRoll: FacePoseThresholdRoll //0-90,Default:35,
+            FacePoseThresholdYaw: FacePoseThresholdYaw //0-90,Default:35,
+            FaceBlurThreshold: FaceBlurThreshold //0-255,Default:0.7,
+            FaceLowBrightnessThreshold: FaceLowBrightnessThreshold //0-255,Default:70,
+            FaceHighBrightnessThreshold: FaceHighBrightnessThreshold //0-255,Default:220,
+            FaceBrightnessSTDThreshold: FaceBrightnessSTDThreshold //0-255,Default:60,
+            FaceFaceMinThreshold: FaceFaceMinThreshold //0-512,whole number,Default:100,
+            FaceRcAttributeAndOcclusionMode: FaceRcAttributeAndOcclusionMode //whole number //0-5,Default:2,
+        }
+        DefaultPreference.set('parameters', JSON.stringify(data))
+    }
+```
+```sh
+  //function to save camera setting
+        function save() {
+          setisSettingAvailable(true);
+          const data = {
+              cameraFacingFront: cameraFacingFront //true,false,Default:false,
+              faceRotation: faceRotation //0,90,180,270,Default:270,
+              isSettingAvailable: true,//Leave it like this
+              cameraPreviewRotation: cameraPreviewRotation //0,90,180,270,Default:90,
+              isCross: isCross //true,false,Default:false,
+          }
+          DefaultPreference.set('settings', JSON.stringify(data))
+         }
 ```
 
 ## Contributing
