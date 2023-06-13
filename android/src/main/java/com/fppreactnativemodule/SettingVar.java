@@ -2,9 +2,7 @@ package com.fppreactnativemodule;
 
 import mcv.facepass.types.FacePassImageRotation;
 
-/**
- * Created by wangzhiqiang on 2017/11/22.
- */
+
 
 public class SettingVar {
     public static boolean cameraFacingFront = false;

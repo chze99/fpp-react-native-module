@@ -4,72 +4,26 @@ import androidx.annotation.NonNull;
 import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.CursorLoader;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
-import android.content.res.Configuration;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.ImageFormat;
-import android.graphics.Matrix;
 import android.graphics.Rect;
-import android.graphics.RectF;
-import android.graphics.Typeface;
-import android.graphics.YuvImage;
 import android.net.Uri;
 import android.os.Build;
-import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.provider.MediaStore;
-import android.text.SpannableString;
-import android.text.Spanned;
 import android.text.TextUtils;
-import android.text.style.TypefaceSpan;
-import android.util.DisplayMetrics;
 import android.util.Log;
-import android.util.LruCache;
-import android.view.Display;
-import android.view.Gravity;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.WindowManager;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.FrameLayout;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
-import android.widget.ListView;
-import android.widget.ScrollView;
-import android.widget.TextView;
 import android.widget.Toast;
 
-import com.android.volley.AuthFailureError;
-import com.android.volley.NetworkResponse;
-import com.android.volley.Request;
-import com.android.volley.Response;
-import com.android.volley.VolleyLog;
-import com.android.volley.toolbox.HttpHeaderParser;
-import com.android.volley.toolbox.ImageLoader;
-import com.android.volley.toolbox.Volley;
 
-import kotlinx.coroutines.BuildersKt;
-import kotlinx.coroutines.CoroutineScope;
-import kotlinx.coroutines.GlobalScope;
-import kotlinx.coroutines.CoroutineStart;
-import kotlinx.coroutines.Dispatchers;
-
-import kotlin.coroutines.Continuation;
-import kotlin.coroutines.CoroutineContext;
-import kotlin.Unit;
-
-import java.util.AbstractMap.SimpleEntry;
-import com.facebook.react.bridge.Promise;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
@@ -81,12 +35,6 @@ import com.facebook.react.bridge.Callback;
 import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.modules.core.DeviceEventManagerModule;
 import com.facebook.react.bridge.WritableArray;
-import org.apache.http.HttpEntity;
-import org.apache.http.entity.ContentType;
-import org.apache.http.entity.mime.MultipartEntityBuilder;
-import org.apache.http.entity.mime.content.ByteArrayBody;
-import org.apache.http.entity.mime.content.StringBody;
-import org.apache.http.util.CharsetUtils;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -98,8 +46,7 @@ import java.util.concurrent.ArrayBlockingQueue;
 
 import com.facebook.react.bridge.Arguments;
 
-import android.database.sqlite.SQLiteDatabase;
-import org.json.JSONArray;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 import android.util.Base64;
@@ -121,9 +68,7 @@ import mcv.facepass.types.FacePassAgeGenderResult;
 import mcv.facepass.types.FacePassRecognitionState;
 import mcv.facepass.types.FacePassTrackOptions;
 
-import com.fppreactnativemodule.camera.CameraManager;
-import com.fppreactnativemodule.camera.CameraPreview;
-import com.fppreactnativemodule.camera.CameraPreviewData;
+
 import com.fppreactnativemodule.utils.FileUtil;
 
 @ReactModule(name = FacePass.NAME)
@@ -149,7 +94,6 @@ public class FacePass extends ReactContextBaseJavaModule
 
   private static final String DEBUG_TAG = "FacePassDemo";
 
-  /* 程序所需权限 ：相机 文件存储 网络访问 */
   private static final int PERMISSIONS_REQUEST = 1;
   private static final String PERMISSION_CAMERA = Manifest.permission.CAMERA;
   private static final String PERMISSION_WRITE_STORAGE = Manifest.permission.WRITE_EXTERNAL_STORAGE;
@@ -159,10 +103,8 @@ public class FacePass extends ReactContextBaseJavaModule
   private String[] Permission = new String[] { PERMISSION_CAMERA, PERMISSION_WRITE_STORAGE, PERMISSION_READ_STORAGE,
       PERMISSION_INTERNET, PERMISSION_ACCESS_NETWORK_STATE };
 
-  /* SDK 实例对象 */
   FacePassHandler mFacePassHandler;
 
-  /* 判断程序是否有所需权限 android22以上需要自申请权限 */
   private boolean hasPermission() {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
       return context.checkSelfPermission(PERMISSION_CAMERA) == PackageManager.PERMISSION_GRANTED &&
@@ -175,16 +117,13 @@ public class FacePass extends ReactContextBaseJavaModule
     }
   }
 
-  /* 请求程序所需权限 */
   private void requestPermission() {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
       activity.requestPermissions(Permission, PERMISSIONS_REQUEST);
     }
   }
 
-  // @Override
   public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-    // super.onRequestPermissionsResult(requestCode, permissions, grantResults);
     if (requestCode == PERMISSIONS_REQUEST) {
       boolean granted = true;
       for (int result : grantResults) {
@@ -200,9 +139,7 @@ public class FacePass extends ReactContextBaseJavaModule
               || !activity.shouldShowRequestPermissionRationale(PERMISSION_ACCESS_NETWORK_STATE)) {
             Toast.makeText(context.getApplicationContext(), "需要开启摄像头网络文件存储权限", Toast.LENGTH_SHORT).show();
           }
-      } else {
-        // initFacePassSDK();
-      }
+      } 
     }
   }
 
@@ -226,7 +163,6 @@ public class FacePass extends ReactContextBaseJavaModule
   public void onActivityResult(Activity activity, int requestCode, int resultCode, Intent data) {
     Log.v("onActivityResult", "Called");
     switch (requestCode) {
-      // 从相册选取照片后读取地址
       case REQUEST_CODE_CHOOSE_PICK:
         if (resultCode == -1) {
           if (pickerSuccessCallback != null) {
@@ -311,7 +247,6 @@ public class FacePass extends ReactContextBaseJavaModule
               parameters.getInt("FaceFaceMinThreshold"),
               parameters.getInt("FaceRcAttributeAndOcclusionMode"));
 
-          // Log.d("TAG", "impl: " + setting);
         } catch (JSONException e) {
           Log.d("JSONERROR", e.toString());
         }
@@ -329,7 +264,6 @@ public class FacePass extends ReactContextBaseJavaModule
 
   private void initFacePassSDK() {
     FacePassHandler.initSDK(activity.getApplicationContext());
-    // FacePassHandler.getAuth(authIP, apiKey, apiSecret,true);
     Log.d("FacePassDemo", FacePassHandler.getVersion());
   }
 
@@ -348,14 +282,12 @@ public class FacePass extends ReactContextBaseJavaModule
       @Override
       public void run() {
         while (true
-        // &&
-        // !activity.isFinishing()
+
         ) {
           while (FacePassHandler.isAvailable()) {
             Log.d(DEBUG_TAG, "start to build FacePassHandler");
             FacePassConfig config;
             try {
-              /* 填入所需要的模型配置 */
               config = new FacePassConfig();
               config.poseBlurModel = FacePassModel.initModel(activity.getApplicationContext().getAssets(),
                   "attr.pose_blur.arm.190630.bin");
@@ -379,7 +311,6 @@ public class FacePass extends ReactContextBaseJavaModule
                   "attr.occlusion.arm.20201209.bin");
             
 
-              /* 送识别阈值参数 */
               config.rcAttributeAndOcclusionMode = rcAttributeAndOcclusionMode;
               config.searchThreshold = searchThreshold;
               config.livenessThreshold = livenessThreshold;
@@ -398,11 +329,9 @@ public class FacePass extends ReactContextBaseJavaModule
               config.maxFaceEnabled = true;
 
               config.fileRootPath = activity.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS).getAbsolutePath();
-              /* 创建SDK实例 */
               mFacePassHandler = new FacePassHandler(config);
 
               Log.v("mFacePassHandler", config.toString());
-              /* 入库阈值参数 */
               FacePassConfig addFaceConfig = mFacePassHandler.getAddFaceConfig();
               addFaceConfig.poseThreshold.pitch = FacePoseThresholdPitch;
               addFaceConfig.poseThreshold.roll = FacePoseThresholdRoll;
@@ -425,7 +354,6 @@ public class FacePass extends ReactContextBaseJavaModule
             return;
           }
           try {
-            /* 如果SDK初始化未完成则需等待 */
             sleep(500);
           } catch (InterruptedException e) {
             e.printStackTrace();
@@ -450,7 +378,7 @@ public class FacePass extends ReactContextBaseJavaModule
     pickerCancelCallback = cancelCallback;
 
     Intent intentFromGallery = new Intent(Intent.ACTION_GET_CONTENT);
-    intentFromGallery.setType("image/*"); // 设置文件类型
+    intentFromGallery.setType("image/*"); 
     intentFromGallery.addCategory(Intent.CATEGORY_OPENABLE);
     Log.v("intentfrom", intentFromGallery.toString());
     try {
@@ -462,12 +390,10 @@ public class FacePass extends ReactContextBaseJavaModule
 
   @ReactMethod
   public void sendDataToReactNative(String base64, String name, Float livenessScore) {
-    // Create a WritableMap to hold the data
     WritableMap params = Arguments.createMap();
     params.putString("image", base64);
     params.putString("name", name);
     params.putDouble("livenessScore", (double) livenessScore);
-    // Get the React Native event emitter and send the data as an event
     getReactApplicationContext()
         .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
         .emit("FaceDetectedEvent", params);

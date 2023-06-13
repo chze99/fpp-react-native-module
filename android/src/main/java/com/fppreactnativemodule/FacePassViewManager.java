@@ -91,9 +91,7 @@ public class FacePassViewManager extends ViewGroupManager<FrameLayout> {
     }
   }
 
-  /**
-   * Replace your React Native view with a custom fragment
-   */
+
   public void createFragment(FrameLayout root, int reactNativeViewId) {
     ViewGroup parentView = (ViewGroup) root.findViewById(reactNativeViewId);
     setupLayout(parentView);
@@ -133,7 +131,6 @@ public class FacePassViewManager extends ViewGroupManager<FrameLayout> {
    * Layout all children properly
    */
   public void manuallyLayoutChildren(View view) {
-      // propWidth and propHeight coming from react-native props
       int width = propWidth;
       int height = propHeight;
 

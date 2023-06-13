@@ -1,27 +1,14 @@
 package com.fppreactnativemodule;
 
-import android.os.Bundle;
-import android.view.LayoutInflater;
-import android.view.View;
 import android.view.ViewGroup;
-import android.graphics.Typeface;
-import android.content.SharedPreferences;
-import android.content.res.AssetManager;
 import android.widget.LinearLayout;
-import android.widget.FrameLayout;
 import androidx.fragment.app.Fragment;
-import android.view.WindowManager;
-import android.content.Context;
-import android.widget.Button;
 import android.util.Log;
 import android.util.Base64;
 
 import androidx.annotation.NonNull;
 import android.Manifest;
 import android.app.Activity;
-import android.app.AlertDialog;
-import android.app.FragmentTransaction;
-import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.CursorLoader;
 import android.content.Intent;
@@ -30,7 +17,6 @@ import android.content.res.AssetManager;
 import android.content.res.Configuration;
 import android.database.Cursor;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.ImageFormat;
 import android.graphics.Matrix;
 import android.graphics.Rect;
@@ -40,7 +26,6 @@ import android.graphics.YuvImage;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.Handler;
 import android.provider.MediaStore;
 import android.text.SpannableString;
@@ -50,17 +35,11 @@ import android.text.style.TypefaceSpan;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.LruCache;
-import android.view.Display;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.WindowManager;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.FrameLayout;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
-import android.widget.ListView;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -74,26 +53,12 @@ import com.android.volley.toolbox.HttpHeaderParser;
 import com.android.volley.toolbox.ImageLoader;
 import com.android.volley.toolbox.Volley;
 
-import com.facebook.react.bridge.Promise;
-import com.facebook.react.bridge.ReactApplicationContext;
-import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactContext;
-import com.facebook.react.bridge.ReactMethod;
-import com.facebook.react.bridge.ActivityEventListener;
-import com.facebook.react.bridge.BaseActivityEventListener;
-import com.facebook.react.module.annotations.ReactModule;
-import com.facebook.react.bridge.LifecycleEventListener;
 import com.facebook.react.bridge.Callback;
-import com.facebook.react.bridge.WritableMap;
-import com.facebook.react.uimanager.events.RCTEventEmitter;
-import com.facebook.react.ReactRootView;
-import com.facebook.react.bridge.Arguments;
 import com.facebook.react.ReactInstanceManager;
 import com.facebook.react.ReactApplication;
 import android.content.SharedPreferences;
 
-import android.database.sqlite.SQLiteDatabase;
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -107,8 +72,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import mcv.facepass.FacePassException;
@@ -135,7 +98,6 @@ import  com.fppreactnativemodule.utils.FileUtil;
 
 public class FacePassFragment extends Fragment implements CameraManager.CameraListener, View.OnClickListener {
   private Context context;
-  private FragmentTransaction currentTransaction;
   Activity activity;
 
 private enum FacePassSDKMode {
@@ -144,7 +106,6 @@ private enum FacePassSDKMode {
   };
   private static FacePassSDKMode SDK_MODE = FacePassSDKMode.MODE_OFFLINE;
   private static final String DEBUG_TAG = "FacePassDemo";
-  private static String recognize_url;
   public static String group_name = "fppreactnative";
   private static final int PERMISSIONS_REQUEST = 1;
   private static final String PERMISSION_CAMERA = Manifest.permission.CAMERA;
@@ -156,7 +117,6 @@ private enum FacePassSDKMode {
       PERMISSION_INTERNET, PERMISSION_ACCESS_NETWORK_STATE };
   FacePassHandler mFacePassHandler;
   private CameraManager manager;
-  private TextView faceBeginTextView;
   private CameraPreview cameraView;
   private boolean isLocalGroupExist = false;
   private FaceView faceView;
@@ -165,20 +125,9 @@ private enum FacePassSDKMode {
   private int cameraRotation;
   private static final int cameraWidth = 1280;
   private static final int cameraHeight = 720;
-  private int mSecretNumber = 0;
-  private static final long CLICK_INTERVAL = 600;
-  private long mLastClickTime;
-  public String imagepath;
   private int heightPixels;
   private int widthPixels;
-  private Promise promise;
   int screenState = 0;
-  Button visible;
-  LinearLayout ll;
-  FrameLayout frameLayout;
-  private int buttonFlag = 0;
-  private Button settingButton;
-  private boolean ageGenderEnabledGlobal;
   private Toast mRecoToast;
   public class RecognizeData {
     public byte[] message;
@@ -196,29 +145,17 @@ private enum FacePassSDKMode {
   ArrayBlockingQueue<CameraPreviewData> mFeedFrameQueue;
   RecognizeThread mRecognizeThread;
   FeedFrameThread mFeedFrameThread;
-  private ImageView mSyncGroupBtn;
-  private AlertDialog mSyncGroupDialog;
-  private ImageView mFaceOperationBtn;
   private FaceImageCache mImageCache;
   private Handler mAndroidHandler;
-  private CameraPreviewData mCurrentImage;
-  private Button mSDKModeBtn;
-  int mId = 0;
 
 
-  protected void commitNowAllowingStateLoss() {
-    if (currentTransaction != null) {
-      currentTransaction.commitNowAllowingStateLoss();
-      currentTransaction = null;
-    }
-  }
+
 
 
 
   @Override
   public void onAttach(Context context) {
     super.onAttach(context);
-    commitNowAllowingStateLoss();
     context = context;
     activity = getActivity();
   }
@@ -241,7 +178,6 @@ private enum FacePassSDKMode {
   @Override
   public void onStart() {
     super.onStart();
-    Log.v("onstart","START");
     mImageCache = new FaceImageCache();
     mRecognizeDataQueue = new ArrayBlockingQueue<RecognizeData>(5);
     mFeedFrameQueue = new ArrayBlockingQueue<CameraPreviewData>(1);
@@ -256,7 +192,6 @@ private enum FacePassSDKMode {
     SharedPreferences temp = activity.getSharedPreferences(
         "fppreactnative", Context.MODE_PRIVATE);
     group_name = temp.getString("group_name","fpp_group");
-    Log.v("groupname",group_name);
     mFacePassHandler = FacePassHandlerHolder.getMyObject();
 
     mRecognizeThread = new RecognizeThread();
@@ -376,7 +311,7 @@ private enum FacePassSDKMode {
         faceView.post(new Runnable() {
           @Override
           public void run() {
-            toast("没库，请创建" + group_name + "底库");
+            toast("LocalGroup not found,Please create" + group_name + " Local Group");
           }
         });
         return;
@@ -392,7 +327,7 @@ private enum FacePassSDKMode {
 
           @Override
           public void run() {
-            toast("请创建" + group_name + "底库");
+            toast("Please create" + group_name + " Local group");
           }
         });
       }
@@ -425,7 +360,7 @@ private enum FacePassSDKMode {
         if (mFacePassHandler == null) {
           continue;
         }
-        long startTime = System.currentTimeMillis(); // 起始时间
+        long startTime = System.currentTimeMillis(); 
 
         FacePassImage image;
         try {
@@ -498,7 +433,7 @@ private enum FacePassSDKMode {
                     searchThreshold = 80f;
                   }               
                 Log.v("searchThreshold",Float.toString(searchThreshold));
-                float livenessThreshold = -1.0f; // -1.0f will not change the liveness threshold
+                float livenessThreshold = -1.0f;
                 trackOpts[i] = new FacePassTrackOptions(detectionResult.images[i].trackId, searchThreshold,
                     livenessThreshold);
               }
@@ -530,7 +465,6 @@ private enum FacePassSDKMode {
     @Override
     public void interrupt() {
       isInterrupt = true;
-      // super.interrupt();
     }
 
   }
@@ -548,7 +482,6 @@ private enum FacePassSDKMode {
     return result;
   }
 
-  // recognize data
   private class RecognizeThread extends Thread {
 
     boolean isInterrupt;
@@ -638,7 +571,7 @@ private enum FacePassSDKMode {
               || !activity.shouldShowRequestPermissionRationale(PERMISSION_WRITE_STORAGE)
               || !activity.shouldShowRequestPermissionRationale(PERMISSION_INTERNET)
               || !activity.shouldShowRequestPermissionRationale(PERMISSION_ACCESS_NETWORK_STATE)) {
-            Toast.makeText(activity.getApplicationContext(), "需要开启摄像头网络文件存储权限", Toast.LENGTH_SHORT).show();
+            Toast.makeText(activity.getApplicationContext(), "Please enable Camera,Network and File write permission", Toast.LENGTH_SHORT).show();
           }
       } else {
         initFacePassSDK();
@@ -681,7 +614,7 @@ private enum FacePassSDKMode {
       Log.d("facefacelist",
           "width " + (face.rect.right - face.rect.left) + " height " + (face.rect.bottom - face.rect.top));
       Log.d("facefacelist", "smile " + face.smile);
-      boolean mirror = cameraFacingFront; /* 前摄像头时mirror为true */
+      boolean mirror = cameraFacingFront; 
       StringBuilder faceIdString = new StringBuilder();
       faceIdString.append("ID = ").append(face.trackId);
       SpannableString faceViewString = new SpannableString(faceIdString);
@@ -774,10 +707,10 @@ private enum FacePassSDKMode {
     TextView stateView = (TextView) toastView.findViewById(R.id.toastState);
     SpannableString s;
     if (isSuccess) {
-      s = new SpannableString("验证成功");
+      s = new SpannableString("Verify Success");
       imageView.setImageResource(R.drawable.success);
     } else {
-      s = new SpannableString("验证失败");
+      s = new SpannableString("Verify Failed");
       imageView.setImageResource(R.drawable.success);
     }
     if (bitmap != null) {
@@ -894,7 +827,7 @@ private enum FacePassSDKMode {
 
 
 
-  private AlertDialog mFaceOperationDialog;
+
 
   private Callback pickerSuccessCallback;
   private Callback pickerCancelCallback;
