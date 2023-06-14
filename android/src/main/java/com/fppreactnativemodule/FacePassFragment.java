@@ -191,7 +191,7 @@ private enum FacePassSDKMode {
     }
     SharedPreferences temp = activity.getSharedPreferences(
         "fppreactnative", Context.MODE_PRIVATE);
-    group_name = temp.getString("group_name","fpp_group");
+    group_name = SettingVar.groupName;
     mFacePassHandler = FacePassHandlerHolder.getMyObject();
 
     mRecognizeThread = new RecognizeThread();
@@ -215,36 +215,36 @@ private enum FacePassSDKMode {
     }
     Log.i(DEBUG_TAG, "Rotation: cameraRation: " + cameraRotation);
     cameraFacingFront = true;
-    SharedPreferences temp = activity.getSharedPreferences(
-        "fppreactnative", Context.MODE_PRIVATE);
-    String setting=temp.getString("settings","");
-      if (setting != "") {
-        try {
-          JSONObject settings = new JSONObject(setting);
-          Log.d("TAG", "impl: " + Boolean.toString(settings.getBoolean("cameraFacingFront")));
-          SettingVar.isSettingAvailable = settings.getBoolean("isSettingAvailable");
-          SettingVar.isCross = settings.getBoolean("isCross");
-          SettingVar.faceRotation = settings.getInt("faceRotation");
-          SettingVar.cameraPreviewRotation = settings.getInt("cameraPreviewRotation");
-          SettingVar.cameraFacingFront = settings.getBoolean("cameraFacingFront");
+    // SharedPreferences temp = activity.getSharedPreferences(
+    //     "fppreactnative", Context.MODE_PRIVATE);
+    // String setting=temp.getString("settings","");
+    //   if (setting != "") {
+    //     try {
+    //       JSONObject settings = new JSONObject(setting);
+    //       Log.d("TAG", "impl: " + Boolean.toString(settings.getBoolean("cameraFacingFront")));
+    //       SettingVar.isSettingAvailable = settings.getBoolean("isSettingAvailable");
+    //       SettingVar.isCross = settings.getBoolean("isCross");
+    //       SettingVar.faceRotation = settings.getInt("faceRotation");
+    //       SettingVar.cameraPreviewRotation = settings.getInt("cameraPreviewRotation");
+    //       SettingVar.cameraFacingFront = settings.getBoolean("cameraFacingFront");
           if (SettingVar.isSettingAvailable) {
             cameraRotation = SettingVar.faceRotation;
             cameraFacingFront = SettingVar.cameraFacingFront;
           }
-        } catch (JSONException e) {
-          Log.d("JSONERROR", e.toString());
-        }
-      } else {
-        SettingVar.isSettingAvailable = false;
-        SettingVar.isCross = false;
-        SettingVar.faceRotation = 270;
-        SettingVar.cameraPreviewRotation = 90;
-        SettingVar.cameraFacingFront = true;
-        if (SettingVar.isSettingAvailable) {
-          cameraRotation = SettingVar.faceRotation;
-          cameraFacingFront = SettingVar.cameraFacingFront;
-        }
-      }
+    //     } catch (JSONException e) {
+    //       Log.d("JSONERROR", e.toString());
+    //     }
+    //   } else {
+    //     SettingVar.isSettingAvailable = false;
+    //     SettingVar.isCross = false;
+    //     SettingVar.faceRotation = 270;
+    //     SettingVar.cameraPreviewRotation = 90;
+    //     SettingVar.cameraFacingFront = true;
+    //     if (SettingVar.isSettingAvailable) {
+    //       cameraRotation = SettingVar.faceRotation;
+    //       cameraFacingFront = SettingVar.cameraFacingFront;
+    //     }
+    //   }
     Log.i(DEBUG_TAG, "Rotation: screenRotation: " + String.valueOf(windowRotation));
     Log.i(DEBUG_TAG, "Rotation: new cameraRation: " + cameraRotation);
     final int mCurrentOrientation = getResources().getConfiguration().orientation;
@@ -311,7 +311,7 @@ private enum FacePassSDKMode {
         faceView.post(new Runnable() {
           @Override
           public void run() {
-            toast("LocalGroup not found,Please create" + group_name + " Local Group");
+            toast("LocalGroup not found,Please create " + group_name + " Local Group");
           }
         });
         return;
@@ -327,7 +327,7 @@ private enum FacePassSDKMode {
 
           @Override
           public void run() {
-            toast("Please create" + group_name + " Local group");
+            toast("Please create " + group_name + " Local group");
           }
         });
       }

@@ -16,4 +16,5 @@ public class SettingVar {
     public static boolean cameraSettingOk = false;
     public static boolean iscameraNeedConfig = false;
     public static boolean isButtonInvisible = false;
+    public static String groupName = "fppreactnative";
 }

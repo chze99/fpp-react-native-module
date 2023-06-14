@@ -23,7 +23,6 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.widget.Toast;
 
-
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
@@ -46,7 +45,6 @@ import java.util.concurrent.ArrayBlockingQueue;
 
 import com.facebook.react.bridge.Arguments;
 
-
 import org.json.JSONException;
 import org.json.JSONObject;
 import android.util.Base64;
@@ -68,7 +66,6 @@ import mcv.facepass.types.FacePassAgeGenderResult;
 import mcv.facepass.types.FacePassRecognitionState;
 import mcv.facepass.types.FacePassTrackOptions;
 
-
 import com.fppreactnativemodule.utils.FileUtil;
 
 @ReactModule(name = FacePass.NAME)
@@ -80,6 +77,7 @@ public class FacePass extends ReactContextBaseJavaModule
 
   public FacePass(ReactApplicationContext context) {
     super(context);
+    Activity activity = getCurrentActivity();
     context.addLifecycleEventListener(this);
     context.addActivityEventListener(this);
     this.context = context;
@@ -119,7 +117,8 @@ public class FacePass extends ReactContextBaseJavaModule
 
   private void requestPermission() {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-      activity.requestPermissions(Permission, PERMISSIONS_REQUEST);
+      Activity currentActivity = getCurrentActivity();
+      currentActivity.requestPermissions(Permission, PERMISSIONS_REQUEST);
     }
   }
 
@@ -139,7 +138,7 @@ public class FacePass extends ReactContextBaseJavaModule
               || !activity.shouldShowRequestPermissionRationale(PERMISSION_ACCESS_NETWORK_STATE)) {
             Toast.makeText(context.getApplicationContext(), "需要开启摄像头网络文件存储权限", Toast.LENGTH_SHORT).show();
           }
-      } 
+      }
     }
   }
 
@@ -157,7 +156,6 @@ public class FacePass extends ReactContextBaseJavaModule
   @Override
   public void onNewIntent(Intent intent) {
   }
-
 
   @Override
   public void onActivityResult(Activity activity, int requestCode, int resultCode, Intent data) {
@@ -206,63 +204,102 @@ public class FacePass extends ReactContextBaseJavaModule
     }
   };
 
+  @ReactMethod
+  public void cameraSetting(String setting) {
+    if (setting != null) {
+          Log.v("Settings",setting);
+
+      try {
+        JSONObject settings = new JSONObject(setting);
+        Log.d("TAG", "impl: " + Integer.toString(settings.getInt("faceRotation")));
+        SettingVar.isSettingAvailable = settings.getBoolean("isSettingAvailable");
+        SettingVar.isCross = settings.getBoolean("isCross");
+        SettingVar.faceRotation = settings.getInt("faceRotation");
+        SettingVar.cameraPreviewRotation = settings.getInt("cameraPreviewRotation");
+        SettingVar.cameraFacingFront = settings.getBoolean("cameraFacingFront");
+      } catch (JSONException e) {
+        Log.d("JSONERROR", e.toString());
+      }
+    } else {
+                Log.v("Settings","SETTING is null");
+
+      SettingVar.isSettingAvailable = false;
+      SettingVar.isCross = false;
+      SettingVar.faceRotation = 270;
+      SettingVar.cameraPreviewRotation = 90;
+      SettingVar.cameraFacingFront = true;
+
+    }
+  }
+
+  @ReactMethod
+  public void setDefaultGroupName(String name) {
+    if(name!=null && !name.isEmpty()){
+      Log.v("GROUPNAME",name);
+      SettingVar.groupName=name;
+    }
+  }
+
+  @ReactMethod
   public void initData() {
     if (!hasPermission()) {
       requestPermission();
     } else {
       initFacePassSDK();
     }
-      
-      SharedPreferences temp = activity.getSharedPreferences(
+    Activity activity = getCurrentActivity();
+
+    SharedPreferences temp = activity.getSharedPreferences(
         "fppreactnative", Context.MODE_PRIVATE);
-      String parameter=temp.getString("parameters","");
-      if (parameter != "") {
-        try {
-          JSONObject parameters = new JSONObject(parameter);
+    String parameter = temp.getString("parameters", "");
+    if (parameter != "") {
+      try {
+        JSONObject parameters = new JSONObject(parameter);
 
-          Log.v("PARAMETERS", Boolean.toString(parameters.getBoolean("livenessEnabled")));
-          initFaceHandler(parameters.getInt("rcAttributeAndOcclusionMode"),
-              (float) parameters.getDouble("searchThreshold"),
-              (float) parameters.getDouble("livenessThreshold"),
-              parameters.getBoolean("livenessEnabled"),
-              parameters.getBoolean("rgbIrLivenessEnabled"),
-              (float) parameters.getDouble("poseThresholdRoll"),
-              (float) parameters.getDouble("poseThresholdPitch"),
-              (float) parameters.getDouble("poseThresholdYaw"),
-              (float) parameters.getDouble("blurThreshold"),
-              (float) parameters.getDouble("lowBrightnessThreshold"),
-              (float) parameters.getDouble("highBrightnessThreshold"),
-              (float) parameters.getDouble("brightnessSTDThreshold"),
-              parameters.getInt("faceMinThreshold"),
-              parameters.getInt("retryCount"),
-              parameters.getBoolean("smileEnabled"),
-              parameters.getBoolean("maxFaceEnabled"),
-              (float) parameters.getDouble("FacePoseThresholdPitch"),
-              (float) parameters.getDouble("FacePoseThresholdRoll"),
-              (float) parameters.getDouble("FacePoseThresholdYaw"),
-              (float) parameters.getDouble("FaceBlurThreshold"),
-              (float) parameters.getDouble("FaceLowBrightnessThreshold"),
-              (float) parameters.getDouble("FaceHighBrightnessThreshold"),
-              (float) parameters.getDouble("FaceBrightnessSTDThreshold"),
-              parameters.getInt("FaceFaceMinThreshold"),
-              parameters.getInt("FaceRcAttributeAndOcclusionMode"));
+        Log.v("PARAMETERS", Boolean.toString(parameters.getBoolean("livenessEnabled")));
+        initFaceHandler(parameters.getInt("rcAttributeAndOcclusionMode"),
+            (float) parameters.getDouble("searchThreshold"),
+            (float) parameters.getDouble("livenessThreshold"),
+            parameters.getBoolean("livenessEnabled"),
+            parameters.getBoolean("rgbIrLivenessEnabled"),
+            (float) parameters.getDouble("poseThresholdRoll"),
+            (float) parameters.getDouble("poseThresholdPitch"),
+            (float) parameters.getDouble("poseThresholdYaw"),
+            (float) parameters.getDouble("blurThreshold"),
+            (float) parameters.getDouble("lowBrightnessThreshold"),
+            (float) parameters.getDouble("highBrightnessThreshold"),
+            (float) parameters.getDouble("brightnessSTDThreshold"),
+            parameters.getInt("faceMinThreshold"),
+            parameters.getInt("retryCount"),
+            parameters.getBoolean("smileEnabled"),
+            parameters.getBoolean("maxFaceEnabled"),
+            (float) parameters.getDouble("FacePoseThresholdPitch"),
+            (float) parameters.getDouble("FacePoseThresholdRoll"),
+            (float) parameters.getDouble("FacePoseThresholdYaw"),
+            (float) parameters.getDouble("FaceBlurThreshold"),
+            (float) parameters.getDouble("FaceLowBrightnessThreshold"),
+            (float) parameters.getDouble("FaceHighBrightnessThreshold"),
+            (float) parameters.getDouble("FaceBrightnessSTDThreshold"),
+            parameters.getInt("FaceFaceMinThreshold"),
+            parameters.getInt("FaceRcAttributeAndOcclusionMode"));
 
-        } catch (JSONException e) {
-          Log.d("JSONERROR", e.toString());
-        }
-      } else {
-        Log.v("PARAMETERS", "No parameter");
-
-        initFaceHandler(1, 69, 55, true, false,
-            30, 30, 30, 0.8f, 30, 210, 60,
-            100, 2, false, true, 35, 35, 35, 0.7f,
-            70, 220, 60, 100, 2);
-
+      } catch (JSONException e) {
+        Log.d("JSONERROR", e.toString());
       }
-    
-          }
+    } else {
+      Log.v("PARAMETERS", "No parameter");
+
+      initFaceHandler(1, 69, 55, true, false,
+          30, 30, 30, 0.8f, 30, 210, 60,
+          100, 2, false, true, 35, 35, 35, 0.7f,
+          70, 220, 60, 100, 2);
+
+    }
+
+  }
 
   private void initFacePassSDK() {
+    Activity activity = getCurrentActivity();
     FacePassHandler.initSDK(activity.getApplicationContext());
     Log.d("FacePassDemo", FacePassHandler.getVersion());
   }
@@ -287,6 +324,7 @@ public class FacePass extends ReactContextBaseJavaModule
           while (FacePassHandler.isAvailable()) {
             Log.d(DEBUG_TAG, "start to build FacePassHandler");
             FacePassConfig config;
+            Activity activity = getCurrentActivity();
             try {
               config = new FacePassConfig();
               config.poseBlurModel = FacePassModel.initModel(activity.getApplicationContext().getAssets(),
@@ -309,7 +347,6 @@ public class FacePass extends ReactContextBaseJavaModule
                   "attr.RC.arm.F.bin");
               config.occlusionFilterModel = FacePassModel.initModel(activity.getApplicationContext().getAssets(),
                   "attr.occlusion.arm.20201209.bin");
-            
 
               config.rcAttributeAndOcclusionMode = rcAttributeAndOcclusionMode;
               config.searchThreshold = searchThreshold;
@@ -367,7 +404,7 @@ public class FacePass extends ReactContextBaseJavaModule
   private Callback pickerCancelCallback;
 
   @ReactMethod
-  public void select_image(Callback successCallback, Callback cancelCallback) {
+  public void selectImage(Callback successCallback, Callback cancelCallback) {
     Activity currentActivity = getCurrentActivity();
     if (currentActivity == null) {
       cancelCallback.invoke("ACTIVITY_NOT_EXIST_ERROR");
@@ -378,7 +415,7 @@ public class FacePass extends ReactContextBaseJavaModule
     pickerCancelCallback = cancelCallback;
 
     Intent intentFromGallery = new Intent(Intent.ACTION_GET_CONTENT);
-    intentFromGallery.setType("image/*"); 
+    intentFromGallery.setType("image/*");
     intentFromGallery.addCategory(Intent.CATEGORY_OPENABLE);
     Log.v("intentfrom", intentFromGallery.toString());
     try {
@@ -410,22 +447,22 @@ public class FacePass extends ReactContextBaseJavaModule
   }
 
   @ReactMethod(isBlockingSynchronousMethod = true)
-  public String addFace(String imagePath, Callback success, Callback failure) {
+  public void addFace(String imagePath, Callback success, Callback failure) {
 
     mFacePassHandler = FacePassHandlerHolder.getMyObject();
     if (mFacePassHandler == null) {
       failure.invoke("FACEPASSHANDLER_NULL_ERROR");
-      return "";
+      return;
     }
     if (TextUtils.isEmpty(imagePath)) {
       failure.invoke("INVALID_IMAGE_PATH_ERROR");
-      return "";
+      return;
     }
 
     File imageFile = new File(imagePath);
     if (!imageFile.exists()) {
       failure.invoke("IMAGE_NOT_EXIST_ERROR");
-      return "";
+      return;
     }
 
     Bitmap bitmap = BitmapFactory.decodeFile(imagePath);
@@ -434,34 +471,32 @@ public class FacePass extends ReactContextBaseJavaModule
       FacePassAddFaceResult result = mFacePassHandler.addFace(bitmap);
       if (result != null) {
         if (result.result == 0) {
-          success.invoke("FACE_ADDED_SUCCESSFULLY");
-          return new String(result.faceToken);
+          success.invoke(new String(result.faceToken));
         } else if (result.result == 1) {
           failure.invoke("NO_FACE_DETECTED_IN_IMAGE_ERROR");
-          return "";
+          return;
 
         } else {
           failure.invoke("FACE_IMAGE_QUALITY_ERROR");
-          return "";
+          return;
 
         }
       }
     } catch (FacePassException e) {
       e.printStackTrace();
       failure.invoke(e.getMessage());
-      return "";
+      return;
 
     }
-    return "";
 
   }
 
   @ReactMethod(isBlockingSynchronousMethod = true)
-  public String getFace(String faceTokenEt, Callback success, Callback failure) {
+  public void getFace(String faceTokenEt, Callback success, Callback failure) {
     mFacePassHandler = FacePassHandlerHolder.getMyObject();
     if (mFacePassHandler == null) {
       failure.invoke("FACEPASSHANDLER_NULL_ERROR");
-      return "";
+      return;
     }
     try {
       byte[] faceToken = faceTokenEt.getBytes();
@@ -470,11 +505,11 @@ public class FacePass extends ReactContextBaseJavaModule
       bitmap.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream);
       byte[] byteArray = byteArrayOutputStream.toByteArray();
       String encoded = Base64.encodeToString(byteArray, Base64.DEFAULT);
-      return encoded;
+      success.invoke(encoded);
     } catch (Exception e) {
       e.printStackTrace();
       failure.invoke(e.getMessage());
-      return "";
+      return;
     }
   }
 

@@ -28,6 +28,13 @@ dependencies{
     ...
     implementation project(":fpp-react-native-module")
 }
+
+android{
+  ...
+      packagingOptions {
+        exclude("META-INF/DEPENDENCIES") 
+      } 
+}
 ```
 - In android/app/src/main/AndroidManifest.xml
 ```sh
@@ -45,6 +52,13 @@ import com.fppreactnativemodule.FacePass;
 import com.facebook.react.bridge.ReactContext;
 import com.facebook.react.modules.core.DeviceEventManagerModule;
 import com.facebook.react.bridge.ReactApplicationContext;
+import com.facebook.react.ReactInstanceManager;
+```
+
+- Inside MainActivity class of MainActivity.java
+
+```sh
+  FacePass facepass;
 ```
 
 - Inside onCreate() of MainActivity.java
@@ -94,9 +108,10 @@ export const FacePassViewManager =
   requireNativeComponent('FacePassViewManager');
 ```
 
-- MainScreen.js(Can be any name)
+- MainScreen.js(Can be any name,The page you want to display the face recognition screen,can also be in App.js)
 ```sh
-import {UIManager,findNodeHandle,BackHandler, NativeEventEmitter} from 'react-native';
+import { NativeModules,StyleSheet,View,PixelRatio,UIManager,findNodeHandle,BackHandler, NativeEventEmitter } from 'react-native';
+import { useEffect,useRef } from 'react';
 import { FacePassViewManager } from '../components/ViewManager'; //ViewManager(.js) need to change to your file name if different
 ```
 
@@ -121,6 +136,7 @@ const destroyFragment = viewId =>
  ```sh
   const eventEmitter = new NativeEventEmitter(FacePass);
   const ref = useRef(null);
+  const { FacePass } = NativeModules
 
   useEffect(() => {
     const viewId = findNodeHandle(ref.current);
@@ -335,6 +351,10 @@ const destroyFragment = viewId =>
           DefaultPreference.set('settings', JSON.stringify(data))
          }
 ```
+
+## Known Issue
+The face recognition may not working if the app is first time launch without camera/file storage permission (Which mean the app ask for permission).Restart of application is needed after the app granted permission.
+
 
 ## Contributing
 

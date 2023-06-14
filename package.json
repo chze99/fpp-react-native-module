@@ -1,6 +1,6 @@
 {
-  "name": "@chze99/fpp-react-native-module",
-  "version": "0.1.0",
+  "name": "fpp-react-native-module",
+  "version": "0.1.5",
   "description": "test",
   "main": "lib/commonjs/index",
   "module": "lib/module/index",
