@@ -7,7 +7,6 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.CursorLoader;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
 import android.database.Cursor;
@@ -241,7 +240,7 @@ public class FacePass extends ReactContextBaseJavaModule
   }
 
   @ReactMethod
-  public void initData() {
+  public void initData(String parameter) {
     if (!hasPermission()) {
       requestPermission();
     } else {
@@ -249,14 +248,12 @@ public class FacePass extends ReactContextBaseJavaModule
     }
     Activity activity = getCurrentActivity();
 
-    SharedPreferences temp = activity.getSharedPreferences(
-        "fppreactnative", Context.MODE_PRIVATE);
-    String parameter = temp.getString("parameters", "");
-    if (parameter != "") {
+    if (parameter != "" && parameter != null )  {
       try {
         JSONObject parameters = new JSONObject(parameter);
 
         Log.v("PARAMETERS", Boolean.toString(parameters.getBoolean("livenessEnabled")));
+        SettingVar.searchThreshold=(float) parameters.getDouble("searchThreshold");
         initFaceHandler(parameters.getInt("rcAttributeAndOcclusionMode"),
             (float) parameters.getDouble("searchThreshold"),
             (float) parameters.getDouble("livenessThreshold"),

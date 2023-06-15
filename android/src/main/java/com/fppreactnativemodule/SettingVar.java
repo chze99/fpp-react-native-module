@@ -17,4 +17,5 @@ public class SettingVar {
     public static boolean iscameraNeedConfig = false;
     public static boolean isButtonInvisible = false;
     public static String groupName = "fppreactnative";
+    public static Float searchThreshold = 80f;
 }

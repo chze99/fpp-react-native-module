@@ -57,7 +57,7 @@ import com.facebook.react.bridge.ReactContext;
 import com.facebook.react.bridge.Callback;
 import com.facebook.react.ReactInstanceManager;
 import com.facebook.react.ReactApplication;
-import android.content.SharedPreferences;
+
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -91,19 +91,20 @@ import mcv.facepass.types.FacePassAgeGenderResult;
 import mcv.facepass.types.FacePassRecognitionState;
 import mcv.facepass.types.FacePassTrackOptions;
 
-import  com.fppreactnativemodule.camera.CameraManager;
-import  com.fppreactnativemodule.camera.CameraPreview;
-import  com.fppreactnativemodule.camera.CameraPreviewData;
-import  com.fppreactnativemodule.utils.FileUtil;
+import com.fppreactnativemodule.camera.CameraManager;
+import com.fppreactnativemodule.camera.CameraPreview;
+import com.fppreactnativemodule.camera.CameraPreviewData;
+import com.fppreactnativemodule.utils.FileUtil;
 
 public class FacePassFragment extends Fragment implements CameraManager.CameraListener, View.OnClickListener {
   private Context context;
   Activity activity;
 
-private enum FacePassSDKMode {
+  private enum FacePassSDKMode {
     MODE_ONLINE,
     MODE_OFFLINE
   };
+
   private static FacePassSDKMode SDK_MODE = FacePassSDKMode.MODE_OFFLINE;
   private static final String DEBUG_TAG = "FacePassDemo";
   public static String group_name = "fppreactnative";
@@ -129,29 +130,28 @@ private enum FacePassSDKMode {
   private int widthPixels;
   int screenState = 0;
   private Toast mRecoToast;
+
   public class RecognizeData {
     public byte[] message;
     public FacePassTrackOptions[] trackOpt;
+
     public RecognizeData(byte[] message) {
       this.message = message;
       this.trackOpt = null;
     }
+
     public RecognizeData(byte[] message, FacePassTrackOptions[] opt) {
       this.message = message;
       this.trackOpt = opt;
     }
   }
+
   ArrayBlockingQueue<RecognizeData> mRecognizeDataQueue;
   ArrayBlockingQueue<CameraPreviewData> mFeedFrameQueue;
   RecognizeThread mRecognizeThread;
   FeedFrameThread mFeedFrameThread;
   private FaceImageCache mImageCache;
   private Handler mAndroidHandler;
-
-
-
-
-
 
   @Override
   public void onAttach(Context context) {
@@ -172,7 +172,6 @@ private enum FacePassSDKMode {
   public void onViewCreated(View view, Bundle savedInstanceState) {
     super.onViewCreated(view, savedInstanceState);
 
-
   }
 
   @Override
@@ -189,8 +188,8 @@ private enum FacePassSDKMode {
     } else {
       initFacePassSDK();
     }
-    SharedPreferences temp = activity.getSharedPreferences(
-        "fppreactnative", Context.MODE_PRIVATE);
+
+    
     group_name = SettingVar.groupName;
     mFacePassHandler = FacePassHandlerHolder.getMyObject();
 
@@ -199,7 +198,6 @@ private enum FacePassSDKMode {
     mFeedFrameThread = new FeedFrameThread();
     mFeedFrameThread.start();
   }
-
 
   private void initView(View view) {
     int windowRotation = ((WindowManager) (activity.getApplicationContext().getSystemService(Context.WINDOW_SERVICE)))
@@ -215,36 +213,14 @@ private enum FacePassSDKMode {
     }
     Log.i(DEBUG_TAG, "Rotation: cameraRation: " + cameraRotation);
     cameraFacingFront = true;
-    // SharedPreferences temp = activity.getSharedPreferences(
-    //     "fppreactnative", Context.MODE_PRIVATE);
-    // String setting=temp.getString("settings","");
-    //   if (setting != "") {
-    //     try {
-    //       JSONObject settings = new JSONObject(setting);
-    //       Log.d("TAG", "impl: " + Boolean.toString(settings.getBoolean("cameraFacingFront")));
-    //       SettingVar.isSettingAvailable = settings.getBoolean("isSettingAvailable");
-    //       SettingVar.isCross = settings.getBoolean("isCross");
-    //       SettingVar.faceRotation = settings.getInt("faceRotation");
-    //       SettingVar.cameraPreviewRotation = settings.getInt("cameraPreviewRotation");
-    //       SettingVar.cameraFacingFront = settings.getBoolean("cameraFacingFront");
-          if (SettingVar.isSettingAvailable) {
-            cameraRotation = SettingVar.faceRotation;
-            cameraFacingFront = SettingVar.cameraFacingFront;
-          }
-    //     } catch (JSONException e) {
-    //       Log.d("JSONERROR", e.toString());
-    //     }
-    //   } else {
-    //     SettingVar.isSettingAvailable = false;
-    //     SettingVar.isCross = false;
-    //     SettingVar.faceRotation = 270;
-    //     SettingVar.cameraPreviewRotation = 90;
-    //     SettingVar.cameraFacingFront = true;
-    //     if (SettingVar.isSettingAvailable) {
-    //       cameraRotation = SettingVar.faceRotation;
-    //       cameraFacingFront = SettingVar.cameraFacingFront;
-    //     }
-    //   }
+
+    
+    if (SettingVar.isSettingAvailable) {
+      cameraRotation = SettingVar.faceRotation;
+      cameraFacingFront = SettingVar.cameraFacingFront;
+    }
+
+    
     Log.i(DEBUG_TAG, "Rotation: screenRotation: " + String.valueOf(windowRotation));
     Log.i(DEBUG_TAG, "Rotation: new cameraRation: " + cameraRotation);
     final int mCurrentOrientation = getResources().getConfiguration().orientation;
@@ -360,7 +336,7 @@ private enum FacePassSDKMode {
         if (mFacePassHandler == null) {
           continue;
         }
-        long startTime = System.currentTimeMillis(); 
+        long startTime = System.currentTimeMillis();
 
         FacePassImage image;
         try {
@@ -419,20 +395,16 @@ private enum FacePassSDKMode {
               if (detectionResult.images[i].rcAttr.respiratorType != FacePassRCAttribute.FacePassRespiratorType.INVALID
                   && detectionResult.images[i].rcAttr.respiratorType != FacePassRCAttribute.FacePassRespiratorType.NO_RESPIRATOR) {
                 float searchThreshold = 80f;
-              SharedPreferences temp = activity.getSharedPreferences(
-                  "fppreactnative", Context.MODE_PRIVATE);
-                String parameter=temp.getString("parameters","");
-                if(parameter!=""){
-                   try {
-                    JSONObject parameters = new JSONObject(parameter);
-                    searchThreshold = (float) parameters.getDouble("searchThreshold");
-                    }catch(JSONException e){
-                      Log.v("JSONERROR",e.toString());
-                    }
-                  } else {
-                    searchThreshold = 80f;
-                  }               
-                Log.v("searchThreshold",Float.toString(searchThreshold));
+
+                
+                if (SettingVar.searchThreshold>0) {
+
+                  searchThreshold = SettingVar.searchThreshold;
+
+                } else {
+                  searchThreshold = 80f;
+                }
+                Log.v("searchThreshold", Float.toString(searchThreshold));
                 float livenessThreshold = -1.0f;
                 trackOpts[i] = new FacePassTrackOptions(detectionResult.images[i].trackId, searchThreshold,
                     livenessThreshold);
@@ -450,7 +422,7 @@ private enum FacePassSDKMode {
             mRecognizeDataQueue.offer(mRecData);
           }
         }
-        long endTime = System.currentTimeMillis(); 
+        long endTime = System.currentTimeMillis();
         long runTime = endTime - startTime;
         for (int i = 0; i < detectionResult.faceList.length; ++i) {
           Log.i("DEBUG_TAG",
@@ -492,7 +464,6 @@ private enum FacePassSDKMode {
         try {
           RecognizeData recognizeData = mRecognizeDataQueue.take();
           FacePassAgeGenderResult[] ageGenderResult = null;
-         
 
           if (isLocalGroupExist) {
             Log.d(DEBUG_TAG, "RecognizeData >>>>");
@@ -532,6 +503,7 @@ private enum FacePassSDKMode {
         }
       }
     }
+
     @Override
     public void interrupt() {
       isInterrupt = true;
@@ -571,7 +543,8 @@ private enum FacePassSDKMode {
               || !activity.shouldShowRequestPermissionRationale(PERMISSION_WRITE_STORAGE)
               || !activity.shouldShowRequestPermissionRationale(PERMISSION_INTERNET)
               || !activity.shouldShowRequestPermissionRationale(PERMISSION_ACCESS_NETWORK_STATE)) {
-            Toast.makeText(activity.getApplicationContext(), "Please enable Camera,Network and File write permission", Toast.LENGTH_SHORT).show();
+            Toast.makeText(activity.getApplicationContext(), "Please enable Camera,Network and File write permission",
+                Toast.LENGTH_SHORT).show();
           }
       } else {
         initFacePassSDK();
@@ -587,8 +560,6 @@ private enum FacePassSDKMode {
   private void initToast() {
     SettingVar.isButtonInvisible = false;
   }
-
-
 
   @Override
   public void onDestroy() {
@@ -614,7 +585,7 @@ private enum FacePassSDKMode {
       Log.d("facefacelist",
           "width " + (face.rect.right - face.rect.left) + " height " + (face.rect.bottom - face.rect.top));
       Log.d("facefacelist", "smile " + face.smile);
-      boolean mirror = cameraFacingFront; 
+      boolean mirror = cameraFacingFront;
       StringBuilder faceIdString = new StringBuilder();
       faceIdString.append("ID = ").append(face.trackId);
       SpannableString faceViewString = new SpannableString(faceIdString);
@@ -735,8 +706,6 @@ private enum FacePassSDKMode {
 
   }
 
-
-
   public void onActivityResult(Activity activity, int requestCode, int resultCode, Intent data) {
     Log.v("onActivityResult", "Called");
     switch (requestCode) {
@@ -783,19 +752,18 @@ private enum FacePassSDKMode {
     }
   };
 
-
   private ReactInstanceManager mReactInstanceManager;
 
   private void sendDataToReactNative(String base64, String name, float livenessScore) {
-    ReactInstanceManager reactInstanceManager = ((ReactApplication) getActivity().getApplication()).getReactNativeHost().getReactInstanceManager();
+    ReactInstanceManager reactInstanceManager = ((ReactApplication) getActivity().getApplication()).getReactNativeHost()
+        .getReactInstanceManager();
     ReactContext reactContext = reactInstanceManager.getCurrentReactContext();
-    FacePass nativeModule =reactContext.getNativeModule(FacePass.class);
+    FacePass nativeModule = reactContext.getNativeModule(FacePass.class);
     if (nativeModule != null) {
       FacePass myNativeModule = (FacePass) nativeModule;
       myNativeModule.sendDataToReactNative(base64, name, livenessScore);
     }
   }
-
 
   private void getFaceImageByFaceToken(final long trackId, String faceToken, final FacePassRecognitionResult result) {
     if (TextUtils.isEmpty(faceToken)) {
@@ -825,14 +793,8 @@ private enum FacePassSDKMode {
     }
   }
 
-
-
-
-
   private Callback pickerSuccessCallback;
   private Callback pickerCancelCallback;
-
-  
 
   private void toast(String msg) {
     Toast.makeText(activity, msg, Toast.LENGTH_SHORT).show();
