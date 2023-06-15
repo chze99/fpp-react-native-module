@@ -18,4 +18,5 @@ public class SettingVar {
     public static boolean isButtonInvisible = false;
     public static String groupName = "fppreactnative";
     public static Float searchThreshold = 80f;
+    public static boolean doneInitialize=false;
 }

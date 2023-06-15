@@ -58,7 +58,6 @@ import com.facebook.react.bridge.Callback;
 import com.facebook.react.ReactInstanceManager;
 import com.facebook.react.ReactApplication;
 
-
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -185,18 +184,22 @@ public class FacePassFragment extends Fragment implements CameraManager.CameraLi
     initView(view);
     if (!hasPermission()) {
       requestPermission();
-    } else {
-      initFacePassSDK();
     }
 
-    
     group_name = SettingVar.groupName;
-    mFacePassHandler = FacePassHandlerHolder.getMyObject();
+    do{
+      Log.v("doneInititialize",Boolean.toString(SettingVar.doneInitialize));
+      if(SettingVar.doneInitialize==true){
+        mFacePassHandler = FacePassHandlerHolder.getMyObject();
+       }
+      }while(SettingVar.doneInitialize==false) ;
 
-    mRecognizeThread = new RecognizeThread();
-    mRecognizeThread.start();
-    mFeedFrameThread = new FeedFrameThread();
-    mFeedFrameThread.start();
+      mRecognizeThread = new RecognizeThread();
+      mRecognizeThread.start();
+
+      mFeedFrameThread = new FeedFrameThread();
+      mFeedFrameThread.start();
+
   }
 
   private void initView(View view) {
@@ -214,13 +217,11 @@ public class FacePassFragment extends Fragment implements CameraManager.CameraLi
     Log.i(DEBUG_TAG, "Rotation: cameraRation: " + cameraRotation);
     cameraFacingFront = true;
 
-    
     if (SettingVar.isSettingAvailable) {
       cameraRotation = SettingVar.faceRotation;
       cameraFacingFront = SettingVar.cameraFacingFront;
     }
 
-    
     Log.i(DEBUG_TAG, "Rotation: screenRotation: " + String.valueOf(windowRotation));
     Log.i(DEBUG_TAG, "Rotation: new cameraRation: " + cameraRotation);
     final int mCurrentOrientation = getResources().getConfiguration().orientation;
@@ -268,11 +269,6 @@ public class FacePassFragment extends Fragment implements CameraManager.CameraLi
 
     mAndroidHandler = new Handler();
 
-  }
-
-  private void initFacePassSDK() {
-    FacePassHandler.initSDK(activity.getApplicationContext());
-    Log.d("FacePassDemo", FacePassHandler.getVersion());
   }
 
   private void checkGroup() {
@@ -396,8 +392,7 @@ public class FacePassFragment extends Fragment implements CameraManager.CameraLi
                   && detectionResult.images[i].rcAttr.respiratorType != FacePassRCAttribute.FacePassRespiratorType.NO_RESPIRATOR) {
                 float searchThreshold = 80f;
 
-                
-                if (SettingVar.searchThreshold>0) {
+                if (SettingVar.searchThreshold > 0) {
 
                   searchThreshold = SettingVar.searchThreshold;
 
@@ -547,7 +542,6 @@ public class FacePassFragment extends Fragment implements CameraManager.CameraLi
                 Toast.LENGTH_SHORT).show();
           }
       } else {
-        initFacePassSDK();
       }
     }
   }
@@ -664,41 +658,41 @@ public class FacePassFragment extends Fragment implements CameraManager.CameraLi
     faceView.invalidate();
   }
 
-  public void showToast(CharSequence text, int duration, boolean isSuccess, Bitmap bitmap) {
-    LayoutInflater inflater = (LayoutInflater) activity.getApplicationContext()
-        .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-    View toastView = inflater.inflate(R.layout.toast, null);
-    LinearLayout toastLLayout = (LinearLayout) toastView.findViewById(R.id.toastll);
-    if (toastLLayout == null) {
-      return;
-    }
-    toastLLayout.getBackground().setAlpha(100);
-    ImageView imageView = (ImageView) toastView.findViewById(R.id.toastImageView);
-    TextView idTextView = (TextView) toastView.findViewById(R.id.toastTextView);
-    TextView stateView = (TextView) toastView.findViewById(R.id.toastState);
-    SpannableString s;
-    if (isSuccess) {
-      s = new SpannableString("Verify Success");
-      imageView.setImageResource(R.drawable.success);
-    } else {
-      s = new SpannableString("Verify Failed");
-      imageView.setImageResource(R.drawable.success);
-    }
-    if (bitmap != null) {
-      imageView.setImageBitmap(bitmap);
-    }
-    stateView.setText(s);
-    idTextView.setText(text);
+  // public void showToast(CharSequence text, int duration, boolean isSuccess, Bitmap bitmap) {
+  //   LayoutInflater inflater = (LayoutInflater) activity.getApplicationContext()
+  //       .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+  //   View toastView = inflater.inflate(R.layout.toast, null);
+  //   LinearLayout toastLLayout = (LinearLayout) toastView.findViewById(R.id.toastll);
+  //   if (toastLLayout == null) {
+  //     return;
+  //   }
+  //   toastLLayout.getBackground().setAlpha(100);
+  //   ImageView imageView = (ImageView) toastView.findViewById(R.id.toastImageView);
+  //   TextView idTextView = (TextView) toastView.findViewById(R.id.toastTextView);
+  //   TextView stateView = (TextView) toastView.findViewById(R.id.toastState);
+  //   SpannableString s;
+  //   if (isSuccess) {
+  //     s = new SpannableString("Verify Success");
+  //     imageView.setImageResource(R.drawable.success);
+  //   } else {
+  //     s = new SpannableString("Verify Failed");
+  //     imageView.setImageResource(R.drawable.success);
+  //   }
+  //   if (bitmap != null) {
+  //     imageView.setImageBitmap(bitmap);
+  //   }
+  //   stateView.setText(s);
+  //   idTextView.setText(text);
 
-    if (mRecoToast == null) {
-      mRecoToast = new Toast(activity.getApplicationContext());
-      mRecoToast.setGravity(Gravity.CENTER_VERTICAL, 0, 0);
-    }
-    mRecoToast.setDuration(duration);
-    mRecoToast.setView(toastView);
+  //   if (mRecoToast == null) {
+  //     mRecoToast = new Toast(activity.getApplicationContext());
+  //     mRecoToast.setGravity(Gravity.CENTER_VERTICAL, 0, 0);
+  //   }
+  //   mRecoToast.setDuration(duration);
+  //   mRecoToast.setView(toastView);
 
-    mRecoToast.show();
-  }
+  //   mRecoToast.show();
+  // }
 
   private static final int REQUEST_CODE_CHOOSE_PICK = 1;
 
@@ -782,7 +776,7 @@ public class FacePassFragment extends Fragment implements CameraManager.CameraLi
           Log.i(DEBUG_TAG, "getFaceImageByFaceToken cache is null");
           String encoded = Base64.encodeToString(byteArray, Base64.DEFAULT);
           sendDataToReactNative(encoded, faceToken, result.detail.searchScore);
-          showToast("ID = " + String.valueOf(trackId), Toast.LENGTH_SHORT, true, bitmap);
+          // showToast("ID = " + String.valueOf(trackId), Toast.LENGTH_SHORT, true, bitmap);
         }
       });
       if (bitmap != null) {

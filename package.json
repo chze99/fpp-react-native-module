@@ -1,6 +1,6 @@
 {
   "name": "fpp-react-native-module",
-  "version": "0.1.5",
+  "version": "0.1.8",
   "description": "test",
   "main": "lib/commonjs/index",
   "module": "lib/module/index",
@@ -157,6 +157,5 @@
     ]
   },
   "dependencies": {
-    "react-native-default-preference": "^1.4.4"
   }
 }

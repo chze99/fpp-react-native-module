@@ -17,6 +17,6 @@ const FppReactNativeModule = NativeModules.FppReactNativeModule
       }
     );
 
-export function multiply(a: number, b: number): Promise<number> {
-  return FppReactNativeModule.multiply(a, b);
+export function multiple(a: number, b: number): Promise<number> {
+  return FppReactNativeModule.multiple(a, b);
 }

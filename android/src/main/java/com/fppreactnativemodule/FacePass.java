@@ -206,7 +206,7 @@ public class FacePass extends ReactContextBaseJavaModule
   @ReactMethod
   public void cameraSetting(String setting) {
     if (setting != null) {
-          Log.v("Settings",setting);
+      Log.v("Settings", setting);
 
       try {
         JSONObject settings = new JSONObject(setting);
@@ -220,7 +220,7 @@ public class FacePass extends ReactContextBaseJavaModule
         Log.d("JSONERROR", e.toString());
       }
     } else {
-                Log.v("Settings","SETTING is null");
+      Log.v("Settings", "SETTING is null");
 
       SettingVar.isSettingAvailable = false;
       SettingVar.isCross = false;
@@ -233,9 +233,9 @@ public class FacePass extends ReactContextBaseJavaModule
 
   @ReactMethod
   public void setDefaultGroupName(String name) {
-    if(name!=null && !name.isEmpty()){
-      Log.v("GROUPNAME",name);
-      SettingVar.groupName=name;
+    if (name != null && !name.isEmpty()) {
+      Log.v("GROUPNAME", name);
+      SettingVar.groupName = name;
     }
   }
 
@@ -247,13 +247,12 @@ public class FacePass extends ReactContextBaseJavaModule
       initFacePassSDK();
     }
     Activity activity = getCurrentActivity();
-
-    if (parameter != "" && parameter != null )  {
+    if (parameter != "" && parameter != null) {
       try {
         JSONObject parameters = new JSONObject(parameter);
 
         Log.v("PARAMETERS", Boolean.toString(parameters.getBoolean("livenessEnabled")));
-        SettingVar.searchThreshold=(float) parameters.getDouble("searchThreshold");
+        SettingVar.searchThreshold = (float) parameters.getDouble("searchThreshold");
         initFaceHandler(parameters.getInt("rcAttributeAndOcclusionMode"),
             (float) parameters.getDouble("searchThreshold"),
             (float) parameters.getDouble("livenessThreshold"),
@@ -285,12 +284,10 @@ public class FacePass extends ReactContextBaseJavaModule
       }
     } else {
       Log.v("PARAMETERS", "No parameter");
-
       initFaceHandler(1, 69, 55, true, false,
           30, 30, 30, 0.8f, 30, 210, 60,
           100, 2, false, true, 35, 35, 35, 0.7f,
           70, 220, 60, 100, 2);
-
     }
 
   }
@@ -323,6 +320,7 @@ public class FacePass extends ReactContextBaseJavaModule
             FacePassConfig config;
             Activity activity = getCurrentActivity();
             try {
+              SettingVar.doneInitialize=false;
               config = new FacePassConfig();
               config.poseBlurModel = FacePassModel.initModel(activity.getApplicationContext().getAssets(),
                   "attr.pose_blur.arm.190630.bin");
@@ -378,14 +376,15 @@ public class FacePass extends ReactContextBaseJavaModule
               addFaceConfig.rcAttributeAndOcclusionMode = FaceRcAttributeAndOcclusionMode;
               mFacePassHandler.setAddFaceConfig(addFaceConfig);
               FacePassHandlerHolder.setMyObject(mFacePassHandler);
+              SettingVar.doneInitialize=true;
             } catch (FacePassException e) {
               e.printStackTrace();
 
               Log.d("FacePassException", e.toString());
               Log.d(DEBUG_TAG, "FacePassHandler is null");
-              return;
+              return ;
             }
-            return;
+            return ;
           }
           try {
             sleep(500);
