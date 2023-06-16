@@ -32,10 +32,13 @@ DefaultPreference is the example of package in this documentation,you can freely
 
 - App.js/Index.js
 ```sh
-import { NativeModules } from 'react-native';
+-For list of function name refer to document below
+import { FunctionName } from 'fpp-react-native-module';
+-Example,
+import { cameraSetting, setDefaultGroupName, initData } from 'fpp-react-native-module';
+
 
 export default function App(){
-  const { FacePass } = NativeModules
 
   useEffect(()=>{
     async function init(){
@@ -47,9 +50,9 @@ export default function App(){
       setting = await DefaultPreference.get("settings")
 
       //Then call function to initilize,all parameter need to be in JSON string format.
-      FacePass.cameraSetting(setting);
-      FacePass.setDefaultGroupName(groupname);
-      FacePass.initData(parameter)
+      cameraSetting(setting);
+      setDefaultGroupName(groupname);
+      initData(parameter)
       }
       init()
   },[])
@@ -57,19 +60,12 @@ export default function App(){
   }
 ```
 
-- ViewManager.js(Can be any name)
-```sh
-import {requireNativeComponent} from 'react-native';
-
-export const FacePassViewManager =
-  requireNativeComponent('FacePassViewManager');
-```
-
 - MainScreen.js(Can be any name,The page you want to display the face recognition screen,can also be in App.js)
 ```sh
-import { NativeModules,StyleSheet,View,PixelRatio,UIManager,findNodeHandle,BackHandler, NativeEventEmitter } from 'react-native';
+import { StyleSheet,View,PixelRatio,UIManager,findNodeHandle,BackHandler, NativeEventEmitter } from 'react-native';
 import { useEffect,useRef } from 'react';
-import { FacePassViewManager } from '../components/ViewManager'; //ViewManager(.js) need to change to your file name if different
+import { FacePassViewManager,FacePass } from 'fpp-react-native-module';
+
 ```
 
 - Outside function MainScreen of MainScreen.js
@@ -93,7 +89,6 @@ const destroyFragment = viewId =>
  ```sh
   const eventEmitter = new NativeEventEmitter(FacePass);
   const ref = useRef(null);
-  const { FacePass } = NativeModules
 
   useEffect(() => {
     const viewId = findNodeHandle(ref.current);
@@ -140,112 +135,102 @@ const destroyFragment = viewId =>
 
 *** Other function(FacePass related) ***
 
-- Initial FacePass
-```sh
-        const { FacePass } = NativeModules
-```
 
 - Get a list of group name
 ```sh
-        FacePass.getAllGroup((data) => {
-             //data=Array of list of group 
-        }, (failure) => {
-            //Error message
-        })
+        try{
+        const data=await getAllGroup()
+        }catch(error){
+          //Error message
+        }
 ```
 
 - Create a new group with provided name
 ```sh
-        FacePass.createGroup(name, (success) => {
-            //success message
-        }, (failure) => {
-            //Error message
-        })
+        try{
+        const successMessage=await createGroup(name)
+        }catch(error){
+          //Error message
+        }
 ```
 
 - Delete the group with provided name
 ```sh
-        FacePass.deleteGroup(name, (data) => {
-            //success message
-        }, (failure) => {
-            //Error message
-        })
+        try{
+          const groupListArray =await deleteGroup(name)
+        }catch(error){
+          //Error message
+        }
 ```
 
 - Open file explorer and choose image
 ```sh
-        FacePass.selectImage((uri) => {
-            //do something, uri=imagepath
-        }, (err) => {
-            //Error message
-        })
+      try{
+       const imagePath=await selectImage()
+      }catch(error){
+        //Error message
+      }
 ```
 
 - Add selected face into facial recognition
 ```sh
-        FacePass.addFace(imagePath, 
-            (success) => {
-              //Here is to set the face owner name so that the app can know the face belong to who
-              //"Face owner name" need to be replace with own function to get name,e.g an text field
-             
-              DefaultPreference.set(faceToken, "Face owner name");
-            }, (failure) => {
-               //Error message
-            }
-        );
+      try{
+       const faceToken=await addFace(imagePath)
+         //Here is to set the face owner name so that the app can know the face belong to who
+         //"Face owner name" need to be replace with own function to get name,e.g an text field
+        DefaultPreference.set(faceToken, "Face owner name");
+      }catch(error){
+        //Error message
+      }
 ```
 
 - Delete selected face
 ```sh
         //faceToken is generated from addFace function
         //groupName= Name of group with that Face added
-        FacePass.deleteFace(faceToken, groupName, (success) => {
-                console.log(success);
-            }, (failure) => {
-                console.log(failure);
-          })
-        //Delete face data from storage
-        await DefaultPreference.clear(faceToken);
+        try{
+          const successMessage=await deleteFace(faceToken, groupName)
+          await DefaultPreference.clear(faceToken);
+        }catch(error){
+          //Error message
+        }
 ```
 
 - Get the face using faceToken, return an image in base64 format
 ```sh
-      
-       FacePass.getFace(faceToken, (success) => {
-            //success action,e.g. setImage(success) , setImage is the useState() variable.
-        }, (failure) => {
-            //Error message
-        })
+      try{
+        //base64 image action,e.g. setImage(base64Image) , setImage is the useState() variable.
+        const base64Image =await getFace(faceToken)
+      }catch(e){
+        //Error message
+      }
 ```
 
 - Bind to face to a group using faceToken and groupName
 ```sh
-
-        FacePass.bindGroup(faceToken, groupName, (success) => {
-            //success message
-        }, (failure) => {
-            //Error message
-        })
+    try{
+       const successMessage=await bindGroup(faceToken)
+    }catch(e){
+        //Error message
+    }
 ```
 
 - Get all facetoken from the provided groupname
 ```sh
-        FacePass.getGroupInfo(groupName, (data) => {
-            //data=Array of list of facetoken
-        }, (failure) => {
-            //Error message
-        }, 
+      try{
+       const faceTokenListArray=await getGroupInfo(groupName)
+      }catch(e){
+        //Error message
+      }
 ```
 
 - Unbind the faceToken from provided group
 ```sh
-        FacePass.unbindFace(facetoken, groupName, (data) => {
-             //data=Array of list of facetoken 
-          }, (success) => {
-            //success message
-          }, (failure) => {
-            //Error message
-          })
+      try{
+        const faceTokenListArray=await unbindFace(facetoken, groupName)
+      }catch(e){
+        //Error message
+      }
 ```
 
 ***Other function (Not relate to FacePass)***
@@ -260,7 +245,7 @@ const destroyFragment = viewId =>
     
     async function changeDefaultGroup(){
         DefaultPreference.set("group_name",defaultGroupName);
-        FacePass.setDefaultGroupName(defaultGroupName);
+        await setDefaultGroupName(defaultGroupName);
     }
 ```
 
@@ -293,9 +278,10 @@ const destroyFragment = viewId =>
             FaceBrightnessSTDThreshold: FaceBrightnessSTDThreshold //0-255,Default:60,
             FaceFaceMinThreshold: FaceFaceMinThreshold //0-512,whole number,Default:100,
             FaceRcAttributeAndOcclusionMode: FaceRcAttributeAndOcclusionMode //whole number //0-5,Default:2,
+           }
+        //Any package/function to save the json into local storage
+        DefaultPreference.set('parameters', data))
         }
-        DefaultPreference.set('parameters', JSON.stringify(data))
-    }
 ```
 
 ```sh
@@ -309,15 +295,16 @@ const destroyFragment = viewId =>
               cameraPreviewRotation: cameraPreviewRotation //0,90,180,270,Default:90,
               isCross: isCross //true,false,Default:false,
           }
-          DefaultPreference.set('settings', JSON.stringify(data))
-          FacePass.cameraSetting(JSON.stringify(data));
-
-         }
+          //Any package/function to save the json into local storage
+          DefaultPreference.set('settings', data)
+          cameraSetting(data);
+        }
 ```
 
 ## Known Issue
 The face recognition may not working if the app is first time launch after installation/clear storage or cache.Restart of application is needed after the app granted permission.
 
+If facial recognition setting is changed,restart is require for new facial recognition setting to take affect.
 
 ## Contributing
 

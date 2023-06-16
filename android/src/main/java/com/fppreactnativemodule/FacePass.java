@@ -615,7 +615,7 @@ public class FacePass extends ReactContextBaseJavaModule
   }
 
   @ReactMethod
-  public void unbindFace(String StringfaceToken, String groupNameEt, Callback returns, Callback success,
+  public void unbindFace(String StringfaceToken, String groupNameEt,Callback success,
       Callback failure) {
     mFacePassHandler = FacePassHandlerHolder.getMyObject();
     if (mFacePassHandler == null) {
@@ -643,9 +643,8 @@ public class FacePass extends ReactContextBaseJavaModule
           }
 
         }
-        success.invoke("FACE_UNBIND_SUCCESS");
         WritableArray array = Arguments.fromList(faceTokenList);
-        returns.invoke(array);
+        success.invoke(array);
       } else {
         failure.invoke("FACE_UNBIND_FAILED");
       }
