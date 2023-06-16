@@ -320,7 +320,7 @@ public class FacePass extends ReactContextBaseJavaModule
             FacePassConfig config;
             Activity activity = getCurrentActivity();
             try {
-              SettingVar.doneInitialize=false;
+              SettingVar.doneInitialize = false;
               config = new FacePassConfig();
               config.poseBlurModel = FacePassModel.initModel(activity.getApplicationContext().getAssets(),
                   "attr.pose_blur.arm.190630.bin");
@@ -376,15 +376,15 @@ public class FacePass extends ReactContextBaseJavaModule
               addFaceConfig.rcAttributeAndOcclusionMode = FaceRcAttributeAndOcclusionMode;
               mFacePassHandler.setAddFaceConfig(addFaceConfig);
               FacePassHandlerHolder.setMyObject(mFacePassHandler);
-              SettingVar.doneInitialize=true;
+              SettingVar.doneInitialize = true;
             } catch (FacePassException e) {
               e.printStackTrace();
 
               Log.d("FacePassException", e.toString());
               Log.d(DEBUG_TAG, "FacePassHandler is null");
-              return ;
+              return;
             }
-            return ;
+            return;
           }
           try {
             sleep(500);
@@ -536,6 +536,9 @@ public class FacePass extends ReactContextBaseJavaModule
           }
 
         }
+        WritableArray array = Arguments.fromList(faceTokenList);
+        success.invoke(array);
+
       }
     } catch (FacePassException e) {
       e.printStackTrace();
@@ -543,7 +546,7 @@ public class FacePass extends ReactContextBaseJavaModule
     }
     String result = b ? "success " : "failed";
     if (b) {
-      success.invoke("FACE_DELETE_SUCCESS");
+      toast("Face deleted");
     } else {
       toast("Fail to delete face");
     }
@@ -615,7 +618,7 @@ public class FacePass extends ReactContextBaseJavaModule
   }
 
   @ReactMethod
-  public void unbindFace(String StringfaceToken, String groupNameEt,Callback success,
+  public void unbindFace(String StringfaceToken, String groupNameEt, Callback success,
       Callback failure) {
     mFacePassHandler = FacePassHandlerHolder.getMyObject();
     if (mFacePassHandler == null) {
