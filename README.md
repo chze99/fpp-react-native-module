@@ -1,11 +1,11 @@
-# fpp-react-native-module
+# facepass-react-native-module
 
 Face Recognition Module for React Native
 
 ## Installation
 
 ```sh
-npm install fpp-react-native-module
+npm install facepass-react-native-module
 ```
 
 Require use of any package that allow react native to save and retrieve data, the data need to store as String of JSON.
@@ -33,10 +33,10 @@ DefaultPreference is the example of package in this documentation,you can freely
 - App.js/Index.js
 ```sh
 -For list of function name refer to document below
-  import { FunctionName } from 'fpp-react-native-module';
+  import { FunctionName } from 'facepass-react-native-module';
 
 -Example,
-  import { cameraSetting, setDefaultGroupName, initData } from 'fpp-react-native-module';
+  import { cameraSetting, setDefaultGroupName, initData } from 'facepass-react-native-module';
   
   export default function App(){
     useEffect(()=>{
@@ -65,7 +65,7 @@ DefaultPreference is the example of package in this documentation,you can freely
 ```sh
   import { StyleSheet,View,PixelRatio,UIManager,findNodeHandle,BackHandler, NativeEventEmitter } from 'react-native';
   import { useEffect,useRef } from 'react';
-  import { FacePassViewManager,FacePass } from 'fpp-react-native-module';
+  import { FacePassViewManager,FacePass } from 'facepass-react-native-module';
 
 ```
 
