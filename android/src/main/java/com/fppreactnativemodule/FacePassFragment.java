@@ -176,30 +176,30 @@ public class FacePassFragment extends Fragment implements CameraManager.CameraLi
   @Override
   public void onStart() {
     super.onStart();
-    mImageCache = new FaceImageCache();
-    mRecognizeDataQueue = new ArrayBlockingQueue<RecognizeData>(5);
-    mFeedFrameQueue = new ArrayBlockingQueue<CameraPreviewData>(1);
-    initAndroidHandler();
-    View view = getView();
-    initView(view);
-    if (!hasPermission()) {
-      requestPermission();
-    }
+    do {
+      Log.v("doneInititialize", Boolean.toString(SettingVar.doneInitialize));
+      if (SettingVar.doneInitialize == true) {
+        mImageCache = new FaceImageCache();
+        mRecognizeDataQueue = new ArrayBlockingQueue<RecognizeData>(5);
+        mFeedFrameQueue = new ArrayBlockingQueue<CameraPreviewData>(1);
+        initAndroidHandler();
+        View view = getView();
+        if (!hasPermission()) {
+          requestPermission();
+        }
+        initView(view);
 
-    group_name = SettingVar.groupName;
-    do{
-      Log.v("doneInititialize",Boolean.toString(SettingVar.doneInitialize));
-      if(SettingVar.doneInitialize==true){
+        group_name = SettingVar.groupName;
+
         mFacePassHandler = FacePassHandlerHolder.getMyObject();
-       }
-      }while(SettingVar.doneInitialize==false) ;
 
-      mRecognizeThread = new RecognizeThread();
-      mRecognizeThread.start();
+        mRecognizeThread = new RecognizeThread();
+        mRecognizeThread.start();
 
-      mFeedFrameThread = new FeedFrameThread();
-      mFeedFrameThread.start();
-
+        mFeedFrameThread = new FeedFrameThread();
+        mFeedFrameThread.start();
+      }
+    } while (SettingVar.doneInitialize == false);
   }
 
   private void initView(View view) {
@@ -658,40 +658,43 @@ public class FacePassFragment extends Fragment implements CameraManager.CameraLi
     faceView.invalidate();
   }
 
-  // public void showToast(CharSequence text, int duration, boolean isSuccess, Bitmap bitmap) {
-  //   LayoutInflater inflater = (LayoutInflater) activity.getApplicationContext()
-  //       .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-  //   View toastView = inflater.inflate(R.layout.toast, null);
-  //   LinearLayout toastLLayout = (LinearLayout) toastView.findViewById(R.id.toastll);
-  //   if (toastLLayout == null) {
-  //     return;
-  //   }
-  //   toastLLayout.getBackground().setAlpha(100);
-  //   ImageView imageView = (ImageView) toastView.findViewById(R.id.toastImageView);
-  //   TextView idTextView = (TextView) toastView.findViewById(R.id.toastTextView);
-  //   TextView stateView = (TextView) toastView.findViewById(R.id.toastState);
-  //   SpannableString s;
-  //   if (isSuccess) {
-  //     s = new SpannableString("Verify Success");
-  //     imageView.setImageResource(R.drawable.success);
-  //   } else {
-  //     s = new SpannableString("Verify Failed");
-  //     imageView.setImageResource(R.drawable.success);
-  //   }
-  //   if (bitmap != null) {
-  //     imageView.setImageBitmap(bitmap);
-  //   }
-  //   stateView.setText(s);
-  //   idTextView.setText(text);
+  // public void showToast(CharSequence text, int duration, boolean isSuccess,
+  // Bitmap bitmap) {
+  // LayoutInflater inflater = (LayoutInflater) activity.getApplicationContext()
+  // .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+  // View toastView = inflater.inflate(R.layout.toast, null);
+  // LinearLayout toastLLayout = (LinearLayout)
+  // toastView.findViewById(R.id.toastll);
+  // if (toastLLayout == null) {
+  // return;
+  // }
+  // toastLLayout.getBackground().setAlpha(100);
+  // ImageView imageView = (ImageView)
+  // toastView.findViewById(R.id.toastImageView);
+  // TextView idTextView = (TextView) toastView.findViewById(R.id.toastTextView);
+  // TextView stateView = (TextView) toastView.findViewById(R.id.toastState);
+  // SpannableString s;
+  // if (isSuccess) {
+  // s = new SpannableString("Verify Success");
+  // imageView.setImageResource(R.drawable.success);
+  // } else {
+  // s = new SpannableString("Verify Failed");
+  // imageView.setImageResource(R.drawable.success);
+  // }
+  // if (bitmap != null) {
+  // imageView.setImageBitmap(bitmap);
+  // }
+  // stateView.setText(s);
+  // idTextView.setText(text);
 
-  //   if (mRecoToast == null) {
-  //     mRecoToast = new Toast(activity.getApplicationContext());
-  //     mRecoToast.setGravity(Gravity.CENTER_VERTICAL, 0, 0);
-  //   }
-  //   mRecoToast.setDuration(duration);
-  //   mRecoToast.setView(toastView);
+  // if (mRecoToast == null) {
+  // mRecoToast = new Toast(activity.getApplicationContext());
+  // mRecoToast.setGravity(Gravity.CENTER_VERTICAL, 0, 0);
+  // }
+  // mRecoToast.setDuration(duration);
+  // mRecoToast.setView(toastView);
 
-  //   mRecoToast.show();
+  // mRecoToast.show();
   // }
 
   private static final int REQUEST_CODE_CHOOSE_PICK = 1;
@@ -776,7 +779,8 @@ public class FacePassFragment extends Fragment implements CameraManager.CameraLi
           Log.i(DEBUG_TAG, "getFaceImageByFaceToken cache is null");
           String encoded = Base64.encodeToString(byteArray, Base64.DEFAULT);
           sendDataToReactNative(encoded, faceToken, result.detail.searchScore);
-          // showToast("ID = " + String.valueOf(trackId), Toast.LENGTH_SHORT, true, bitmap);
+          // showToast("ID = " + String.valueOf(trackId), Toast.LENGTH_SHORT, true,
+          // bitmap);
         }
       });
       if (bitmap != null) {

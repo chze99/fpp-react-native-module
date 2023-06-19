@@ -118,6 +118,7 @@ public class FacePass extends ReactContextBaseJavaModule
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
       Activity currentActivity = getCurrentActivity();
       currentActivity.requestPermissions(Permission, PERMISSIONS_REQUEST);
+
     }
   }
 
@@ -137,6 +138,8 @@ public class FacePass extends ReactContextBaseJavaModule
               || !activity.shouldShowRequestPermissionRationale(PERMISSION_ACCESS_NETWORK_STATE)) {
             Toast.makeText(context.getApplicationContext(), "需要开启摄像头网络文件存储权限", Toast.LENGTH_SHORT).show();
           }
+      } else {
+        initFacePassSDK();
       }
     }
   }
@@ -203,6 +206,8 @@ public class FacePass extends ReactContextBaseJavaModule
     }
   };
 
+
+
   @ReactMethod
   public void cameraSetting(String setting) {
     if (setting != null) {
@@ -246,7 +251,9 @@ public class FacePass extends ReactContextBaseJavaModule
     } else {
       initFacePassSDK();
     }
+    // initFacePassSDK();
     Activity activity = getCurrentActivity();
+
     if (parameter != "" && parameter != null) {
       try {
         JSONObject parameters = new JSONObject(parameter);
@@ -295,7 +302,7 @@ public class FacePass extends ReactContextBaseJavaModule
   private void initFacePassSDK() {
     Activity activity = getCurrentActivity();
     FacePassHandler.initSDK(activity.getApplicationContext());
-    Log.d("FacePassDemo", FacePassHandler.getVersion());
+    Log.d("FacePassSDK", FacePassHandler.getVersion());
   }
 
   private boolean ageGenderEnabledGlobal;
