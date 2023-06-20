@@ -27,11 +27,11 @@ if (isNewArchitectureEnabled()) {
 }
 
 def getExtOrDefault(name) {
-  return rootProject.ext.has(name) ? rootProject.ext.get(name) : project.properties["FppReactNativeModule_" + name]
+  return rootProject.ext.has(name) ? rootProject.ext.get(name) : project.properties["FacePassReactNativeModule_" + name]
 }
 
 def getExtOrIntegerDefault(name) {
-  return rootProject.ext.has(name) ? rootProject.ext.get(name) : (project.properties["FppReactNativeModule_" + name]).toInteger()
+  return rootProject.ext.has(name) ? rootProject.ext.get(name) : (project.properties["FacePassReactNativeModule_" + name]).toInteger()
 }
 
 // Override `hermesEnabled` by `expo.jsEngine`
@@ -110,7 +110,7 @@ implementation ('org.apache.httpcomponents:httpmime:4.5.6'){
 if (isNewArchitectureEnabled()) {
   react {
     jsRootDir = file("../src/")
-    libraryName = "FppReactNativeModule"
+    libraryName = "FacePassReactNativeModule"
     codegenJavaPackageName = "com.fppreactnativemodule"
   }
 }

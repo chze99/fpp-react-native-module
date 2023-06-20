@@ -215,12 +215,11 @@ public class FacePass extends ReactContextBaseJavaModule
 
       try {
         JSONObject settings = new JSONObject(setting);
-        Log.d("TAG", "impl: " + Integer.toString(settings.getInt("faceRotation")));
-        SettingVar.isSettingAvailable = settings.getBoolean("isSettingAvailable");
-        SettingVar.isCross = settings.getBoolean("isCross");
-        SettingVar.faceRotation = settings.getInt("faceRotation");
-        SettingVar.cameraPreviewRotation = settings.getInt("cameraPreviewRotation");
-        SettingVar.cameraFacingFront = settings.getBoolean("cameraFacingFront");
+        SettingVar.isSettingAvailable = settings.getBoolean("isSettingAvailable",true);
+        SettingVar.isCross = settings.getBoolean("isCross",false);
+        SettingVar.faceRotation = settings.getInt("faceRotation",90);
+        SettingVar.cameraPreviewRotation = settings.getInt("cameraPreviewRotation",270);
+        SettingVar.cameraFacingFront = settings.getBoolean("cameraFacingFront",false);
       } catch (JSONException e) {
         Log.d("JSONERROR", e.toString());
       }
@@ -239,7 +238,6 @@ public class FacePass extends ReactContextBaseJavaModule
   @ReactMethod
   public void setDefaultGroupName(String name) {
     if (name != null && !name.isEmpty()) {
-      Log.v("GROUPNAME", name);
       SettingVar.groupName = name;
     }
   }
@@ -258,33 +256,32 @@ public class FacePass extends ReactContextBaseJavaModule
       try {
         JSONObject parameters = new JSONObject(parameter);
 
-        Log.v("PARAMETERS", Boolean.toString(parameters.getBoolean("livenessEnabled")));
         SettingVar.searchThreshold = (float) parameters.getDouble("searchThreshold");
-        initFaceHandler(parameters.getInt("rcAttributeAndOcclusionMode"),
-            (float) parameters.getDouble("searchThreshold"),
-            (float) parameters.getDouble("livenessThreshold"),
-            parameters.getBoolean("livenessEnabled"),
-            parameters.getBoolean("rgbIrLivenessEnabled"),
-            (float) parameters.getDouble("poseThresholdRoll"),
-            (float) parameters.getDouble("poseThresholdPitch"),
-            (float) parameters.getDouble("poseThresholdYaw"),
-            (float) parameters.getDouble("blurThreshold"),
-            (float) parameters.getDouble("lowBrightnessThreshold"),
-            (float) parameters.getDouble("highBrightnessThreshold"),
-            (float) parameters.getDouble("brightnessSTDThreshold"),
-            parameters.getInt("faceMinThreshold"),
-            parameters.getInt("retryCount"),
-            parameters.getBoolean("smileEnabled"),
-            parameters.getBoolean("maxFaceEnabled"),
-            (float) parameters.getDouble("FacePoseThresholdPitch"),
-            (float) parameters.getDouble("FacePoseThresholdRoll"),
-            (float) parameters.getDouble("FacePoseThresholdYaw"),
-            (float) parameters.getDouble("FaceBlurThreshold"),
-            (float) parameters.getDouble("FaceLowBrightnessThreshold"),
-            (float) parameters.getDouble("FaceHighBrightnessThreshold"),
-            (float) parameters.getDouble("FaceBrightnessSTDThreshold"),
-            parameters.getInt("FaceFaceMinThreshold"),
-            parameters.getInt("FaceRcAttributeAndOcclusionMode"));
+        initFaceHandler(parameters.getInt("rcAttributeAndOcclusionMode",1),
+            (float) parameters.getDouble("searchThreshold",69),
+            (float) parameters.getDouble("livenessThreshold",55),
+            parameters.getBoolean("livenessEnabled",true),
+            parameters.getBoolean("rgbIrLivenessEnabled",false),
+            (float) parameters.getDouble("poseThresholdRoll",35),
+            (float) parameters.getDouble("poseThresholdPitch",35),
+            (float) parameters.getDouble("poseThresholdYaw",35),
+            (float) parameters.getDouble("blurThreshold",0.8),
+            (float) parameters.getDouble("lowBrightnessThreshold",30),
+            (float) parameters.getDouble("highBrightnessThreshold",210),
+            (float) parameters.getDouble("brightnessSTDThreshold",80),
+            parameters.getInt("faceMinThreshold",100),
+            parameters.getInt("retryCount",2),
+            parameters.getBoolean("smileEnabled",false),
+            parameters.getBoolean("maxFaceEnabled",true),
+            (float) parameters.getDouble("FacePoseThresholdPitch",35),
+            (float) parameters.getDouble("FacePoseThresholdRoll",35),
+            (float) parameters.getDouble("FacePoseThresholdYaw",35),
+            (float) parameters.getDouble("FaceBlurThreshold",0.7),
+            (float) parameters.getDouble("FaceLowBrightnessThreshold",70),
+            (float) parameters.getDouble("FaceHighBrightnessThreshold",220),
+            (float) parameters.getDouble("FaceBrightnessSTDThreshold",60),
+            parameters.getInt("FaceFaceMinThreshold",100),
+            parameters.getInt("FaceRcAttributeAndOcclusionMode",2));
 
       } catch (JSONException e) {
         Log.d("JSONERROR", e.toString());

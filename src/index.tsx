@@ -6,7 +6,7 @@ const LINKING_ERROR =
   '- You rebuilt the app after installing the package\n' +
   '- You are not using Expo Go\n';
 
-const FppReactNativeModule = NativeModules.FacePass
+const FacePassReactNativeModule = NativeModules.FacePass
   ? NativeModules.FacePass
   : new Proxy(
     {},
@@ -20,7 +20,7 @@ const FppReactNativeModule = NativeModules.FacePass
 export const FacePassViewManager: HostComponent<any> =
   requireNativeComponent('FacePassViewManager');
 
-export const FacePass=FppReactNativeModule;
+export const FacePass = FacePassReactNativeModule;
 
 export function startCameraScreen(height: number, width: number, ref: any) {
   return <FacePassViewManager
@@ -35,23 +35,35 @@ export function startCameraScreen(height: number, width: number, ref: any) {
 
 
 export function initData(data: JSON): Promise<void> {
-  const jsonString = JSON.stringify(data)
-  return FppReactNativeModule.initData(jsonString)
+  let jsonString = ""
+  if (data != undefined) {
+    jsonString = JSON.stringify(data)
+  }
+  return FacePassReactNativeModule.initData(jsonString)
+
 }
 
 export function setDefaultGroupName(data: String): Promise<void> {
-  return FppReactNativeModule.setDefaultGroupName(data)
+  let name:String = ""
+  if (data != undefined) {
+    name=data
+  }
+  return FacePassReactNativeModule.setDefaultGroupName(name)
+
 }
 
 export function cameraSetting(data: String): Promise<void> {
-  const jsonString = JSON.stringify(data)
-  return FppReactNativeModule.cameraSetting(jsonString)
+  let jsonString = ""
+  if (data != undefined) {
+    jsonString = JSON.stringify(data)
+  }
+  return FacePassReactNativeModule.cameraSetting(jsonString)
 }
 
 
 export function selectImage(): Promise<void> {
   return new Promise((resolve, reject) => {
-    FppReactNativeModule.selectImage((success: any) => {
+    FacePassReactNativeModule.selectImage((success: any) => {
       resolve(success)
     }, (
       fail: any
@@ -66,7 +78,7 @@ export function selectImage(): Promise<void> {
 
 export function addFace(data: String): Promise<void> {
   return new Promise((resolve, reject) => {
-    FppReactNativeModule.addFace(data, (success: any) => {
+    FacePassReactNativeModule.addFace(data, (success: any) => {
       resolve(success)
     }, (
       fail: any
@@ -79,7 +91,7 @@ export function addFace(data: String): Promise<void> {
 export function getFace(data: String): Promise<void> {
   console.log(data)
   return new Promise((resolve, reject) => {
-    FppReactNativeModule.getFace(data, (success: any) => {
+    FacePassReactNativeModule.getFace(data, (success: any) => {
       resolve(success)
     }, (
       fail: any
@@ -91,7 +103,7 @@ export function getFace(data: String): Promise<void> {
 
 export function deleteFace(faceToken: String, groupName: String): Promise<void> {
   return new Promise((resolve, reject) => {
-    FppReactNativeModule.deleteFace(faceToken, groupName, (success: any) => {
+    FacePassReactNativeModule.deleteFace(faceToken, groupName, (success: any) => {
       resolve(success)
     }, (
       fail: any
@@ -104,7 +116,7 @@ export function deleteFace(faceToken: String, groupName: String): Promise<void> 
 
 export function bindGroup(faceToken: String, groupName: String): Promise<void> {
   return new Promise((resolve, reject) => {
-    FppReactNativeModule.bindGroup(faceToken, groupName, (success: any) => {
+    FacePassReactNativeModule.bindGroup(faceToken, groupName, (success: any) => {
       resolve(success)
     }, (
       fail: any
@@ -116,7 +128,7 @@ export function bindGroup(faceToken: String, groupName: String): Promise<void> {
 
 export function getGroupInfo(data: String): Promise<void> {
   return new Promise((resolve, reject) => {
-    FppReactNativeModule.getGroupInfo(data, (success: any) => {
+    FacePassReactNativeModule.getGroupInfo(data, (success: any) => {
       resolve(success);
     }, (
       fail: any
@@ -128,7 +140,7 @@ export function getGroupInfo(data: String): Promise<void> {
 
 export function unbindFace(faceToken: String, groupName: String): Promise<void> {
   return new Promise((resolve, reject) => {
-    FppReactNativeModule.unbindFace(faceToken, groupName, (success: any) => {
+    FacePassReactNativeModule.unbindFace(faceToken, groupName, (success: any) => {
       resolve(success)
     }, (
       fail: any
@@ -141,7 +153,7 @@ export function unbindFace(faceToken: String, groupName: String): Promise<void> 
 
 export function getAllGroup(): Promise<void> {
   return new Promise((resolve, reject) => {
-    FppReactNativeModule.getAllGroup((success: any) => {
+    FacePassReactNativeModule.getAllGroup((success: any) => {
       resolve(success)
     }, (
       fail: any
@@ -154,7 +166,7 @@ export function getAllGroup(): Promise<void> {
 
 export function createGroup(data: String): Promise<void> {
   return new Promise((resolve, reject) => {
-    FppReactNativeModule.createGroup(data, (success: any) => {
+    FacePassReactNativeModule.createGroup(data, (success: any) => {
       resolve(success)
     }, (
       fail: any
@@ -167,7 +179,7 @@ export function createGroup(data: String): Promise<void> {
 
 export function deleteGroup(data: String): Promise<void> {
   return new Promise((resolve, reject) => {
-    FppReactNativeModule.deleteGroup(data, (success: any) => {
+    FacePassReactNativeModule.deleteGroup(data, (success: any) => {
       resolve(success)
     }, (
       fail: any

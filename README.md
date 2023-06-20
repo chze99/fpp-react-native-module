@@ -283,9 +283,9 @@ DefaultPreference is the example of package in this documentation,you can freely
 ```sh
   const data = {
     cameraFacingFront: cameraFacingFront //true,false,Default:false,
-    faceRotation: faceRotation //0,90,180,270,Default:270,
+    faceRotation: faceRotation //0,90,180,270,Default:90,
     isSettingAvailable: true,//Leave it like this
-    cameraPreviewRotation: cameraPreviewRotation //0,90,180,270,Default:90,
+    cameraPreviewRotation: cameraPreviewRotation //0,90,180,270,Default:270,
     isCross: isCross //true,false,Default:false,
   }
   cameraSetting(data);
