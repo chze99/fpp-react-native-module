@@ -8,7 +8,7 @@ Face Recognition Module for React Native
 npm install facepass-react-native-module
 ```
 
-Require use of any package that allow react native to save and retrieve data, the data need to store as String of JSON.
+Require use of any package that allow react native to save and retrieve data, the data need to store as  JSON.
 
 DefaultPreference is the example of package in this documentation,you can freely choose other package to be used
 **Android**
@@ -227,6 +227,19 @@ DefaultPreference is the example of package in this documentation,you can freely
     }catch(e){
       //Error message
     }
+```
+
+- Control the light
+```sh
+  changeLight("color")
+  //List of color:"red","green","white","yellow","off"
+  //"off" is to turn off light,the light need to be turn off on app exit else will remain turn on
+```
+
+- Control the door(Not test yet)
+```sh
+  controlDoor("command")
+  //Command: "open","close"
 ```
 
 ***JSON format of Parameter for funtion***

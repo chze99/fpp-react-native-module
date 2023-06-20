@@ -59,7 +59,6 @@ import com.facebook.react.ReactInstanceManager;
 import com.facebook.react.ReactApplication;
 
 import org.json.JSONException;
-import org.json.JSONObject;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.entity.ContentType;
@@ -89,11 +88,15 @@ import mcv.facepass.types.FacePassRecognitionResult;
 import mcv.facepass.types.FacePassAgeGenderResult;
 import mcv.facepass.types.FacePassRecognitionState;
 import mcv.facepass.types.FacePassTrackOptions;
+import com.example.yfaceapi.GPIOManager;
 
 import com.fppreactnativemodule.camera.CameraManager;
 import com.fppreactnativemodule.camera.CameraPreview;
 import com.fppreactnativemodule.camera.CameraPreviewData;
 import com.fppreactnativemodule.utils.FileUtil;
+import com.q_zheng.QZhengGPIOManager;
+import com.q_zheng.QZhengIFManager;
+import com.q_zheng.QZGpio;
 
 public class FacePassFragment extends Fragment implements CameraManager.CameraListener, View.OnClickListener {
   private Context context;
@@ -151,6 +154,9 @@ public class FacePassFragment extends Fragment implements CameraManager.CameraLi
   FeedFrameThread mFeedFrameThread;
   private FaceImageCache mImageCache;
   private Handler mAndroidHandler;
+    Boolean appPaused = false;
+    Boolean enableLight = true;
+    private GPIOManager gpioManager;
 
   @Override
   public void onAttach(Context context) {
@@ -176,7 +182,7 @@ public class FacePassFragment extends Fragment implements CameraManager.CameraLi
   @Override
   public void onStart() {
     super.onStart();
-    do {
+    // do {
       Log.v("doneInititialize", Boolean.toString(SettingVar.doneInitialize));
       if (SettingVar.doneInitialize == true) {
         mImageCache = new FaceImageCache();
@@ -188,9 +194,15 @@ public class FacePassFragment extends Fragment implements CameraManager.CameraLi
           requestPermission();
         }
         initView(view);
+        QZhengGPIOInstance = QZhengGPIOManager.getInstance(context);
+        qZhengManager = new QZhengIFManager(context);
+        qZhengManager.disableStatusBar(true);
+        gpioManager = GPIOManager.getInstance(context);
 
         group_name = SettingVar.groupName;
-
+        if (enableLight) {
+            // changeLight("white");
+        }
         mFacePassHandler = FacePassHandlerHolder.getMyObject();
 
         mRecognizeThread = new RecognizeThread();
@@ -199,7 +211,7 @@ public class FacePassFragment extends Fragment implements CameraManager.CameraLi
         mFeedFrameThread = new FeedFrameThread();
         mFeedFrameThread.start();
       }
-    } while (SettingVar.doneInitialize == false);
+    // } while (SettingVar.doneInitialize == false);
   }
 
   private void initView(View view) {
@@ -250,6 +262,8 @@ public class FacePassFragment extends Fragment implements CameraManager.CameraLi
   @Override
   public void onPause() {
     Log.v("OnPause", "Pause");
+    // changeLight("off");
+    appPaused = true;
     super.onPause();
 
   }
@@ -264,6 +278,50 @@ public class FacePassFragment extends Fragment implements CameraManager.CameraLi
     adaptFrameLayout();
     super.onResume();
   }
+    QZhengGPIOManager QZhengGPIOInstance;
+    QZhengIFManager qZhengManager;
+
+  // private void changeLight(String light) {
+
+  //   // new device
+  //   if (light.equals("white") && enableLight) {
+  //     QZhengGPIOInstance.getGPIO(QZhengGPIOManager.GPIO_ID_LED_R).setValue(QZhengGPIOManager.GPIO_VALUE_LOW);
+  //     QZhengGPIOInstance.getGPIO(QZhengGPIOManager.GPIO_ID_LED_B).setValue(QZhengGPIOManager.GPIO_VALUE_HIGH);
+  //     QZhengGPIOInstance.getGPIO(QZhengGPIOManager.GPIO_ID_LED_G).setValue(QZhengGPIOManager.GPIO_VALUE_LOW);
+  //   } else if (light.equals("red")) {
+  //     QZhengGPIOInstance.getGPIO(QZhengGPIOManager.GPIO_ID_LED_R).setValue(QZhengGPIOManager.GPIO_VALUE_HIGH);
+  //     QZhengGPIOInstance.getGPIO(QZhengGPIOManager.GPIO_ID_LED_B).setValue(QZhengGPIOManager.GPIO_VALUE_LOW);
+  //     QZhengGPIOInstance.getGPIO(QZhengGPIOManager.GPIO_ID_LED_G).setValue(QZhengGPIOManager.GPIO_VALUE_LOW);
+  //   } else if (light.equals("green")) {
+  //     QZhengGPIOInstance.getGPIO(QZhengGPIOManager.GPIO_ID_LED_R).setValue(QZhengGPIOManager.GPIO_VALUE_LOW);
+  //     QZhengGPIOInstance.getGPIO(QZhengGPIOManager.GPIO_ID_LED_B).setValue(QZhengGPIOManager.GPIO_VALUE_LOW);
+  //     QZhengGPIOInstance.getGPIO(QZhengGPIOManager.GPIO_ID_LED_G).setValue(QZhengGPIOManager.GPIO_VALUE_HIGH);
+  //   } else {
+  //     QZhengGPIOInstance.getGPIO(QZhengGPIOManager.GPIO_ID_LED_R).setValue(QZhengGPIOManager.GPIO_VALUE_LOW);
+  //     QZhengGPIOInstance.getGPIO(QZhengGPIOManager.GPIO_ID_LED_B).setValue(QZhengGPIOManager.GPIO_VALUE_LOW);
+  //     QZhengGPIOInstance.getGPIO(QZhengGPIOManager.GPIO_ID_LED_G).setValue(QZhengGPIOManager.GPIO_VALUE_LOW);
+  //   }
+  //   // old device
+  //   if (light.equals("white")) {
+  //     gpioManager.pullUpWhiteLight();
+  //     gpioManager.pullDownGreenLight();
+  //     gpioManager.pullDownRedLight();
+  //   } else if (light.equals("red")) {
+  //     gpioManager.pullDownWhiteLight();
+  //     gpioManager.pullDownGreenLight();
+  //     gpioManager.pullUpRedLight();
+  //   } else if (light.equals("green")) {
+  //     gpioManager.pullDownWhiteLight();
+  //     gpioManager.pullUpGreenLight();
+  //     gpioManager.pullDownRedLight();
+  //   } else {
+  //     gpioManager.pullDownWhiteLight();
+  //     gpioManager.pullDownGreenLight();
+  //     gpioManager.pullDownRedLight();
+  //   }
+  // }
+
+
 
   private void initAndroidHandler() {
 
@@ -778,6 +836,7 @@ public class FacePassFragment extends Fragment implements CameraManager.CameraLi
         public void run() {
           Log.i(DEBUG_TAG, "getFaceImageByFaceToken cache is null");
           String encoded = Base64.encodeToString(byteArray, Base64.DEFAULT);
+          // changeLight("green");
           sendDataToReactNative(encoded, faceToken, result.detail.searchScore);
           // showToast("ID = " + String.valueOf(trackId), Toast.LENGTH_SHORT, true,
           // bitmap);

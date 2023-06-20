@@ -64,7 +64,10 @@ import mcv.facepass.types.FacePassRecognitionResult;
 import mcv.facepass.types.FacePassAgeGenderResult;
 import mcv.facepass.types.FacePassRecognitionState;
 import mcv.facepass.types.FacePassTrackOptions;
-
+import com.q_zheng.QZhengGPIOManager;
+import com.q_zheng.QZhengIFManager;
+import com.q_zheng.QZGpio;
+import com.example.yfaceapi.GPIOManager;
 import com.fppreactnativemodule.utils.FileUtil;
 
 @ReactModule(name = FacePass.NAME)
@@ -101,6 +104,8 @@ public class FacePass extends ReactContextBaseJavaModule
       PERMISSION_INTERNET, PERMISSION_ACCESS_NETWORK_STATE };
 
   FacePassHandler mFacePassHandler;
+  QZhengIFManager qZhengManager;
+  private GPIOManager gpioManager;
 
   private boolean hasPermission() {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -206,20 +211,85 @@ public class FacePass extends ReactContextBaseJavaModule
     }
   };
 
+  Boolean appPaused = false;
+  Boolean enableLight = true;
+  QZhengGPIOManager QZhengGPIOInstance;
 
+  @ReactMethod
+  private void changeLight(String light) {
+    QZhengGPIOInstance = QZhengGPIOManager.getInstance(context);
+    qZhengManager = new QZhengIFManager(context);
+    gpioManager = GPIOManager.getInstance(context);
+
+    // new device
+    if (light.equals("white") && enableLight) {
+      QZhengGPIOInstance.getGPIO(QZhengGPIOManager.GPIO_ID_LED_R).setValue(QZhengGPIOManager.GPIO_VALUE_LOW);
+      QZhengGPIOInstance.getGPIO(QZhengGPIOManager.GPIO_ID_LED_B).setValue(QZhengGPIOManager.GPIO_VALUE_HIGH);
+      QZhengGPIOInstance.getGPIO(QZhengGPIOManager.GPIO_ID_LED_G).setValue(QZhengGPIOManager.GPIO_VALUE_LOW);
+    } else if (light.equals("red")) {
+      QZhengGPIOInstance.getGPIO(QZhengGPIOManager.GPIO_ID_LED_R).setValue(QZhengGPIOManager.GPIO_VALUE_HIGH);
+      QZhengGPIOInstance.getGPIO(QZhengGPIOManager.GPIO_ID_LED_B).setValue(QZhengGPIOManager.GPIO_VALUE_LOW);
+      QZhengGPIOInstance.getGPIO(QZhengGPIOManager.GPIO_ID_LED_G).setValue(QZhengGPIOManager.GPIO_VALUE_LOW);
+    } else if (light.equals("green")) {
+      QZhengGPIOInstance.getGPIO(QZhengGPIOManager.GPIO_ID_LED_R).setValue(QZhengGPIOManager.GPIO_VALUE_LOW);
+      QZhengGPIOInstance.getGPIO(QZhengGPIOManager.GPIO_ID_LED_B).setValue(QZhengGPIOManager.GPIO_VALUE_LOW);
+      QZhengGPIOInstance.getGPIO(QZhengGPIOManager.GPIO_ID_LED_G).setValue(QZhengGPIOManager.GPIO_VALUE_HIGH);
+    } else if (light.equals("yellow_white")) {
+      QZhengGPIOInstance.getGPIO(QZhengGPIOManager.GPIO_ID_LED_R).setValue(QZhengGPIOManager.GPIO_VALUE_HIGH);
+      QZhengGPIOInstance.getGPIO(QZhengGPIOManager.GPIO_ID_LED_B).setValue(QZhengGPIOManager.GPIO_VALUE_HIGH);
+      QZhengGPIOInstance.getGPIO(QZhengGPIOManager.GPIO_ID_LED_G).setValue(QZhengGPIOManager.GPIO_VALUE_HIGH);
+    }else if (light.equals("yellow")) {
+      QZhengGPIOInstance.getGPIO(QZhengGPIOManager.GPIO_ID_LED_R).setValue(QZhengGPIOManager.GPIO_VALUE_HIGH);
+      QZhengGPIOInstance.getGPIO(QZhengGPIOManager.GPIO_ID_LED_B).setValue(QZhengGPIOManager.GPIO_VALUE_LOW);
+      QZhengGPIOInstance.getGPIO(QZhengGPIOManager.GPIO_ID_LED_G).setValue(QZhengGPIOManager.GPIO_VALUE_HIGH);
+    } else if (light.equals("red_white")) {
+      QZhengGPIOInstance.getGPIO(QZhengGPIOManager.GPIO_ID_LED_R).setValue(QZhengGPIOManager.GPIO_VALUE_HIGH);
+      QZhengGPIOInstance.getGPIO(QZhengGPIOManager.GPIO_ID_LED_B).setValue(QZhengGPIOManager.GPIO_VALUE_HIGH);
+      QZhengGPIOInstance.getGPIO(QZhengGPIOManager.GPIO_ID_LED_G).setValue(QZhengGPIOManager.GPIO_VALUE_LOW);
+    } else if (light.equals("green_white")) {
+      QZhengGPIOInstance.getGPIO(QZhengGPIOManager.GPIO_ID_LED_R).setValue(QZhengGPIOManager.GPIO_VALUE_LOW);
+      QZhengGPIOInstance.getGPIO(QZhengGPIOManager.GPIO_ID_LED_B).setValue(QZhengGPIOManager.GPIO_VALUE_HIGH);
+      QZhengGPIOInstance.getGPIO(QZhengGPIOManager.GPIO_ID_LED_G).setValue(QZhengGPIOManager.GPIO_VALUE_HIGH);
+    } 
+     
+    
+    else {
+      QZhengGPIOInstance.getGPIO(QZhengGPIOManager.GPIO_ID_LED_R).setValue(QZhengGPIOManager.GPIO_VALUE_LOW);
+      QZhengGPIOInstance.getGPIO(QZhengGPIOManager.GPIO_ID_LED_B).setValue(QZhengGPIOManager.GPIO_VALUE_LOW);
+      QZhengGPIOInstance.getGPIO(QZhengGPIOManager.GPIO_ID_LED_G).setValue(QZhengGPIOManager.GPIO_VALUE_LOW);
+    }
+    // old device
+    if (light.equals("white")) {
+      gpioManager.pullUpWhiteLight();
+      gpioManager.pullDownGreenLight();
+      gpioManager.pullDownRedLight();
+    } else if (light.equals("red")) {
+      gpioManager.pullDownWhiteLight();
+      gpioManager.pullDownGreenLight();
+      gpioManager.pullUpRedLight();
+    } else if (light.equals("green")) {
+      gpioManager.pullDownWhiteLight();
+      gpioManager.pullUpGreenLight();
+      gpioManager.pullDownRedLight();
+    } else {
+      gpioManager.pullDownWhiteLight();
+      gpioManager.pullDownGreenLight();
+      gpioManager.pullDownRedLight();
+    }
+  }
 
   @ReactMethod
   public void cameraSetting(String setting) {
-    if (setting != null) {
+    if (!setting.isEmpty() && setting != null) {
       Log.v("Settings", setting);
 
       try {
         JSONObject settings = new JSONObject(setting);
-        SettingVar.isSettingAvailable = settings.getBoolean("isSettingAvailable",true);
-        SettingVar.isCross = settings.getBoolean("isCross",false);
-        SettingVar.faceRotation = settings.getInt("faceRotation",90);
-        SettingVar.cameraPreviewRotation = settings.getInt("cameraPreviewRotation",270);
-        SettingVar.cameraFacingFront = settings.getBoolean("cameraFacingFront",false);
+        SettingVar.isSettingAvailable = settings.optBoolean("isSettingAvailable", true);
+        SettingVar.isCross = settings.optBoolean("isCross", false);
+        SettingVar.faceRotation = settings.optInt("faceRotation", 90);
+        SettingVar.cameraPreviewRotation = settings.optInt("cameraPreviewRotation", 270);
+        SettingVar.cameraFacingFront = settings.optBoolean("cameraFacingFront", false);
       } catch (JSONException e) {
         Log.d("JSONERROR", e.toString());
       }
@@ -234,6 +304,19 @@ public class FacePass extends ReactContextBaseJavaModule
 
     }
   }
+
+  @ReactMethod
+  public void controlDoor(String mode) {
+        QZhengGPIOInstance = QZhengGPIOManager.getInstance(context);
+        qZhengManager = new QZhengIFManager(context);
+        gpioManager = GPIOManager.getInstance(context);
+        QZGpio door = QZhengGPIOInstance.getGPIO(QZhengGPIOManager.GPIO_ID_DOOR);
+        if(mode.equals("open")) {
+            door.setValue(1);
+        } else {
+            door.setValue(0);
+        }
+    }
 
   @ReactMethod
   public void setDefaultGroupName(String name) {
@@ -252,36 +335,36 @@ public class FacePass extends ReactContextBaseJavaModule
     // initFacePassSDK();
     Activity activity = getCurrentActivity();
 
-    if (parameter != "" && parameter != null) {
+    if (!parameter.isEmpty() && parameter != "" && parameter != null) {
       try {
         JSONObject parameters = new JSONObject(parameter);
 
-        SettingVar.searchThreshold = (float) parameters.getDouble("searchThreshold");
-        initFaceHandler(parameters.getInt("rcAttributeAndOcclusionMode",1),
-            (float) parameters.getDouble("searchThreshold",69),
-            (float) parameters.getDouble("livenessThreshold",55),
-            parameters.getBoolean("livenessEnabled",true),
-            parameters.getBoolean("rgbIrLivenessEnabled",false),
-            (float) parameters.getDouble("poseThresholdRoll",35),
-            (float) parameters.getDouble("poseThresholdPitch",35),
-            (float) parameters.getDouble("poseThresholdYaw",35),
-            (float) parameters.getDouble("blurThreshold",0.8),
-            (float) parameters.getDouble("lowBrightnessThreshold",30),
-            (float) parameters.getDouble("highBrightnessThreshold",210),
-            (float) parameters.getDouble("brightnessSTDThreshold",80),
-            parameters.getInt("faceMinThreshold",100),
-            parameters.getInt("retryCount",2),
-            parameters.getBoolean("smileEnabled",false),
-            parameters.getBoolean("maxFaceEnabled",true),
-            (float) parameters.getDouble("FacePoseThresholdPitch",35),
-            (float) parameters.getDouble("FacePoseThresholdRoll",35),
-            (float) parameters.getDouble("FacePoseThresholdYaw",35),
-            (float) parameters.getDouble("FaceBlurThreshold",0.7),
-            (float) parameters.getDouble("FaceLowBrightnessThreshold",70),
-            (float) parameters.getDouble("FaceHighBrightnessThreshold",220),
-            (float) parameters.getDouble("FaceBrightnessSTDThreshold",60),
-            parameters.getInt("FaceFaceMinThreshold",100),
-            parameters.getInt("FaceRcAttributeAndOcclusionMode",2));
+        SettingVar.searchThreshold = (float) parameters.optDouble("searchThreshold", 69);
+        initFaceHandler(parameters.optInt("rcAttributeAndOcclusionMode", 1),
+            (float) parameters.optDouble("searchThreshold", 69),
+            (float) parameters.optDouble("livenessThreshold", 55),
+            parameters.optBoolean("livenessEnabled", true),
+            parameters.optBoolean("rgbIrLivenessEnabled", false),
+            (float) parameters.optDouble("poseThresholdRoll", 35),
+            (float) parameters.optDouble("poseThresholdPitch", 35),
+            (float) parameters.optDouble("poseThresholdYaw", 35),
+            (float) parameters.optDouble("blurThreshold", 0.8),
+            (float) parameters.optDouble("lowBrightnessThreshold", 30),
+            (float) parameters.optDouble("highBrightnessThreshold", 210),
+            (float) parameters.optDouble("brightnessSTDThreshold", 80),
+            parameters.optInt("faceMinThreshold", 100),
+            parameters.optInt("retryCount", 2),
+            parameters.optBoolean("smileEnabled", false),
+            parameters.optBoolean("maxFaceEnabled", true),
+            (float) parameters.optDouble("FacePoseThresholdPitch", 35),
+            (float) parameters.optDouble("FacePoseThresholdRoll", 35),
+            (float) parameters.optDouble("FacePoseThresholdYaw", 35),
+            (float) parameters.optDouble("FaceBlurThreshold", 0.7),
+            (float) parameters.optDouble("FaceLowBrightnessThreshold", 70),
+            (float) parameters.optDouble("FaceHighBrightnessThreshold", 220),
+            (float) parameters.optDouble("FaceBrightnessSTDThreshold", 60),
+            parameters.optInt("FaceFaceMinThreshold", 100),
+            parameters.optInt("FaceRcAttributeAndOcclusionMode", 2));
 
       } catch (JSONException e) {
         Log.d("JSONERROR", e.toString());

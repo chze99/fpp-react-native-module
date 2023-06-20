@@ -36,7 +36,7 @@ export function startCameraScreen(height: number, width: number, ref: any) {
 
 export function initData(data: JSON): Promise<void> {
   let jsonString = ""
-  if (data != undefined) {
+  if (data != undefined && data !=null ) {
     jsonString = JSON.stringify(data)
   }
   return FacePassReactNativeModule.initData(jsonString)
@@ -45,7 +45,7 @@ export function initData(data: JSON): Promise<void> {
 
 export function setDefaultGroupName(data: String): Promise<void> {
   let name:String = ""
-  if (data != undefined) {
+  if (data != undefined && data !=null ) {
     name=data
   }
   return FacePassReactNativeModule.setDefaultGroupName(name)
@@ -54,7 +54,7 @@ export function setDefaultGroupName(data: String): Promise<void> {
 
 export function cameraSetting(data: String): Promise<void> {
   let jsonString = ""
-  if (data != undefined) {
+  if (data != undefined && data !=null ) {
     jsonString = JSON.stringify(data)
   }
   return FacePassReactNativeModule.cameraSetting(jsonString)
@@ -187,4 +187,11 @@ export function deleteGroup(data: String): Promise<void> {
       reject(fail)
     })
   })
+}
+
+export function changeLight(data:String): Promise<void> {
+  return FacePassReactNativeModule.changeLight(data)
+}
+export function controlDoor(data:String): Promise<void> {
+  return FacePassReactNativeModule.controlDoor(data)
 }
