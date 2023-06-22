@@ -238,7 +238,7 @@ public class FacePass extends ReactContextBaseJavaModule
       QZhengGPIOInstance.getGPIO(QZhengGPIOManager.GPIO_ID_LED_R).setValue(QZhengGPIOManager.GPIO_VALUE_HIGH);
       QZhengGPIOInstance.getGPIO(QZhengGPIOManager.GPIO_ID_LED_B).setValue(QZhengGPIOManager.GPIO_VALUE_HIGH);
       QZhengGPIOInstance.getGPIO(QZhengGPIOManager.GPIO_ID_LED_G).setValue(QZhengGPIOManager.GPIO_VALUE_HIGH);
-    }else if (light.equals("yellow")) {
+    } else if (light.equals("yellow")) {
       QZhengGPIOInstance.getGPIO(QZhengGPIOManager.GPIO_ID_LED_R).setValue(QZhengGPIOManager.GPIO_VALUE_HIGH);
       QZhengGPIOInstance.getGPIO(QZhengGPIOManager.GPIO_ID_LED_B).setValue(QZhengGPIOManager.GPIO_VALUE_LOW);
       QZhengGPIOInstance.getGPIO(QZhengGPIOManager.GPIO_ID_LED_G).setValue(QZhengGPIOManager.GPIO_VALUE_HIGH);
@@ -251,8 +251,6 @@ public class FacePass extends ReactContextBaseJavaModule
       QZhengGPIOInstance.getGPIO(QZhengGPIOManager.GPIO_ID_LED_B).setValue(QZhengGPIOManager.GPIO_VALUE_HIGH);
       QZhengGPIOInstance.getGPIO(QZhengGPIOManager.GPIO_ID_LED_G).setValue(QZhengGPIOManager.GPIO_VALUE_HIGH);
     } 
-     
-    
     else {
       QZhengGPIOInstance.getGPIO(QZhengGPIOManager.GPIO_ID_LED_R).setValue(QZhengGPIOManager.GPIO_VALUE_LOW);
       QZhengGPIOInstance.getGPIO(QZhengGPIOManager.GPIO_ID_LED_B).setValue(QZhengGPIOManager.GPIO_VALUE_LOW);
@@ -307,16 +305,16 @@ public class FacePass extends ReactContextBaseJavaModule
 
   @ReactMethod
   public void controlDoor(String mode) {
-        QZhengGPIOInstance = QZhengGPIOManager.getInstance(context);
-        qZhengManager = new QZhengIFManager(context);
-        gpioManager = GPIOManager.getInstance(context);
-        QZGpio door = QZhengGPIOInstance.getGPIO(QZhengGPIOManager.GPIO_ID_DOOR);
-        if(mode.equals("open")) {
-            door.setValue(1);
-        } else {
-            door.setValue(0);
-        }
+    QZhengGPIOInstance = QZhengGPIOManager.getInstance(context);
+    qZhengManager = new QZhengIFManager(context);
+    gpioManager = GPIOManager.getInstance(context);
+    QZGpio door = QZhengGPIOInstance.getGPIO(QZhengGPIOManager.GPIO_ID_DOOR);
+    if (mode.equals("open")) {
+      door.setValue(1);
+    } else {
+      door.setValue(0);
     }
+  }
 
   @ReactMethod
   public void setDefaultGroupName(String name) {
@@ -343,8 +341,7 @@ public class FacePass extends ReactContextBaseJavaModule
         initFaceHandler(parameters.optInt("rcAttributeAndOcclusionMode", 1),
             (float) parameters.optDouble("searchThreshold", 69),
             (float) parameters.optDouble("livenessThreshold", 55),
-            parameters.optBoolean("livenessEnabled", true),
-            parameters.optBoolean("rgbIrLivenessEnabled", false),
+            parameters.optBoolean("livenessEnabled", true),            parameters.optBoolean("rgbIrLivenessEnabled", false),
             (float) parameters.optDouble("poseThresholdRoll", 35),
             (float) parameters.optDouble("poseThresholdPitch", 35),
             (float) parameters.optDouble("poseThresholdYaw", 35),

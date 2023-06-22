@@ -52,7 +52,7 @@ public class FacePassViewManager extends ViewGroupManager<FrameLayout> {
   @Nullable
   @Override
   public Map<String, Integer> getCommandsMap() {
-    return MapBuilder.of("create", COMMAND_CREATE,"destroy",COMMAND_DESTROY,"remove",COMMAND_REMOVE);
+    return MapBuilder.of("create", COMMAND_CREATE,"remove",COMMAND_REMOVE);
   }
 
 
@@ -69,9 +69,6 @@ public class FacePassViewManager extends ViewGroupManager<FrameLayout> {
     switch (commandIdInt) {
       case COMMAND_CREATE:
         createFragment(root, reactNativeViewId);
-        break;
-      case COMMAND_DESTROY:
-        destroyFragment();
         break;
       case COMMAND_REMOVE:
         removeFragment(root, reactNativeViewId);

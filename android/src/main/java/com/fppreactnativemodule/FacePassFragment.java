@@ -154,9 +154,9 @@ public class FacePassFragment extends Fragment implements CameraManager.CameraLi
   FeedFrameThread mFeedFrameThread;
   private FaceImageCache mImageCache;
   private Handler mAndroidHandler;
-    Boolean appPaused = false;
-    Boolean enableLight = true;
-    private GPIOManager gpioManager;
+  Boolean appPaused = false;
+  Boolean enableLight = true;
+  private GPIOManager gpioManager;
 
   @Override
   public void onAttach(Context context) {
@@ -182,24 +182,31 @@ public class FacePassFragment extends Fragment implements CameraManager.CameraLi
   @Override
   public void onStart() {
     super.onStart();
-    // do {
-      Log.v("doneInititialize", Boolean.toString(SettingVar.doneInitialize));
-      if (SettingVar.doneInitialize == true) {
-        mImageCache = new FaceImageCache();
+    int counter=0;
+     mImageCache = new FaceImageCache();
         mRecognizeDataQueue = new ArrayBlockingQueue<RecognizeData>(5);
         mFeedFrameQueue = new ArrayBlockingQueue<CameraPreviewData>(1);
         initAndroidHandler();
         View view = getView();
-        if (!hasPermission()) {
-          requestPermission();
-        }
         initView(view);
         QZhengGPIOInstance = QZhengGPIOManager.getInstance(context);
         qZhengManager = new QZhengIFManager(context);
-        qZhengManager.disableStatusBar(true);
         gpioManager = GPIOManager.getInstance(context);
-
         group_name = SettingVar.groupName;
+    do {
+      counter++;
+        Log.v("doneInititialize", Boolean.toString(SettingVar.doneInitialize));
+        Log.v("Counter", Integer.toString(counter));
+       
+        
+      if (SettingVar.doneInitialize == true) {
+      
+ 
+        if (!hasPermission()) {
+          requestPermission();
+        }
+        
+
         if (enableLight) {
             // changeLight("white");
         }
@@ -211,7 +218,10 @@ public class FacePassFragment extends Fragment implements CameraManager.CameraLi
         mFeedFrameThread = new FeedFrameThread();
         mFeedFrameThread.start();
       }
-    // } while (SettingVar.doneInitialize == false);
+      if(counter>=29000){
+        toast("Initializing time out,please restart your app");
+      }
+    } while (SettingVar.doneInitialize == false && counter<30000);
   }
 
   private void initView(View view) {
@@ -278,50 +288,49 @@ public class FacePassFragment extends Fragment implements CameraManager.CameraLi
     adaptFrameLayout();
     super.onResume();
   }
-    QZhengGPIOManager QZhengGPIOInstance;
-    QZhengIFManager qZhengManager;
+
+  QZhengGPIOManager QZhengGPIOInstance;
+  QZhengIFManager qZhengManager;
 
   // private void changeLight(String light) {
 
-  //   // new device
-  //   if (light.equals("white") && enableLight) {
-  //     QZhengGPIOInstance.getGPIO(QZhengGPIOManager.GPIO_ID_LED_R).setValue(QZhengGPIOManager.GPIO_VALUE_LOW);
-  //     QZhengGPIOInstance.getGPIO(QZhengGPIOManager.GPIO_ID_LED_B).setValue(QZhengGPIOManager.GPIO_VALUE_HIGH);
-  //     QZhengGPIOInstance.getGPIO(QZhengGPIOManager.GPIO_ID_LED_G).setValue(QZhengGPIOManager.GPIO_VALUE_LOW);
-  //   } else if (light.equals("red")) {
-  //     QZhengGPIOInstance.getGPIO(QZhengGPIOManager.GPIO_ID_LED_R).setValue(QZhengGPIOManager.GPIO_VALUE_HIGH);
-  //     QZhengGPIOInstance.getGPIO(QZhengGPIOManager.GPIO_ID_LED_B).setValue(QZhengGPIOManager.GPIO_VALUE_LOW);
-  //     QZhengGPIOInstance.getGPIO(QZhengGPIOManager.GPIO_ID_LED_G).setValue(QZhengGPIOManager.GPIO_VALUE_LOW);
-  //   } else if (light.equals("green")) {
-  //     QZhengGPIOInstance.getGPIO(QZhengGPIOManager.GPIO_ID_LED_R).setValue(QZhengGPIOManager.GPIO_VALUE_LOW);
-  //     QZhengGPIOInstance.getGPIO(QZhengGPIOManager.GPIO_ID_LED_B).setValue(QZhengGPIOManager.GPIO_VALUE_LOW);
-  //     QZhengGPIOInstance.getGPIO(QZhengGPIOManager.GPIO_ID_LED_G).setValue(QZhengGPIOManager.GPIO_VALUE_HIGH);
-  //   } else {
-  //     QZhengGPIOInstance.getGPIO(QZhengGPIOManager.GPIO_ID_LED_R).setValue(QZhengGPIOManager.GPIO_VALUE_LOW);
-  //     QZhengGPIOInstance.getGPIO(QZhengGPIOManager.GPIO_ID_LED_B).setValue(QZhengGPIOManager.GPIO_VALUE_LOW);
-  //     QZhengGPIOInstance.getGPIO(QZhengGPIOManager.GPIO_ID_LED_G).setValue(QZhengGPIOManager.GPIO_VALUE_LOW);
-  //   }
-  //   // old device
-  //   if (light.equals("white")) {
-  //     gpioManager.pullUpWhiteLight();
-  //     gpioManager.pullDownGreenLight();
-  //     gpioManager.pullDownRedLight();
-  //   } else if (light.equals("red")) {
-  //     gpioManager.pullDownWhiteLight();
-  //     gpioManager.pullDownGreenLight();
-  //     gpioManager.pullUpRedLight();
-  //   } else if (light.equals("green")) {
-  //     gpioManager.pullDownWhiteLight();
-  //     gpioManager.pullUpGreenLight();
-  //     gpioManager.pullDownRedLight();
-  //   } else {
-  //     gpioManager.pullDownWhiteLight();
-  //     gpioManager.pullDownGreenLight();
-  //     gpioManager.pullDownRedLight();
-  //   }
+  // // new device
+  // if (light.equals("white") && enableLight) {
+  // QZhengGPIOInstance.getGPIO(QZhengGPIOManager.GPIO_ID_LED_R).setValue(QZhengGPIOManager.GPIO_VALUE_LOW);
+  // QZhengGPIOInstance.getGPIO(QZhengGPIOManager.GPIO_ID_LED_B).setValue(QZhengGPIOManager.GPIO_VALUE_HIGH);
+  // QZhengGPIOInstance.getGPIO(QZhengGPIOManager.GPIO_ID_LED_G).setValue(QZhengGPIOManager.GPIO_VALUE_LOW);
+  // } else if (light.equals("red")) {
+  // QZhengGPIOInstance.getGPIO(QZhengGPIOManager.GPIO_ID_LED_R).setValue(QZhengGPIOManager.GPIO_VALUE_HIGH);
+  // QZhengGPIOInstance.getGPIO(QZhengGPIOManager.GPIO_ID_LED_B).setValue(QZhengGPIOManager.GPIO_VALUE_LOW);
+  // QZhengGPIOInstance.getGPIO(QZhengGPIOManager.GPIO_ID_LED_G).setValue(QZhengGPIOManager.GPIO_VALUE_LOW);
+  // } else if (light.equals("green")) {
+  // QZhengGPIOInstance.getGPIO(QZhengGPIOManager.GPIO_ID_LED_R).setValue(QZhengGPIOManager.GPIO_VALUE_LOW);
+  // QZhengGPIOInstance.getGPIO(QZhengGPIOManager.GPIO_ID_LED_B).setValue(QZhengGPIOManager.GPIO_VALUE_LOW);
+  // QZhengGPIOInstance.getGPIO(QZhengGPIOManager.GPIO_ID_LED_G).setValue(QZhengGPIOManager.GPIO_VALUE_HIGH);
+  // } else {
+  // QZhengGPIOInstance.getGPIO(QZhengGPIOManager.GPIO_ID_LED_R).setValue(QZhengGPIOManager.GPIO_VALUE_LOW);
+  // QZhengGPIOInstance.getGPIO(QZhengGPIOManager.GPIO_ID_LED_B).setValue(QZhengGPIOManager.GPIO_VALUE_LOW);
+  // QZhengGPIOInstance.getGPIO(QZhengGPIOManager.GPIO_ID_LED_G).setValue(QZhengGPIOManager.GPIO_VALUE_LOW);
   // }
-
-
+  // // old device
+  // if (light.equals("white")) {
+  // gpioManager.pullUpWhiteLight();
+  // gpioManager.pullDownGreenLight();
+  // gpioManager.pullDownRedLight();
+  // } else if (light.equals("red")) {
+  // gpioManager.pullDownWhiteLight();
+  // gpioManager.pullDownGreenLight();
+  // gpioManager.pullUpRedLight();
+  // } else if (light.equals("green")) {
+  // gpioManager.pullDownWhiteLight();
+  // gpioManager.pullUpGreenLight();
+  // gpioManager.pullDownRedLight();
+  // } else {
+  // gpioManager.pullDownWhiteLight();
+  // gpioManager.pullDownGreenLight();
+  // gpioManager.pullDownRedLight();
+  // }
+  // }
 
   private void initAndroidHandler() {
 
