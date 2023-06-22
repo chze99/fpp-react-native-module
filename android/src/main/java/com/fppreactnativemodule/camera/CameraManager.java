@@ -18,12 +18,10 @@ import com.fppreactnativemodule.SettingVar;
 
 public class CameraManager implements CameraPreview.CameraPreviewListener {
     protected boolean front = false;
-    protected boolean irEnable = false;
+
     protected Camera camera = null;
-    protected Camera cameraIR = null;
 
     protected int cameraId = -1;
-    protected int cameraIRId = -1;
 
     protected SurfaceHolder surfaceHolder = null;
 
@@ -130,27 +128,17 @@ public class CameraManager implements CameraPreview.CameraPreviewListener {
                 @Override
                 protected Object doInBackground(Object... params) {
                     cameraId = front ? Camera.CameraInfo.CAMERA_FACING_FRONT : Camera.CameraInfo.CAMERA_FACING_BACK;
-                    cameraIRId = irEnable ? 1 : -1;
                     try {
                         camera = Camera.open(cameraId);
-                        if (cameraIRId != -1) {
-                            cameraIR = Camera.open(cameraIRId);
-                        }
                     } catch (Exception e) {
                         Camera.CameraInfo cameraInfo = new Camera.CameraInfo();
                         int count = Camera.getNumberOfCameras();
                         if (count > 0) {
                             cameraId = 0;
                             camera = Camera.open(cameraId);
-                            if (count >= 1) {
-                                cameraIRId = 1;
-                                cameraIR = Camera.open(cameraIRID);
-                            }
                         } else {
                             cameraId = -1;
                             camera = null;
-                            cameraIRId = -1;
-                            cameraIR = null;
                         }
                     }
                     if (camera != null) {
@@ -218,71 +206,6 @@ public class CameraManager implements CameraPreview.CameraPreviewListener {
                         camera.addCallbackBuffer(mPicBuffer);
                         previewSize = sz;
                     }
-                    if (cameraIR != null) {
-                        Camera.CameraInfo info = new Camera.CameraInfo();
-                        Camera.getCameraInfo(cameraIRId, info);
-                        int rotation = windowManager.getDefaultDisplay().getRotation();
-                        int degrees = 0;
-                        switch (rotation) {
-                            case Surface.ROTATION_0:
-                                degrees = 0;
-                                break;
-                            case Surface.ROTATION_90:
-                                degrees = 90;
-                                break;
-                            case Surface.ROTATION_180:
-                                degrees = 180;
-                                break;
-                            case Surface.ROTATION_270:
-                                degrees = 270;
-                                break;
-                        }
-                        int previewRotation;
-                        if (info.facing == Camera.CameraInfo.CAMERA_FACING_FRONT) {
-                            previewRotation = (info.orientation + degrees) % 360;
-                            previewRotation = (360 - previewRotation) % 360; // compensate the mirror
-                        } else { // back-facing
-                            previewRotation = (info.orientation - degrees + 360) % 360;
-                        }
-                        previewRotation = 90;
-                        if (SettingVar.isSettingAvailable) {
-                            previewRotation = SettingVar.cameraPreviewRotation;
-                        }
-
-                        Log.i("CameraManager",
-                                String.format("camera rotation: %d %d %d", degrees, info.orientation, previewRotation));
-                        cameraIR.setDisplayOrientation(previewRotation);
-                        Camera.Parameters param = cameraIR.getParameters();
-                        if (manualHeight > 0 && manualWidth > 0
-                                && isSupportedPreviewSize(manualWidth, manualHeight, cameraIR)) {
-                            param.setPreviewSize(manualWidth, manualHeight);
-                        } else {
-                            Camera.Size bestPreviewSize = getBestPreviewSize(cameraIR);
-                            Log.i("metrics",
-                                    "best height is" + bestPreviewSize.height + "width is " + bestPreviewSize.width);
-                            manualWidth = bestPreviewSize.width;
-                            manualHeight = bestPreviewSize.height;
-                            param.setPreviewSize(bestPreviewSize.width, bestPreviewSize.height);
-                            SettingVar.iscameraNeedConfig = true;
-                            Log.i("cameraManager",
-                                    "camerawidth : " + bestPreviewSize.width + "  height  : " + bestPreviewSize.height);
-                        }
-                        SettingVar.cameraSettingOk = true;
-                        param.setPreviewFormat(ImageFormat.NV21);
-                        cameraIR.setParameters(param);
-                        PixelFormat pixelinfo = new PixelFormat();
-                        int pixelformat = cameraIR.getParameters().getPreviewFormat();
-                        PixelFormat.getPixelFormatInfo(pixelformat, pixelinfo);
-                        Camera.Parameters parameters = cameraIR.getParameters();
-                        Camera.Size sz = parameters.getPreviewSize();
-                        Log.i("cameraManager", "camerawidth : " + sz.width + "  height  : " + sz.height);
-                        int bufSize = sz.width * sz.height * pixelinfo.bitsPerPixel / 8;
-                        if (mPicBuffer == null || mPicBuffer.length != bufSize) {
-                            mPicBuffer = new byte[bufSize];
-                        }
-                        cameraIR.addCallbackBuffer(mPicBuffer);
-                        previewSize = sz;
-                    }
                     return null;
                 }
 
@@ -290,7 +213,7 @@ public class CameraManager implements CameraPreview.CameraPreviewListener {
                 protected void onPostExecute(Object o) {
                     super.onPostExecute(o);
 
-                    cameraPreview.setCamera(cameraIR);
+                    cameraPreview.setCamera(camera);
                     state = CameraState.OPENED;
                 }
 
@@ -319,26 +242,6 @@ public class CameraManager implements CameraPreview.CameraPreviewListener {
         return open(windowManager);
     }
 
-        public boolean open(WindowManager windowManager, boolean front,boolean IRenable) {
-        if (state == CameraState.OPENING) {
-            return false;
-        }
-        this.irEnable=IRenable;
-        this.front = front;
-        return open(windowManager);
-    }
-
-    public boolean open(WindowManager windowManager, boolean front,boolean IRenable, int width, int height) {
-        if (state == CameraState.OPENING) {
-            return false;
-        }
-        this.irEnable=IRenable;
-        this.manualHeight = height;
-        this.manualWidth = width;
-        this.front = front;
-        return open(windowManager);
-    }
-
     public void release() {
         if (camera != null) {
             this.cameraPreview.setCamera(null);
@@ -346,10 +249,6 @@ public class CameraManager implements CameraPreview.CameraPreviewListener {
             camera.setPreviewCallback(null);
             camera.release();
             camera = null;
-        }
-        if (camera2 != null) {
-            camera2.release();
-            camera2 = null;
         }
     }
 
@@ -381,17 +280,6 @@ public class CameraManager implements CameraPreview.CameraPreviewListener {
                                     previewDegreen, front));
                 }
                 camera.addCallbackBuffer(data);
-            }
-        });
-        cameraIR.setPreviewCallbackWithBuffer(new Camera.PreviewCallback() {
-            @Override
-            public void onPreviewFrame(byte[] data, Camera cameraIR) {
-                if (listener != null) {
-                    listener.onPictureTaken(
-                            new CameraPreviewData(data, previewSize.width, previewSize.height,
-                                    previewDegreen, front));
-                }
-                cameraIR.addCallbackBuffer(data);
             }
         });
     }
