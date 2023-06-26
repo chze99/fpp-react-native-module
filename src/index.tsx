@@ -165,6 +165,7 @@ export function getAllGroup(): Promise<void> {
 
 
 export function createGroup(data: String): Promise<void> {
+
   return new Promise((resolve, reject) => {
     FacePassReactNativeModule.createGroup(data, (success: any) => {
       resolve(success)
@@ -198,4 +199,16 @@ export function controlDoor(data: String): Promise<void> {
 
 export function useIRCameraSupport(data: Boolean): Promise<void> {
   return FacePassReactNativeModule.useIRCameraSupport(data)
+}
+
+export function restartDevice(): Promise<void> {
+  return FacePassReactNativeModule.restartDevice()
+}
+
+export function enableTemperature(enable:Boolean): Promise<void> {
+  return FacePassReactNativeModule.enableTemperature(enable)
+}
+
+export function enableIRPreview(enable:Boolean): Promise<void> {
+  return FacePassReactNativeModule.enableIRPreview(enable);
 }

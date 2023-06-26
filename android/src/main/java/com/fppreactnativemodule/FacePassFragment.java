@@ -52,6 +52,8 @@ import com.android.volley.VolleyLog;
 import com.android.volley.toolbox.HttpHeaderParser;
 import com.android.volley.toolbox.ImageLoader;
 import com.android.volley.toolbox.Volley;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.VolleyError;
 
 import com.facebook.react.bridge.ReactContext;
 import com.facebook.react.bridge.Callback;
@@ -96,6 +98,8 @@ import com.fppreactnativemodule.camera.CameraPreview;
 import com.fppreactnativemodule.camera.CameraPreviewData;
 import com.fppreactnativemodule.camera.ComplexFrameHelper;
 import com.fppreactnativemodule.utils.FileUtil;
+import static com.fppreactnativemodule.utils.Helper.getSerialNumber;
+
 import com.q_zheng.QZhengGPIOManager;
 import com.q_zheng.QZhengIFManager;
 import com.q_zheng.QZGpio;
@@ -136,6 +140,7 @@ public class FacePassFragment extends Fragment implements CameraManager.CameraLi
   private int widthPixels;
   int screenState = 0;
   private Toast mRecoToast;
+  float faceTemperature = 0f;
 
   public class RecognizeData {
     public byte[] message;
@@ -164,6 +169,7 @@ public class FacePassFragment extends Fragment implements CameraManager.CameraLi
   Boolean enableLight = true;
   private GPIOManager gpioManager;
   Boolean useIRCameraSupport = false;
+  boolean temperatureScan = false;
 
   @Override
   public void onAttach(Context context) {
@@ -187,7 +193,7 @@ public class FacePassFragment extends Fragment implements CameraManager.CameraLi
   }
 
   public Boolean timeOut = false;
-
+  public Boolean showIRPreview =false;
   @Override
   public void onStart() {
     super.onStart();
@@ -197,6 +203,7 @@ public class FacePassFragment extends Fragment implements CameraManager.CameraLi
     mFeedFrameQueue = new ArrayBlockingQueue<CameraPreviewData>(1);
     mFeedFrameIRQueue = new ArrayBlockingQueue<CameraPreviewData>(1);
     useIRCameraSupport = SettingVar.useIRCameraSupport;
+    showIRPreview = SettingVar.showIRPreview;
     initAndroidHandler();
     View view = getView();
     initView(view);
@@ -204,6 +211,8 @@ public class FacePassFragment extends Fragment implements CameraManager.CameraLi
     qZhengManager = new QZhengIFManager(context);
     gpioManager = GPIOManager.getInstance(context);
     group_name = SettingVar.groupName;
+    temperatureScan = SettingVar.temperatureScan;
+
     do {
       counter++;
       Log.v("doneInititialize", Boolean.toString(SettingVar.doneInitialize));
@@ -217,6 +226,9 @@ public class FacePassFragment extends Fragment implements CameraManager.CameraLi
 
         if (enableLight) {
           // changeLight("white");
+        }
+        if (temperatureScan) {
+          TemperatureService.startService(activity.getApplicationContext());
         }
         mFacePassHandler = FacePassHandlerHolder.getMyObject();
 
@@ -277,7 +289,11 @@ public class FacePassFragment extends Fragment implements CameraManager.CameraLi
     manager.setPreviewDisplay(cameraView);
     if (useIRCameraSupport) {
       mIRCameraManager = new CameraManager();
+      if(showIRPreview){
       mIRCameraView = (CameraPreview) getView().findViewById(R.id.previewIR);
+      }else{
+      mIRCameraView = (CameraPreview) getView().findViewById(R.id.previewIRHidden);
+      }
       mIRCameraManager.setPreviewDisplay(mIRCameraView);
       mIRCameraManager.setListener(new CameraManager.CameraListener() {
         @Override
@@ -538,6 +554,9 @@ public class FacePassFragment extends Fragment implements CameraManager.CameraLi
             RecognizeData mRecData = new RecognizeData(detectionResult.message, trackOpts);
             mRecognizeDataQueue.offer(mRecData);
           }
+        }
+        if (temperatureScan) {
+          faceTemperature = TemperatureService.getTemperature();
         }
         long endTime = System.currentTimeMillis();
         long runTime = endTime - startTime;

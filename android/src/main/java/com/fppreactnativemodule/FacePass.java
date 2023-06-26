@@ -47,6 +47,12 @@ import com.facebook.react.bridge.Arguments;
 import org.json.JSONException;
 import org.json.JSONObject;
 import android.util.Base64;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.Request;
+import com.android.volley.VolleyError;
+
+import com.android.volley.toolbox.JsonObjectRequest;
 
 import mcv.facepass.FacePassException;
 import mcv.facepass.FacePassHandler;
@@ -69,6 +75,7 @@ import com.q_zheng.QZhengIFManager;
 import com.q_zheng.QZGpio;
 import com.example.yfaceapi.GPIOManager;
 import com.fppreactnativemodule.utils.FileUtil;
+import static com.fppreactnativemodule.utils.Helper.getSerialNumber;
 
 @ReactModule(name = FacePass.NAME)
 public class FacePass extends ReactContextBaseJavaModule
@@ -106,6 +113,13 @@ public class FacePass extends ReactContextBaseJavaModule
   FacePassHandler mFacePassHandler;
   QZhengIFManager qZhengManager;
   private GPIOManager gpioManager;
+  Boolean appPaused = false;
+  Boolean enableLight = true;
+  QZhengGPIOManager QZhengGPIOInstance;
+  private boolean ageGenderEnabledGlobal;
+  private Callback pickerSuccessCallback;
+  private Callback pickerCancelCallback;
+  RequestQueue requestQueue;
 
   private boolean hasPermission() {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -211,10 +225,6 @@ public class FacePass extends ReactContextBaseJavaModule
     }
   };
 
-  Boolean appPaused = false;
-  Boolean enableLight = true;
-  QZhengGPIOManager QZhengGPIOInstance;
-
   @ReactMethod
   private void changeLight(String light) {
     QZhengGPIOInstance = QZhengGPIOManager.getInstance(context);
@@ -250,8 +260,7 @@ public class FacePass extends ReactContextBaseJavaModule
       QZhengGPIOInstance.getGPIO(QZhengGPIOManager.GPIO_ID_LED_R).setValue(QZhengGPIOManager.GPIO_VALUE_LOW);
       QZhengGPIOInstance.getGPIO(QZhengGPIOManager.GPIO_ID_LED_B).setValue(QZhengGPIOManager.GPIO_VALUE_HIGH);
       QZhengGPIOInstance.getGPIO(QZhengGPIOManager.GPIO_ID_LED_G).setValue(QZhengGPIOManager.GPIO_VALUE_HIGH);
-    } 
-    else {
+    } else {
       QZhengGPIOInstance.getGPIO(QZhengGPIOManager.GPIO_ID_LED_R).setValue(QZhengGPIOManager.GPIO_VALUE_LOW);
       QZhengGPIOInstance.getGPIO(QZhengGPIOManager.GPIO_ID_LED_B).setValue(QZhengGPIOManager.GPIO_VALUE_LOW);
       QZhengGPIOInstance.getGPIO(QZhengGPIOManager.GPIO_ID_LED_G).setValue(QZhengGPIOManager.GPIO_VALUE_LOW);
@@ -304,19 +313,6 @@ public class FacePass extends ReactContextBaseJavaModule
   }
 
   @ReactMethod
-  public void controlDoor(String mode) {
-    QZhengGPIOInstance = QZhengGPIOManager.getInstance(context);
-    qZhengManager = new QZhengIFManager(context);
-    gpioManager = GPIOManager.getInstance(context);
-    QZGpio door = QZhengGPIOInstance.getGPIO(QZhengGPIOManager.GPIO_ID_DOOR);
-    if (mode.equals("open")) {
-      door.setValue(1);
-    } else {
-      door.setValue(0);
-    }
-  }
-
-  @ReactMethod
   public void setDefaultGroupName(String name) {
     if (name != null && !name.isEmpty()) {
       SettingVar.groupName = name;
@@ -341,7 +337,7 @@ public class FacePass extends ReactContextBaseJavaModule
         initFaceHandler(parameters.optInt("rcAttributeAndOcclusionMode", 1),
             (float) parameters.optDouble("searchThreshold", 69),
             (float) parameters.optDouble("livenessThreshold", 55),
-            parameters.optBoolean("livenessEnabled", true),            parameters.optBoolean("rgbIrLivenessEnabled", false),
+            parameters.optBoolean("livenessEnabled", true), parameters.optBoolean("rgbIrLivenessEnabled", false),
             (float) parameters.optDouble("poseThresholdRoll", 35),
             (float) parameters.optDouble("poseThresholdPitch", 35),
             (float) parameters.optDouble("poseThresholdYaw", 35),
@@ -381,8 +377,6 @@ public class FacePass extends ReactContextBaseJavaModule
     FacePassHandler.initSDK(activity.getApplicationContext());
     Log.d("FacePassSDK", FacePassHandler.getVersion());
   }
-
-  private boolean ageGenderEnabledGlobal;
 
   private void initFaceHandler(int rcAttributeAndOcclusionMode, float searchThreshold, float livenessThreshold,
       boolean livenessEnabled, boolean rgbIrLivenessEnabled,
@@ -479,9 +473,6 @@ public class FacePass extends ReactContextBaseJavaModule
       }
     }.start();
   }
-
-  private Callback pickerSuccessCallback;
-  private Callback pickerCancelCallback;
 
   @ReactMethod
   public void selectImage(Callback successCallback, Callback cancelCallback) {
@@ -702,11 +693,6 @@ public class FacePass extends ReactContextBaseJavaModule
   }
 
   @ReactMethod
-  public void useIRCameraSupport(Boolean use){
-    SettingVar.useIRCameraSupport=use;
-  }
-
-  @ReactMethod
   public void unbindFace(String StringfaceToken, String groupNameEt, Callback success,
       Callback failure) {
     mFacePassHandler = FacePassHandlerHolder.getMyObject();
@@ -826,6 +812,79 @@ public class FacePass extends ReactContextBaseJavaModule
 
   private void toast(String msg) {
     Toast.makeText(context, msg, Toast.LENGTH_SHORT).show();
+  }
+
+  @ReactMethod
+  public void controlDoor(String mode) {
+    QZhengGPIOInstance = QZhengGPIOManager.getInstance(context);
+    qZhengManager = new QZhengIFManager(context);
+    gpioManager = GPIOManager.getInstance(context);
+    QZGpio door = QZhengGPIOInstance.getGPIO(QZhengGPIOManager.GPIO_ID_DOOR);
+    if (mode.equals("open")) {
+      door.setValue(1);
+    } else {
+      door.setValue(0);
+    }
+  }
+
+  @ReactMethod
+  public void useIRCameraSupport(Boolean use) {
+    SettingVar.useIRCameraSupport = use;
+  }
+
+  @ReactMethod
+  public void restartDevice() {
+    try {
+      QZhengGPIOInstance = QZhengGPIOManager.getInstance(context);
+      qZhengManager = new QZhengIFManager(context);
+      gpioManager = GPIOManager.getInstance(context);
+      qZhengManager.reboot(false, "", false);
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+  }
+
+  @ReactMethod
+  public void enableTemperature(Boolean enable) {
+    SettingVar.temperatureScan = enable;
+  }
+
+  @ReactMethod
+  public void enableIRPreview(Boolean enable) {
+    SettingVar.showIRPreview = enable;
+  }
+
+  @ReactMethod
+  public void elevatorAccess(String elevatorGatewayIp, String uid, String premiseId) {
+    if (!elevatorGatewayIp.equals("")) {
+      JSONObject object = new JSONObject();
+
+      try {
+        object.put("uid", uid);
+        object.put("premiseId", premiseId);
+        object.put("deviceId", getSerialNumber());
+      } catch (JSONException e) {
+        e.printStackTrace();
+      }
+
+      String url = "http://" + elevatorGatewayIp + "/v1/elevator/access/user";
+
+      JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, url, object,
+          new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(JSONObject response) {
+              Log.d("elevatorAccess", "String Response : " + response.toString());
+            }
+          }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+              Log.d("elevatorAccess", "Error Response : " + error.getMessage());
+            }
+          });
+
+      requestQueue.add(jsonObjectRequest);
+    }
+
   }
 
   @Override

@@ -23,6 +23,16 @@ DefaultPreference is the example of package in this documentation,you can freely
   <uses-permission android:name="android.permission.CAMERA" />
   <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
   <uses-permission android:name="android.permission.MOUNT_UNMOUNT_FILESYSTEMS" />
+  <uses-permission android:name=" android.permission.SYSTEM_CAMERA
+  " />
+```
+
+```sh
+  <application>
+    ....
+   <service android:name="com.fppreactnativemodule.TemperatureService" android:enabled="true"/>   <!--   Add this   -->
+  </application>
+
 ```
 
 ## Usage
@@ -244,10 +254,21 @@ DefaultPreference is the example of package in this documentation,you can freely
 
 - Use IR camera as support for face recognition
 ```sh
-  useIR(boolean)
+  useIRCameraSupport(boolean)
   //Command: true/false
 ```
 
+- Restart the device 
+```sh
+  restartDevice()
+```
+
+- Enable IR camera preview
+```sh
+  enableIRPreview(boolean)
+  //Command: true/false
+
+```
 ***JSON format of Parameter for funtion***
 
 - setDefaultGroupName()
