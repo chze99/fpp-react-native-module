@@ -702,6 +702,11 @@ public class FacePass extends ReactContextBaseJavaModule
   }
 
   @ReactMethod
+  public void useIRCameraSupport(Boolean use){
+    SettingVar.useIRCameraSupport=use;
+  }
+
+  @ReactMethod
   public void unbindFace(String StringfaceToken, String groupNameEt, Callback success,
       Callback failure) {
     mFacePassHandler = FacePassHandlerHolder.getMyObject();

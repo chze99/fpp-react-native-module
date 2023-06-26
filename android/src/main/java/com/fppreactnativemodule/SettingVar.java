@@ -19,4 +19,5 @@ public class SettingVar {
     public static String groupName = "fppreactnative";
     public static Float searchThreshold = 80f;
     public static boolean doneInitialize=false;
+    public static boolean useIRCameraSupport=false;
 }

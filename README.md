@@ -242,6 +242,12 @@ DefaultPreference is the example of package in this documentation,you can freely
   //Command: "open","close"
 ```
 
+- Use IR camera as support for face recognition
+```sh
+  useIR(boolean)
+  //Command: true/false
+```
+
 ***JSON format of Parameter for funtion***
 
 - setDefaultGroupName()

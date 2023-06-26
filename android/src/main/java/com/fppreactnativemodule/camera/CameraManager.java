@@ -16,6 +16,7 @@ import java.util.List;
 
 import com.fppreactnativemodule.SettingVar;
 
+
 public class CameraManager implements CameraPreview.CameraPreviewListener {
     protected boolean front = false;
 
@@ -24,11 +25,9 @@ public class CameraManager implements CameraPreview.CameraPreviewListener {
     protected int cameraId = -1;
 
     protected SurfaceHolder surfaceHolder = null;
-
     private CameraListener listener = null;
 
     private CameraPreview cameraPreview;
-
     private CameraState state = CameraState.IDEL;
 
     private int previewDegreen = 0;
@@ -136,6 +135,7 @@ public class CameraManager implements CameraPreview.CameraPreviewListener {
                         if (count > 0) {
                             cameraId = 0;
                             camera = Camera.open(cameraId);
+                           
                         } else {
                             cameraId = -1;
                             camera = null;
@@ -172,7 +172,7 @@ public class CameraManager implements CameraPreview.CameraPreviewListener {
                             previewRotation = SettingVar.cameraPreviewRotation;
                         }
 
-                        Log.i("CameraManager",
+                        Log.i("CameraManager1",
                                 String.format("camera rotation: %d %d %d", degrees, info.orientation, previewRotation));
                         camera.setDisplayOrientation(previewRotation);
                         Camera.Parameters param = camera.getParameters();
@@ -181,13 +181,13 @@ public class CameraManager implements CameraPreview.CameraPreviewListener {
                             param.setPreviewSize(manualWidth, manualHeight);
                         } else {
                             Camera.Size bestPreviewSize = getBestPreviewSize(camera);
-                            Log.i("metrics",
+                            Log.i("metrics1",
                                     "best height is" + bestPreviewSize.height + "width is " + bestPreviewSize.width);
                             manualWidth = bestPreviewSize.width;
                             manualHeight = bestPreviewSize.height;
                             param.setPreviewSize(bestPreviewSize.width, bestPreviewSize.height);
                             SettingVar.iscameraNeedConfig = true;
-                            Log.i("cameraManager",
+                            Log.i("cameraManager1",
                                     "camerawidth : " + bestPreviewSize.width + "  height  : " + bestPreviewSize.height);
                         }
                         SettingVar.cameraSettingOk = true;
@@ -198,7 +198,7 @@ public class CameraManager implements CameraPreview.CameraPreviewListener {
                         PixelFormat.getPixelFormatInfo(pixelformat, pixelinfo);
                         Camera.Parameters parameters = camera.getParameters();
                         Camera.Size sz = parameters.getPreviewSize();
-                        Log.i("cameraManager", "camerawidth : " + sz.width + "  height  : " + sz.height);
+                        Log.i("cameraManager1", "camerawidth : " + sz.width + "  height  : " + sz.height);
                         int bufSize = sz.width * sz.height * pixelinfo.bitsPerPixel / 8;
                         if (mPicBuffer == null || mPicBuffer.length != bufSize) {
                             mPicBuffer = new byte[bufSize];
@@ -214,6 +214,7 @@ public class CameraManager implements CameraPreview.CameraPreviewListener {
                     super.onPostExecute(o);
 
                     cameraPreview.setCamera(camera);
+        
                     state = CameraState.OPENED;
                 }
 
@@ -250,6 +251,7 @@ public class CameraManager implements CameraPreview.CameraPreviewListener {
             camera.release();
             camera = null;
         }
+
     }
 
     public void finalRelease() {
@@ -264,6 +266,7 @@ public class CameraManager implements CameraPreview.CameraPreviewListener {
         this.surfaceHolder = preview.getHolder();
         preview.setListener(this);
     }
+
 
     public void setListener(CameraListener listener) {
         this.listener = listener;
@@ -292,5 +295,6 @@ public class CameraManager implements CameraPreview.CameraPreviewListener {
 
     public interface CameraListener {
         void onPictureTaken(CameraPreviewData cameraPreviewData);
+
     }
 }

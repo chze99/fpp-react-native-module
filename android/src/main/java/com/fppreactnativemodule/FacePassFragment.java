@@ -89,10 +89,12 @@ import mcv.facepass.types.FacePassAgeGenderResult;
 import mcv.facepass.types.FacePassRecognitionState;
 import mcv.facepass.types.FacePassTrackOptions;
 import com.example.yfaceapi.GPIOManager;
+import android.util.Pair;
 
 import com.fppreactnativemodule.camera.CameraManager;
 import com.fppreactnativemodule.camera.CameraPreview;
 import com.fppreactnativemodule.camera.CameraPreviewData;
+import com.fppreactnativemodule.camera.ComplexFrameHelper;
 import com.fppreactnativemodule.utils.FileUtil;
 import com.q_zheng.QZhengGPIOManager;
 import com.q_zheng.QZhengIFManager;
@@ -120,7 +122,9 @@ public class FacePassFragment extends Fragment implements CameraManager.CameraLi
       PERMISSION_INTERNET, PERMISSION_ACCESS_NETWORK_STATE };
   FacePassHandler mFacePassHandler;
   private CameraManager manager;
+  private CameraManager mIRCameraManager;
   private CameraPreview cameraView;
+  private CameraPreview mIRCameraView;
   private boolean isLocalGroupExist = false;
   private FaceView faceView;
   private ScrollView scrollView;
@@ -150,6 +154,8 @@ public class FacePassFragment extends Fragment implements CameraManager.CameraLi
 
   ArrayBlockingQueue<RecognizeData> mRecognizeDataQueue;
   ArrayBlockingQueue<CameraPreviewData> mFeedFrameQueue;
+  ArrayBlockingQueue<CameraPreviewData> mFeedFrameIRQueue;
+
   RecognizeThread mRecognizeThread;
   FeedFrameThread mFeedFrameThread;
   private FaceImageCache mImageCache;
@@ -157,6 +163,7 @@ public class FacePassFragment extends Fragment implements CameraManager.CameraLi
   Boolean appPaused = false;
   Boolean enableLight = true;
   private GPIOManager gpioManager;
+  Boolean useIRCameraSupport = false;
 
   @Override
   public void onAttach(Context context) {
@@ -179,36 +186,37 @@ public class FacePassFragment extends Fragment implements CameraManager.CameraLi
 
   }
 
+  public Boolean timeOut = false;
+
   @Override
   public void onStart() {
     super.onStart();
-    int counter=0;
-     mImageCache = new FaceImageCache();
-        mRecognizeDataQueue = new ArrayBlockingQueue<RecognizeData>(5);
-        mFeedFrameQueue = new ArrayBlockingQueue<CameraPreviewData>(1);
-        initAndroidHandler();
-        View view = getView();
-        initView(view);
-        QZhengGPIOInstance = QZhengGPIOManager.getInstance(context);
-        qZhengManager = new QZhengIFManager(context);
-        gpioManager = GPIOManager.getInstance(context);
-        group_name = SettingVar.groupName;
+    int counter = 0;
+    mImageCache = new FaceImageCache();
+    mRecognizeDataQueue = new ArrayBlockingQueue<RecognizeData>(5);
+    mFeedFrameQueue = new ArrayBlockingQueue<CameraPreviewData>(1);
+    mFeedFrameIRQueue = new ArrayBlockingQueue<CameraPreviewData>(1);
+    useIRCameraSupport = SettingVar.useIRCameraSupport;
+    initAndroidHandler();
+    View view = getView();
+    initView(view);
+    QZhengGPIOInstance = QZhengGPIOManager.getInstance(context);
+    qZhengManager = new QZhengIFManager(context);
+    gpioManager = GPIOManager.getInstance(context);
+    group_name = SettingVar.groupName;
     do {
       counter++;
-        Log.v("doneInititialize", Boolean.toString(SettingVar.doneInitialize));
-        Log.v("Counter", Integer.toString(counter));
-       
-        
+      Log.v("doneInititialize", Boolean.toString(SettingVar.doneInitialize));
+      Log.v("Counter", Integer.toString(counter));
+
       if (SettingVar.doneInitialize == true) {
-      
- 
+
         if (!hasPermission()) {
           requestPermission();
         }
-        
 
         if (enableLight) {
-            // changeLight("white");
+          // changeLight("white");
         }
         mFacePassHandler = FacePassHandlerHolder.getMyObject();
 
@@ -218,10 +226,12 @@ public class FacePassFragment extends Fragment implements CameraManager.CameraLi
         mFeedFrameThread = new FeedFrameThread();
         mFeedFrameThread.start();
       }
-      if(counter>=29000){
+
+      if (counter >= 29000 && timeOut == false) {
         toast("Initializing time out,please restart your app");
+        timeOut = true;
       }
-    } while (SettingVar.doneInitialize == false && counter<30000);
+    } while (SettingVar.doneInitialize == false && counter < 30000);
   }
 
   private void initView(View view) {
@@ -265,8 +275,20 @@ public class FacePassFragment extends Fragment implements CameraManager.CameraLi
     manager = new CameraManager();
     cameraView = (CameraPreview) getView().findViewById(R.id.preview);
     manager.setPreviewDisplay(cameraView);
+    if (useIRCameraSupport) {
+      mIRCameraManager = new CameraManager();
+      mIRCameraView = (CameraPreview) getView().findViewById(R.id.previewIR);
+      mIRCameraManager.setPreviewDisplay(mIRCameraView);
+      mIRCameraManager.setListener(new CameraManager.CameraListener() {
+        @Override
+        public void onPictureTaken(CameraPreviewData cameraPreviewData) {
+
+          ComplexFrameHelper.addIRFrame(cameraPreviewData);
+        }
+      });
+    }
     manager.setListener(this);
-    manager.open(activity.getWindowManager(), false, cameraWidth, cameraHeight);
+
   }
 
   @Override
@@ -284,6 +306,9 @@ public class FacePassFragment extends Fragment implements CameraManager.CameraLi
     initToast();
     if (hasPermission()) {
       manager.open(activity.getWindowManager(), false, cameraWidth, cameraHeight);
+      if (useIRCameraSupport) {
+        mIRCameraManager.open(activity.getWindowManager(), true, cameraWidth, cameraHeight);
+      }
     }
     adaptFrameLayout();
     super.onResume();
@@ -379,8 +404,11 @@ public class FacePassFragment extends Fragment implements CameraManager.CameraLi
 
   @Override
   public void onPictureTaken(CameraPreviewData cameraPreviewData) {
-    mFeedFrameQueue.offer(cameraPreviewData);
-    Log.i(DEBUG_TAG, "feedframe");
+    if (useIRCameraSupport) {
+      ComplexFrameHelper.addRgbFrame(cameraPreviewData);
+    } else {
+      mFeedFrameQueue.offer(cameraPreviewData);
+    }
   }
 
   private class FeedFrameThread extends Thread {
@@ -389,9 +417,15 @@ public class FacePassFragment extends Fragment implements CameraManager.CameraLi
     @Override
     public void run() {
       while (!isInterrupt) {
+
+        Pair<CameraPreviewData, CameraPreviewData> framePair = null;
         CameraPreviewData cameraPreviewData = null;
         try {
-          cameraPreviewData = mFeedFrameQueue.take();
+          if (useIRCameraSupport) {
+            framePair = ComplexFrameHelper.takeComplexFrame();
+          } else {
+            cameraPreviewData = mFeedFrameQueue.take();
+          }
         } catch (InterruptedException e) {
           e.printStackTrace();
           continue;
@@ -400,19 +434,40 @@ public class FacePassFragment extends Fragment implements CameraManager.CameraLi
           continue;
         }
         long startTime = System.currentTimeMillis();
-
         FacePassImage image;
+        FacePassImage imageIR;
+
         try {
-          image = new FacePassImage(cameraPreviewData.nv21Data, cameraPreviewData.width, cameraPreviewData.height,
-              cameraRotation, FacePassImageType.NV21);
+
+          if (useIRCameraSupport) {
+
+            image = new FacePassImage(framePair.first.nv21Data, framePair.first.width, framePair.first.height,
+                cameraRotation, FacePassImageType.NV21);
+
+            imageIR = new FacePassImage(framePair.second.nv21Data, framePair.second.width, framePair.second.height,
+                cameraRotation, FacePassImageType.NV21);
+
+          } else {
+            image = new FacePassImage(cameraPreviewData.nv21Data, cameraPreviewData.width, cameraPreviewData.height,
+                cameraRotation, FacePassImageType.NV21);
+            imageIR = null;
+          }
         } catch (FacePassException e) {
           e.printStackTrace();
+          Log.v("Error FacePassImage Data", e.toString());
+
           continue;
         }
         FacePassDetectionResult detectionResult = null;
         try {
 
-          detectionResult = mFacePassHandler.feedFrame(image);
+          if (useIRCameraSupport) {
+            detectionResult = mFacePassHandler.feedFrameRGBIR(image, imageIR);
+
+          } else {
+            detectionResult = mFacePassHandler.feedFrame(image);
+
+          }
         } catch (FacePassException e) {
           e.printStackTrace();
         }
@@ -631,6 +686,11 @@ public class FacePassFragment extends Fragment implements CameraManager.CameraLi
     mFeedFrameThread.interrupt();
     if (manager != null) {
       manager.release();
+    }
+    if (useIRCameraSupport) {
+      if (mIRCameraManager != null) {
+        mIRCameraManager.release();
+      }
     }
     if (mAndroidHandler != null) {
       mAndroidHandler.removeCallbacksAndMessages(null);
