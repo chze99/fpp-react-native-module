@@ -6,7 +6,8 @@ import AddFace from '../pages/AddFace'
 import FaceGroupSettingScreen from '../pages/FaceGroupSettingScreen'
 import FacialRecognitionSettingScreen from '../pages/FacialRecognitionSettingScreen'
 import SettingScreen from '../pages/SettingScreen'
-// import { createStackNavigator } from '@react-navigation/stack';
+import TestLightPage from '../pages/TestLightPage'
+import { createStackNavigator } from '@react-navigation/stack';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -19,29 +20,31 @@ export default function Routes() {
 
             <NavigationContainer >
                 <Stack.Navigator>
-
                     <Stack.Screen
                         name="Home"
                         component={Home}
-
                     />
                     <Stack.Screen
                         name="FaceManagement"
                         component={FaceManagement}
                     />
                     <Stack.Screen
+                        name="TestLightPage"
+                        component={TestLightPage}
+                    />
+                    <Stack.Screen
                         name="AddFace"
                         component={AddFace}
                     />
-                                        <Stack.Screen
+                    <Stack.Screen
                         name="FaceGroupSettingScreen"
                         component={FaceGroupSettingScreen}
                     />
-                                        <Stack.Screen
+                    <Stack.Screen
                         name="FacialRecognitionSettingScreen"
                         component={FacialRecognitionSettingScreen}
                     />
-                                        <Stack.Screen
+                    <Stack.Screen
                         name="SettingScreen"
                         component={SettingScreen}
                     />

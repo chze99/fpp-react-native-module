@@ -176,7 +176,7 @@ export default function FacialRecognitionSettingScreen({ navigation }) {
             FaceFaceMinThreshold: FaceFaceMinThreshold,
             FaceRcAttributeAndOcclusionMode: FaceRcAttributeAndOcclusionMode,
         }
-        DefaultPreference.set('parameters', data)
+        DefaultPreference.set('parameters', JSON.stringify(data))
 
         Alert.alert("Attention", "Please restart your application for the changes to take effect", [
             {
@@ -317,10 +317,10 @@ export default function FacialRecognitionSettingScreen({ navigation }) {
                         <Text style={styles.titleTextView}>Liveness Enabled</Text>
                         <RadioButtons values={liveness_enabled} onPress={onLivenessEnable} defaults={livenessEnabled ? 0 : 1} />
                     </View>
-                    <View style={styles.inputFieldView}>
+                    {/* <View style={styles.inputFieldView}>
                         <Text style={styles.titleTextView}>RGB IR Liveness Enabled</Text>
                         <RadioButtons values={RGB_IR_liveness_enabled} onPress={onRGBIRLivenessEnable} defaults={rgbIrLivenessEnabled ? 0 : 1} />
-                    </View>
+                    </View> */}
                     <View style={styles.inputFieldView}>
                         <Text style={styles.titleTextView}>poseThresholdRoll</Text>
                         <TextInput

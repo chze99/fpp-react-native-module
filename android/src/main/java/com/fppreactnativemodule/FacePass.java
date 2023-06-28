@@ -21,6 +21,7 @@ import android.provider.MediaStore;
 import android.text.TextUtils;
 import android.util.Log;
 import android.widget.Toast;
+import android.widget.ImageView;
 
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
@@ -41,6 +42,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.TimeoutException;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 
 import com.facebook.react.bridge.Arguments;
 
@@ -51,8 +55,10 @@ import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.Request;
 import com.android.volley.VolleyError;
-
+import com.android.volley.toolbox.RequestFuture;
 import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.ImageRequest;
+import com.android.volley.toolbox.Volley;
 
 import mcv.facepass.FacePassException;
 import mcv.facepass.FacePassHandler;
@@ -529,14 +535,21 @@ public class FacePass extends ReactContextBaseJavaModule
       failure.invoke("INVALID_IMAGE_PATH_ERROR");
       return;
     }
+    Bitmap bitmap;
+    try {
+      bitmap = getBitmapByUrl(imagePath);
+      Log.v("IMAGE path",imagePath.toString());
 
-    File imageFile = new File(imagePath);
-    if (!imageFile.exists()) {
-      failure.invoke("IMAGE_NOT_EXIST_ERROR");
-      return;
+    } catch (Exception e) {
+      Log.v("IMAGE fail",e.toString());
+      File imageFile = new File(imagePath);
+      if (!imageFile.exists()) {
+        failure.invoke("IMAGE_NOT_EXIST_ERROR");
+        return;
+      } else {
+        bitmap = BitmapFactory.decodeFile(imagePath);
+      }
     }
-
-    Bitmap bitmap = BitmapFactory.decodeFile(imagePath);
 
     try {
       FacePassAddFaceResult result = mFacePassHandler.addFace(bitmap);
@@ -560,6 +573,23 @@ public class FacePass extends ReactContextBaseJavaModule
 
     }
 
+  }
+
+  Bitmap getBitmapByUrl(String photoUrl) throws InterruptedException, ExecutionException, TimeoutException {
+        Activity activity = getCurrentActivity();
+
+    RequestFuture<Bitmap> future = RequestFuture.newFuture();
+    ImageRequest request = new ImageRequest(
+        photoUrl,
+        future,
+        1000,
+        1000,
+        ImageView.ScaleType.CENTER,
+        null,
+        future);
+     requestQueue = Volley.newRequestQueue(activity.getApplicationContext());
+     requestQueue.add(request);
+    return future.get(30, TimeUnit.SECONDS);
   }
 
   @ReactMethod(isBlockingSynchronousMethod = true)
@@ -856,6 +886,8 @@ public class FacePass extends ReactContextBaseJavaModule
 
   @ReactMethod
   public void elevatorAccess(String elevatorGatewayIp, String uid, String premiseId) {
+        Activity activity = getCurrentActivity();
+
     if (!elevatorGatewayIp.equals("")) {
       JSONObject object = new JSONObject();
 
@@ -881,7 +913,7 @@ public class FacePass extends ReactContextBaseJavaModule
               Log.d("elevatorAccess", "Error Response : " + error.getMessage());
             }
           });
-
+      requestQueue = Volley.newRequestQueue(activity.getApplicationContext());
       requestQueue.add(jsonObjectRequest);
     }
 

@@ -182,6 +182,7 @@ DefaultPreference is the example of package in this documentation,you can freely
 ```sh
   try{
     const faceToken=await addFace(imagePath)
+    //Image path can be wherether local path or an url image
     //Here is to set the face owner name so that the app can know the face belong to who
     //"Face owner name" need to be replace with own function to get name,e.g an text field
     DefaultPreference.set(faceToken, "Face owner name");

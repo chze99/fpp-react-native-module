@@ -193,7 +193,8 @@ public class FacePassFragment extends Fragment implements CameraManager.CameraLi
   }
 
   public Boolean timeOut = false;
-  public Boolean showIRPreview =false;
+  public Boolean showIRPreview = false;
+
   @Override
   public void onStart() {
     super.onStart();
@@ -230,6 +231,7 @@ public class FacePassFragment extends Fragment implements CameraManager.CameraLi
         if (temperatureScan) {
           TemperatureService.startService(activity.getApplicationContext());
         }
+
         mFacePassHandler = FacePassHandlerHolder.getMyObject();
 
         mRecognizeThread = new RecognizeThread();
@@ -289,10 +291,10 @@ public class FacePassFragment extends Fragment implements CameraManager.CameraLi
     manager.setPreviewDisplay(cameraView);
     if (useIRCameraSupport) {
       mIRCameraManager = new CameraManager();
-      if(showIRPreview){
-      mIRCameraView = (CameraPreview) getView().findViewById(R.id.previewIR);
-      }else{
-      mIRCameraView = (CameraPreview) getView().findViewById(R.id.previewIRHidden);
+      if (showIRPreview) {
+        mIRCameraView = (CameraPreview) getView().findViewById(R.id.previewIR);
+      } else {
+        mIRCameraView = (CameraPreview) getView().findViewById(R.id.previewIRHidden);
       }
       mIRCameraManager.setPreviewDisplay(mIRCameraView);
       mIRCameraManager.setListener(new CameraManager.CameraListener() {
@@ -425,6 +427,54 @@ public class FacePassFragment extends Fragment implements CameraManager.CameraLi
     } else {
       mFeedFrameQueue.offer(cameraPreviewData);
     }
+    // detectQRCode(cameraPreviewData);
+
+  }
+
+  // public void detectQRCode(CameraPreviewData cameraPreviewData) {
+
+  //   InputImage image = InputImage.fromByteArray(cameraPreviewData.nv21Data,
+  //       cameraPreviewData.width,
+  //       cameraPreviewData.height,
+  //       cameraPreviewData.rotation,
+  //       InputImage.IMAGE_FORMAT_NV21);
+
+  //   scanner.process(image)
+  //       .addOnSuccessListener(new OnSuccessListener<List<Barcode>>() {
+  //         @Override
+  //         public void onSuccess(List<Barcode> barcodes) {
+  //           for (Barcode barcode : barcodes) {
+  //             String uid = barcode.getRawValue();
+  //             Log.d("QR counter", String.valueOf(recognitionIntervalCounter));
+  //             Log.d("QR check in", uid);
+  //             if (recognitionIntervalCounter <= 0) {
+  //               if (loadedUsers.has(uid)) {
+  //                 faceCheckIn(0, null, 100, 1, null, null, true, uid);
+  //               } else {
+  //                 toast("No access or invalid QR code.");
+  //               }
+  //               recognitionIntervalCounter = recognitionInterval;
+  //             }
+  //           }
+  //         }
+  //       });
+
+  // }
+
+  public void detectBrightness(CameraPreviewData cameraPreviewData) {
+    long sumY = 0;
+    for (int j = 0, yp = 0; j < cameraPreviewData.height; j++) {
+      for (int i = 0; i < cameraPreviewData.width; i++, yp++) {
+        int y = (0xff & ((int) cameraPreviewData.nv21Data[yp]));
+        if (y < 0) {
+          y = 0;
+        }
+        sumY += y;
+      }
+    }
+    int brightness = (int) sumY / (cameraPreviewData.width * cameraPreviewData.height);
+
+    Log.d("brightness", String.valueOf(brightness));
   }
 
   private class FeedFrameThread extends Thread {

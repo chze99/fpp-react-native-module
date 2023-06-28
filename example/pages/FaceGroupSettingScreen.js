@@ -3,7 +3,8 @@ import {
     StyleSheet, Text, Image, View, TextInput, FlatList, TouchableOpacity, NativeModules
 } from 'react-native';
 import DefaultPreference from 'react-native-default-preference';
-import { selectImage, addFace, setDefaultGroupName,deleteFace, getFace, bindGroup, getGroupInfo, unbindGroup, getAllGroup, deleteGroup, createGroup, unbindFace } from 'facepass-react-native-module';
+import { selectImage, addFace, setDefaultGroupName, deleteFace, getFace, bindGroup, getGroupInfo, unbindGroup, getAllGroup, deleteGroup, createGroup, unbindFace } from 'facepass-react-native-module';
+import Toast from 'react-native-toast-message';
 
 export default function FaceGroupSettingScreen({ navigation }) {
     const { FacePass } = NativeModules
@@ -31,10 +32,14 @@ export default function FaceGroupSettingScreen({ navigation }) {
 
     async function selectimage() {
         try {
-            const uri =await  selectImage()
+            const uri = await selectImage()
             setImagePath(uri)
         } catch (e) {
-            console.log(e);
+            Toast.show({
+                type: 'error',
+                text1: 'Error select image',
+                text2: e,
+            });
         }
     }
 
@@ -44,36 +49,71 @@ export default function FaceGroupSettingScreen({ navigation }) {
                 const success = await addFace(imagePath);
                 setFaceToken(success);
                 DefaultPreference.set(success, faceName);
+                Toast.show({
+                    type: 'success',
+                    text1: 'Face added',
+                });
             } catch (e) {
-                console.log(e);
+                Toast.show({
+                    type: 'error',
+                    text1: 'Error adding face',
+                    text2: e,
+                });
             }
+        } else {
+            Toast.show({
+                type: 'error',
+                text1: 'Please input face name',
+
+            });
         }
     }
 
     async function deleteface() {
         try {
-            await  deleteFace(faceToken, groupName)
+            await deleteFace(faceToken, groupName)
             await DefaultPreference.clear(faceToken);
             setFaceToken("")
+            Toast.show({
+                type: 'success',
+                text1: 'Face deleted',
+            });
         } catch (e) {
-            console.log("Delete Face", e)
+            Toast.show({
+                type: 'error',
+                text1: 'Error delete face',
+                text2: e,
+            });
         }
     }
 
     async function obtainFaceImage() {
         try {
-            const success =await  getFace(faceToken)
+            const success = await getFace(faceToken)
             setImage(success)
+
         } catch (e) {
-            console.log(e);
+            Toast.show({
+                type: 'error',
+                text1: 'Error obtain image',
+                text2: e,
+            });
         }
     }
 
     async function bindFaceGroup() {
         try {
-            await bindGroup(faceToken, groupName,)
+            await bindGroup(faceToken, groupName)
+            Toast.show({
+                type: 'success',
+                text1: 'Group binded',
+            });
         } catch (e) {
-            console.log(e);
+            Toast.show({
+                type: 'error',
+                text1: 'Error bind group',
+                text2: e,
+            });
         }
     }
 
@@ -81,8 +121,13 @@ export default function FaceGroupSettingScreen({ navigation }) {
         try {
             const data = await getGroupInfo(groupName)
             setFacegrouplist(data)
+
         } catch (e) {
-            console.log(e);
+            Toast.show({
+                type: 'error',
+                text1: 'Error get group info',
+                text2: e,
+            });
         }
     }
 
@@ -90,35 +135,80 @@ export default function FaceGroupSettingScreen({ navigation }) {
         try {
             const data = await unbindFace(facetoken, groupName)
             setFacegrouplist(data)
+
         } catch (e) {
-            console.log(e);
+            Toast.show({
+                type: 'error',
+                text1: 'Error unbind group',
+                text2: e,
+            });
         }
     }
 
     async function getallGroup() {
         try {
-            const data= await getAllGroup()
+            const data = await getAllGroup()
             setGroupList(data);
 
         } catch (e) {
-            console.log(e);
+            Toast.show({
+                type: 'error',
+                text1: 'Error get all group',
+            });
         }
     }
     async function changeDefaultGroup() {
-        DefaultPreference.set("group_name", defaultGroupName);
-        setDefaultGroupName(defaultGroupName);
+        if (defaultGroupName != '') {
+            try {
+                await setDefaultGroupName(defaultGroupName);
+                DefaultPreference.set("group_name", defaultGroupName);
+                Toast.show({
+                    type: 'success',
+                    text1: 'Default group changed to',
+                    text2: defaultGroupName,
+                }); 
+            } catch (e) {
+                Toast.show({
+                    type: 'error',
+                    text1: 'Default group change failed',
+                    text2: e,
+                });
+            }
+        } else {
+            Toast.show({
+                type: 'error',
+                text1: 'Default group change failed',
+                text2: 'Please input group name'
+            });
+        }
+
     }
-    function addGroup(name) {
+
+    async function addGroup(name) {
         try {
-            createGroup(name)
+            await createGroup(name)
+            Toast.show({
+                type: 'success',
+                text1: 'Created group:',
+                text2: name,
+            });
         } catch (e) {
-            console.log(e);
+            Toast.show({
+                type: 'error',
+                text1: 'Group creation failed',
+                text2: e,
+            });
         }
     }
     async function deletegroup(name) {
         try {
-            const data=await deleteGroup(name)
+            const data = await deleteGroup(name)
             setGroupList(data)
+            Toast.show({
+                type: 'success',
+                text1: 'Success delete this group:',
+                text2: name,
+            });
         } catch (e) {
             console.log(e);
         }
@@ -198,6 +288,19 @@ export default function FaceGroupSettingScreen({ navigation }) {
                         </TouchableOpacity>
                     </View>
                 </View>
+                <FlatList
+                    data={facegrouplist}
+                    renderItem={
+                        ({ item }) =>
+                            <View style={{ display: 'flex', flexDirection: 'row', marginRight: 10, marginVertical: 5 }}>
+                                <Text style={{ flex: 2, alignSelf: 'center' }} >{item}</Text>
+                                <TouchableOpacity style={styles.button} onPress={() => { unbindGroup(item) }}>
+                                    <Text style={{ color: "white" }}>Unbind</Text>
+                                </TouchableOpacity>
+                            </View>
+                    }
+
+                />
                 <View style={{ flexDirection: "row", display: "flex", marginTop: 20, marginBottom: 10 }}>
                     <View style={styles.textInputView}>
                         <TextInput
@@ -217,6 +320,7 @@ export default function FaceGroupSettingScreen({ navigation }) {
 
                     </View>
                 </View>
+
                 {faceImage != "" ?
                     <Image
                         style={{ width: 70, height: 70 }}
@@ -225,50 +329,31 @@ export default function FaceGroupSettingScreen({ navigation }) {
                         }}>
                     </Image>
                     : ""}
-                <FlatList
-                    data={facegrouplist}
-                    renderItem={
-                        ({ item }) =>
-                            <View style={{ display: 'flex', flexDirection: 'row', marginRight: 10, marginVertical: 5 }}>
-                                <Text style={{ flex: 2, alignSelf: 'center' }} >{item}</Text>
-                                <TouchableOpacity style={styles.button} onPress={() => { unbindGroup(item) }}>
-                                    <Text style={{ color: "white" }}>Unbind</Text>
-                                </TouchableOpacity>
-                            </View>
-                    }
-
-                />
-
-                <View style={{ flexDirection: "column", display: "flex", marginTop: 20, marginBottom: 10 }}>
-                    <TouchableOpacity style={styles.button} onPress={() => { getallGroup() }}>
-                        <Text style={{ color: "white" }}>Get all group</Text>
-                    </TouchableOpacity>
-                </View>
-                <View style={{ flexDirection: "column", display: "flex", marginTop: 20, marginBottom: 10 }}>
 
 
-                </View>
 
                 <View style={{ flexDirection: "row", display: "flex", marginTop: 20 }}>
                     <View style={styles.textInputView}>
-
                         <TextInput
                             style={styles.border}
-
                             onChangeText={setGroupCreateName}
                             value={groupCreateName}
                             placeholder="Group "
                         />
                     </View>
                     <View style={{ flexDirection: "row", flex: 2 }}>
-
                         <TouchableOpacity style={styles.button} onPress={() => { addGroup(groupCreateName) }}>
                             <Text style={{ color: "white" }}>Add group</Text>
                         </TouchableOpacity>
                     </View>
                 </View>
+                <View style={{ flexDirection: "column", display: "flex", marginTop: 20, marginBottom: 10 }}>
+                    <TouchableOpacity style={styles.button} onPress={() => { getallGroup() }}>
+                        <Text style={{ color: "white" }}>Get all group</Text>
+                    </TouchableOpacity>
+                </View>
 
-
+    
 
                 <View style={{ flexDirection: "column", display: "flex", marginTop: 20, marginBottom: 10 }}>
                     <FlatList
@@ -282,9 +367,10 @@ export default function FaceGroupSettingScreen({ navigation }) {
                                     </TouchableOpacity>
                                 </View>
                         }
-
                     />
                 </View>
+
+
             </View>
 
     )

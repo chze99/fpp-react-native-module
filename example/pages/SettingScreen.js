@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
 import {
-    StyleSheet, Text, View, TouchableOpacity, 
+    StyleSheet, Text, View, TouchableOpacity,
 } from 'react-native';
 import RadioButtons from "../components/RadioButtons";
 import DefaultPreference from 'react-native-default-preference';
-import { cameraSetting } from 'facepass-react-native-module';
+import { cameraSetting, useIRCameraSupport, enableIRPreview } from 'facepass-react-native-module';
 
 export default function SettingScreen({ navigation }) {
     const [cameraFacingFront, setcameraFacingFront] = useState();
@@ -12,6 +12,9 @@ export default function SettingScreen({ navigation }) {
     const [isSettingAvailable, setisSettingAvailable] = useState();
     const [cameraPreviewRotation, setcameraPreviewRotation] = useState();
     const [isCross, setisCross] = useState();
+    const [useIR, setUseIR] = useState();
+    const [useIRPreview, setUseIRPreview] = useState();
+
     const [isLoading, setisLoading] = useState(true);
     useEffect(() => {
         init_data();
@@ -28,12 +31,17 @@ export default function SettingScreen({ navigation }) {
                 setcameraPreviewRotation(settings.cameraPreviewRotation);
                 setisCross(settings.isCross);
                 setisSettingAvailable(settings.isSettingAvailable)
+                setUseIR(true)
+                setUseIRPreview(false)
             } else {
                 setcameraFacingFront(true);
                 setfaceRotation(90);
                 setcameraPreviewRotation(270);
                 setisCross(false);
                 setisSettingAvailable(true)
+                setUseIR(true)
+                setUseIRPreview(false)
+
             }
         } catch (e) {
             console.log(e)
@@ -92,6 +100,23 @@ export default function SettingScreen({ navigation }) {
         },
     ]
 
+    const use_ir = [
+        {
+            text: "Yes",
+        },
+        {
+            text: "No",
+        },
+    ]
+
+    const use_ir_preview = [
+        {
+            text: "Yes",
+        },
+        {
+            text: "No",
+        },
+    ]
     const onCameraDirection = (value) => {
         if (value === "Front") {
             setcameraFacingFront(true)
@@ -118,7 +143,22 @@ export default function SettingScreen({ navigation }) {
         }
         console.log("cross", value);
     };
-
+    const onUseIr = (value) => {
+        if (value === "Yes") {
+            setUseIR(true)
+        } else if (value === "No") {
+            setUseIR(false)
+        }
+        console.log("IR", value);
+    };
+    const onUseIrPreview = (value) => {
+        if (value === "Yes") {
+            setUseIRPreview(true)
+        } else if (value === "No") {
+            setUseIRPreview(false)
+        }
+        console.log("IR", value);
+    };
 
     function save() {
         setisSettingAvailable(true);
@@ -131,6 +171,8 @@ export default function SettingScreen({ navigation }) {
         }
         DefaultPreference.set('settings', JSON.stringify(data))
         cameraSetting(data);
+        useIRCameraSupport(useIR);
+        enableIRPreview(useIRPreview);
         navigation.navigate('Home')
 
     }
@@ -146,7 +188,8 @@ export default function SettingScreen({ navigation }) {
         }
         DefaultPreference.set('settings', JSON.stringify(data))
         cameraSetting(data);
-
+        useIRCameraSupport(true);
+        enableIRPreview(false);
         navigation.navigate('Home')
     }
 
@@ -163,6 +206,10 @@ export default function SettingScreen({ navigation }) {
                 <RadioButtons values={face_rotation} onPress={onFaceRotation} defaults={faceRotation == 0 ? 0 : faceRotation == 90 ? 1 : faceRotation == 180 ? 2 : 3} />
                 <Text>Screen cross</Text>
                 <RadioButtons values={screen_cross} onPress={onScreenCross} defaults={isCross ? 0 : 1} />
+                <Text>Use IR</Text>
+                <RadioButtons values={use_ir} onPress={onUseIr} defaults={useIR ? 0 : 1} />
+                <Text>Use IR Preview</Text>
+                <RadioButtons values={use_ir_preview} onPress={onUseIrPreview} defaults={useIRPreview ? 0 : 1} />
                 <View style={{ paddingHorizontal: 20, paddingTop: 50, justifyContent: "space-between", flexDirection: "row", display: "flex" }} >
                     <TouchableOpacity style={styles.button} onPress={() => { save() }}>
                         <Text>Save</Text>

@@ -1,18 +1,14 @@
 import _ from "lodash";
 import { useState, useEffect } from "react";
-import { TouchableOpacity,  View, Text, StyleSheet, Image, } from "react-native";
+import { TouchableOpacity, View, Text, StyleSheet, Image, } from "react-native";
 import DefaultPreference from 'react-native-default-preference';
-import { getGroupInfo, getFace, deleteFace, createGroup } from "facepass-react-native-module";
+import { getGroupInfo, getFace, deleteFace, createGroup, restartDevice, controlDoor } from "facepass-react-native-module";
 export default function FaceMangement({ navigation }) {
     const [faceList, setFaceList] = useState([]);
     async function showFaceList() {
 
         try {
-            try {
-                await createGroup("testi")
-            } catch (e) {
-                console.log(e)
-            }
+
             const data = await getGroupInfo("testi")
             const facedata = await Promise.all(_.map(data, async (datas) => {
                 const name = await DefaultPreference.get(datas)
@@ -59,21 +55,60 @@ export default function FaceMangement({ navigation }) {
             }>
                 <Text style={{ color: "white" }}>Add face</Text>
             </TouchableOpacity>
+            <View style={{ paddingVertical: 10 }}></View>
             <TouchableOpacity style={styles.button} onPress={() =>
                 navigation.navigate("FaceGroupSettingScreen")
             }>
-                <Text style={{ color: "white" }}>FaceGroupSettingScreen</Text>
+                <Text style={{ color: "white" }}>Face Group Setting Screen</Text>
             </TouchableOpacity>
+            <View style={{ paddingVertical: 10 }}></View>
+
             <TouchableOpacity style={styles.button} onPress={() =>
                 navigation.navigate("FacialRecognitionSettingScreen")
             }>
-                <Text style={{ color: "white" }}> FacialRecognitionSettingScreen</Text>
+                <Text style={{ color: "white" }}> Facial Recognition Setting Screen</Text>
             </TouchableOpacity>
+            <View style={{ paddingVertical: 10 }}></View>
+
             <TouchableOpacity style={styles.button} onPress={() =>
                 navigation.navigate("SettingScreen")
             }>
-                <Text style={{ color: "white" }}>SettingScreen</Text>
+                <Text style={{ color: "white" }}>Setting Screen</Text>
             </TouchableOpacity>
+            <View style={{ paddingVertical: 10 }}></View>
+
+            <TouchableOpacity style={styles.button} onPress={() =>
+                navigation.navigate("TestLightPage")
+            }>
+                <Text style={{ color: "white" }}>Test Light Page</Text>
+            </TouchableOpacity>
+            <View style={{ paddingVertical: 10 }}></View>
+
+            <View style={{ paddingVertical: 10, display: "flex", flexDirection: "row", justifyContent: "center" }}>
+                <TouchableOpacity style={{ backgroundColor: '#33b5e5', padding: 10 }} onPress={() =>
+                    restartDevice()
+                }>
+                    <Text style={{ color: "white" }}>Restart device</Text>
+                </TouchableOpacity>
+                <View style={{ padding: 10 }}></View>
+
+                <TouchableOpacity style={{ backgroundColor: '#33b5e5', padding: 10 }} onPress={() =>
+                    controlDoor("open")
+                }>
+                    <Text style={{ color: "white" }}>Open door</Text>
+                </TouchableOpacity>
+                <View style={{ padding: 10 }}></View>
+
+                <TouchableOpacity style={{ backgroundColor: '#33b5e5', padding: 10 }} onPress={() =>
+                    controlDoor("close")
+                }>
+                    <Text style={{ color: "white" }}>Close door</Text>
+                </TouchableOpacity>
+                <View style={{ padding: 10 }}></View>
+            </View>
+            <View style={{ paddingVertical: 10 }}></View>
+
+
             {/* <TouchableOpacity style={styles.button} onPress={() =>
                 showFaceList()
             }>
@@ -120,8 +155,10 @@ const styles = StyleSheet.create({
 
     button: {
         alignItems: 'center',
+        alignSelf: 'center',
         backgroundColor: '#33b5e5',
         padding: 10,
-        minWidth: 100
+        minWidth: 300,
+        maxWidth: 300,
     },
 });

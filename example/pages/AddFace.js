@@ -4,12 +4,14 @@ import { StyleSheet, View, TouchableOpacity, Text, TextInput, BackHandler } from
 import * as MediaLibrary from 'expo-media-library';
 import DefaultPreference from 'react-native-default-preference';
 import { addFace, bindGroup } from 'facepass-react-native-module';
+import Toast from 'react-native-toast-message';
+
 export default function AddFace() {
 
     const cameraRef = useRef(null);
     const [faceName, setFaceName] = useState(null);
 
- 
+
 
     const takePictureAsync = async () => {
         if (faceName != null) {
@@ -20,11 +22,18 @@ export default function AddFace() {
 
 
                 } catch (error) {
-                    console.error('Error taking picture:', error);
+                    Toast.show({
+                        type: 'error',
+                        text1: 'Error taking picture',
+                        text2: error
+                    });
                 }
             }
         } else {
-            console.error('Error no face name');
+            Toast.show({
+                type: 'error',
+                text1: 'Face name field is empty',
+            });
 
         }
     }
@@ -33,17 +42,22 @@ export default function AddFace() {
         try {
             const asset = await MediaLibrary.createAssetAsync(pictureUri);
             const fileName = asset.uri.split('file://').pop();
-            console.log('Picture saved:', fileName);
             try {
                 const token = await addFace(fileName)
-                const successMessage = await bindGroup(token, "testi"
-                )
+                const groupName = await DefaultPreference.get("group_name")
+                const successMessage = await bindGroup(token, groupName)
                 DefaultPreference.set(token, faceName)
+                Toast.show({
+                    type: 'success',
+                    text1: 'Face added successfully',
+                });
             } catch (e) {
-                console.log(e)
+                Toast.show({
+                    type: 'error',
+                    text1: 'Add face error',
+                    text2: e,
+                });
             }
-
-
         } catch (error) {
             console.error('Error saving picture:', error);
         }
@@ -53,14 +67,14 @@ export default function AddFace() {
 
     return (
         <View style={styles.container}>
-            <Camera ref={cameraRef} style={styles.camera} type={CameraType.back}>
+            <Camera ref={cameraRef} style={styles.camera} type={CameraType.front}>
             </Camera>
             <View style={styles.buttonContainer}>
                 <TextInput
                     style={styles.border}
                     onChangeText={setFaceName}
                     value={faceName}
-                    placeholder="FaceName "
+                    placeholder="Face Name"
                 />
                 <View style={{ paddingHorizontal: 4 }}></View>
                 <TouchableOpacity style={styles.button} onPress={takePictureAsync}>
