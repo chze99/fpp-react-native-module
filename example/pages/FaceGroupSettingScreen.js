@@ -3,6 +3,7 @@ import {
     StyleSheet, Text, Image, View, TextInput, FlatList, TouchableOpacity, NativeModules
 } from 'react-native';
 import DefaultPreference from 'react-native-default-preference';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { selectImage, addFace, setDefaultGroupName, deleteFace, getFace, bindGroup, getGroupInfo, unbindGroup, getAllGroup, deleteGroup, createGroup, unbindFace } from 'facepass-react-native-module';
 import Toast from 'react-native-toast-message';
 
@@ -48,7 +49,8 @@ export default function FaceGroupSettingScreen({ navigation }) {
             try {
                 const success = await addFace(imagePath);
                 setFaceToken(success);
-                DefaultPreference.set(success, faceName);
+                const data={faceName:faceName,fileName:imagePath}
+                AsyncStorage.setItem(success, JSON.stringify(data));
                 Toast.show({
                     type: 'success',
                     text1: 'Face added',
@@ -63,7 +65,7 @@ export default function FaceGroupSettingScreen({ navigation }) {
         } else {
             Toast.show({
                 type: 'error',
-                text1: 'Please input face name',
+                text1: 'Please input face name & image path',
 
             });
         }
@@ -72,7 +74,7 @@ export default function FaceGroupSettingScreen({ navigation }) {
     async function deleteface() {
         try {
             await deleteFace(faceToken, groupName)
-            await DefaultPreference.clear(faceToken);
+            await AsyncStorage.removeItem(faceToken);
             setFaceToken("")
             Toast.show({
                 type: 'success',
@@ -154,6 +156,7 @@ export default function FaceGroupSettingScreen({ navigation }) {
             Toast.show({
                 type: 'error',
                 text1: 'Error get all group',
+                text2: e,
             });
         }
     }
@@ -161,7 +164,7 @@ export default function FaceGroupSettingScreen({ navigation }) {
         if (defaultGroupName != '') {
             try {
                 await setDefaultGroupName(defaultGroupName);
-                DefaultPreference.set("group_name", defaultGroupName);
+                AsyncStorage.setItem("group_name", defaultGroupName);
                 Toast.show({
                     type: 'success',
                     text1: 'Default group changed to',

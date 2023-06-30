@@ -1,6 +1,6 @@
 import { StatusBar } from 'expo-status-bar';
 import { Image, TouchableOpacity, Dimensions, StyleSheet, View, PixelRatio, UIManager, Text, AppState, findNodeHandle, NativeEventEmitter } from 'react-native';
-import DefaultPreference from 'react-native-default-preference';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useEffect, useRef, useState } from 'react';
 import { FacePassViewManager, FacePass } from 'facepass-react-native-module';
 import { useIsFocused } from '@react-navigation/native';
@@ -32,18 +32,6 @@ export default function Home({ navigation }) {
     const [name, setName] = useState("");
     const [appState, setAppState] = useState(AppState.currentState);
     const isFocused = useIsFocused();
-
-
-
-
-
-    useEffect(() => {
-        async function setPreferenceName() {
-            await DefaultPreference.setName("fppreactnative")
-        }
-        setPreferenceName()
-    }, [])
-
 
     const eventEmitter = new NativeEventEmitter(FacePass);
     const ref = useRef(null);
@@ -94,19 +82,16 @@ export default function Home({ navigation }) {
         console.log("detected")
 
         // if (image == null && name == null) {
-            const image = params.image;
-            const facetoken = params.name;
-            const livenessScore = params.livenessScore;
-      
-            const names = await DefaultPreference.get(facetoken)
-            setImage(image);
-            setName(names);
-      
+            const facetoken = params.faceToken;
+            const data = JSON.parse(await AsyncStorage.getItem(facetoken))
+            setImage(data.fileName);
+            setName(data.faceName);
+            console.log(image)
             setTimeout(() => {
               setImage(null);
               setName(null);
             }, 1500)
-        //   }
+          // }
     });
 
     function getCurrentTime() {
@@ -142,7 +127,7 @@ export default function Home({ navigation }) {
                         ref={faceDetectionImage}
                         style={{ opacity: 0, width: 70, height: 70 }}
                         source={{
-                            uri: 'data:image/png;base64,' + image,
+                            uri: 'file:///' + image,
                         }}
                     />
                     <View style={{ display: 'flex', flexDirection: 'column' }}>

@@ -2,7 +2,7 @@ import { Camera, CameraType } from 'expo-camera';
 import { useEffect, useRef, useState } from 'react';
 import { StyleSheet, View, TouchableOpacity, Text, TextInput, BackHandler } from 'react-native';
 import * as MediaLibrary from 'expo-media-library';
-import DefaultPreference from 'react-native-default-preference';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { addFace, bindGroup } from 'facepass-react-native-module';
 import Toast from 'react-native-toast-message';
 
@@ -10,11 +10,11 @@ export default function AddFace() {
 
     const cameraRef = useRef(null);
     const [faceName, setFaceName] = useState(null);
-
+    const [groupName,setGroupName] = useState(null);
 
 
     const takePictureAsync = async () => {
-        if (faceName != null) {
+        if (faceName != null && groupName!=null) {
             if (cameraRef.current) {
                 try {
                     const { uri } = await cameraRef.current.takePictureAsync();
@@ -32,7 +32,7 @@ export default function AddFace() {
         } else {
             Toast.show({
                 type: 'error',
-                text1: 'Face name field is empty',
+                text1: 'Face name or group name field is empty',
             });
 
         }
@@ -44,9 +44,9 @@ export default function AddFace() {
             const fileName = asset.uri.split('file://').pop();
             try {
                 const token = await addFace(fileName)
-                const groupName = await DefaultPreference.get("group_name")
                 const successMessage = await bindGroup(token, groupName)
-                DefaultPreference.set(token, faceName)
+                const data={faceName:faceName,fileName:fileName}
+                AsyncStorage.setItem(token, JSON.stringify(data))
                 Toast.show({
                     type: 'success',
                     text1: 'Face added successfully',
@@ -75,6 +75,12 @@ export default function AddFace() {
                     onChangeText={setFaceName}
                     value={faceName}
                     placeholder="Face Name"
+                />
+                <TextInput
+                    style={styles.border}
+                    onChangeText={setGroupName}
+                    value={groupName}
+                    placeholder="Group Name"
                 />
                 <View style={{ paddingHorizontal: 4 }}></View>
                 <TouchableOpacity style={styles.button} onPress={takePictureAsync}>

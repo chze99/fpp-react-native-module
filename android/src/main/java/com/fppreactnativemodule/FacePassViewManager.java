@@ -26,9 +26,7 @@ import java.util.Map;
 public class FacePassViewManager extends ViewGroupManager<FrameLayout> {
 
   public final int COMMAND_CREATE = 1;
-  public final int COMMAND_DESTROY = 2;
   public final int COMMAND_REMOVE = 3;
-  public final int COMMAND_NEWREMOVE = 4;
   private int propWidth;
   private int propHeight;
   final FacePassFragment myFragment = new FacePassFragment();
@@ -99,10 +97,7 @@ public class FacePassViewManager extends ViewGroupManager<FrameLayout> {
             .commit();
   }
 
-  public void destroyFragment(){
-    final FacePassFragment myFragment = new FacePassFragment();
-    myFragment.onDestroy();
-  }
+
 
 
   public void removeFragment(FrameLayout root, int reactNativeViewId) {

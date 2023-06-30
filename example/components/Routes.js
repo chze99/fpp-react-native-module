@@ -7,6 +7,8 @@ import FaceGroupSettingScreen from '../pages/FaceGroupSettingScreen'
 import FacialRecognitionSettingScreen from '../pages/FacialRecognitionSettingScreen'
 import SettingScreen from '../pages/SettingScreen'
 import TestLightPage from '../pages/TestLightPage'
+import GroupListPage from '../pages/GroupListPage'
+import GroupListFacePage from '../pages/GroupListFacePage'
 import { createStackNavigator } from '@react-navigation/stack';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
@@ -27,6 +29,14 @@ export default function Routes() {
                     <Stack.Screen
                         name="FaceManagement"
                         component={FaceManagement}
+                    />
+                    <Stack.Screen 
+                        name="GroupListPage"
+                        component={GroupListPage}
+                    />
+                    <Stack.Screen 
+                        name="GroupListFacePage"
+                        component={GroupListFacePage}
                     />
                     <Stack.Screen
                         name="TestLightPage"

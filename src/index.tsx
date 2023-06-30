@@ -39,8 +39,15 @@ export function initData(data: JSON): Promise<void> {
   if (data != undefined && data != null) {
     jsonString = JSON.stringify(data)
   }
-  return FacePassReactNativeModule.initData(jsonString)
-
+  return new Promise((resolve, reject) => {
+    FacePassReactNativeModule.initData(jsonString, (success: any) => {
+      resolve(success)
+    }, (
+      fail: any
+    ) => {
+      reject(fail)
+    })
+  })
 }
 
 export function setDefaultGroupName(data: String): Promise<void> {
@@ -205,10 +212,22 @@ export function restartDevice(): Promise<void> {
   return FacePassReactNativeModule.restartDevice()
 }
 
-export function enableTemperature(enable:Boolean): Promise<void> {
+export function enableTemperature(enable: Boolean): Promise<void> {
   return FacePassReactNativeModule.enableTemperature(enable)
 }
 
-export function enableIRPreview(enable:Boolean): Promise<void> {
+export function enableIRPreview(enable: Boolean): Promise<void> {
   return FacePassReactNativeModule.enableIRPreview(enable);
+}
+
+export function checkGroupExist(data: String): Promise<void> {
+  return new Promise((resolve, reject) => {
+    FacePassReactNativeModule.checkGroupExist(data, (success: any) => {
+      resolve(success)
+    }, (
+      fail: any
+    ) => {
+      reject(fail)
+    })
+  })
 }

@@ -947,14 +947,14 @@ public class FacePassFragment extends Fragment implements CameraManager.CameraLi
 
   private ReactInstanceManager mReactInstanceManager;
 
-  private void sendDataToReactNative(String base64, String name, float livenessScore) {
+  private void sendDataToReactNative(String faceToken) {
     ReactInstanceManager reactInstanceManager = ((ReactApplication) getActivity().getApplication()).getReactNativeHost()
         .getReactInstanceManager();
     ReactContext reactContext = reactInstanceManager.getCurrentReactContext();
     FacePass nativeModule = reactContext.getNativeModule(FacePass.class);
     if (nativeModule != null) {
       FacePass myNativeModule = (FacePass) nativeModule;
-      myNativeModule.sendDataToReactNative(base64, name, livenessScore);
+      myNativeModule.sendDataToReactNative(faceToken);
     }
   }
 
@@ -965,19 +965,13 @@ public class FacePassFragment extends Fragment implements CameraManager.CameraLi
 
     try {
       final Bitmap bitmap = mFacePassHandler.getFaceImage(faceToken.getBytes());
-      ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-      bitmap.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream);
-      byte[] byteArray = byteArrayOutputStream.toByteArray();
 
       mAndroidHandler.post(new Runnable() {
         @Override
         public void run() {
           Log.i(DEBUG_TAG, "getFaceImageByFaceToken cache is null");
-          String encoded = Base64.encodeToString(byteArray, Base64.DEFAULT);
-          // changeLight("green");
-          sendDataToReactNative(encoded, faceToken, result.detail.searchScore);
-          // showToast("ID = " + String.valueOf(trackId), Toast.LENGTH_SHORT, true,
-          // bitmap);
+          sendDataToReactNative(faceToken);
+
         }
       });
       if (bitmap != null) {

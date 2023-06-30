@@ -3,7 +3,7 @@ import {
     StyleSheet, Text, View, TextInput, TouchableOpacity, ScrollView, Alert
 } from 'react-native';
 import RadioButtons from "../components/RadioButtons";
-import DefaultPreference from 'react-native-default-preference';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import RNRestart from 'react-native-restart';
 
 export default function FacialRecognitionSettingScreen({ navigation }) {
@@ -45,7 +45,7 @@ export default function FacialRecognitionSettingScreen({ navigation }) {
 
     async function init_data() {
         try {
-            const temp = await DefaultPreference.get("parameters")
+            const temp = await AsyncStorage.getItem("parameters")
             const parameters = JSON.parse(temp);
             console.log(parameters)
             if (parameters) {
@@ -176,7 +176,7 @@ export default function FacialRecognitionSettingScreen({ navigation }) {
             FaceFaceMinThreshold: FaceFaceMinThreshold,
             FaceRcAttributeAndOcclusionMode: FaceRcAttributeAndOcclusionMode,
         }
-        DefaultPreference.set('parameters', JSON.stringify(data))
+        AsyncStorage.setItem('parameters', JSON.stringify(data))
 
         Alert.alert("Attention", "Please restart your application for the changes to take effect", [
             {
@@ -220,7 +220,7 @@ export default function FacialRecognitionSettingScreen({ navigation }) {
             FaceFaceMinThreshold: 100,
             FaceRcAttributeAndOcclusionMode: 2,
         }
-        DefaultPreference.set('parameters', data)
+        AsyncStorage.setItem('parameters', data)
         navigation.navigate('Home')
     }
 

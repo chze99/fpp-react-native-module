@@ -2,8 +2,7 @@ import { useEffect, useState } from 'react';
 import {
     StyleSheet, Text, View, TouchableOpacity,
 } from 'react-native';
-import RadioButtons from "../components/RadioButtons";
-import DefaultPreference from 'react-native-default-preference';
+import RadioButtons from "../components/RadioButtons";import DefaultPreference from 'react-native-default-preference';
 import { cameraSetting, useIRCameraSupport, enableIRPreview } from 'facepass-react-native-module';
 
 export default function SettingScreen({ navigation }) {
@@ -187,6 +186,7 @@ export default function SettingScreen({ navigation }) {
             isCross: false
         }
         DefaultPreference.set('settings', JSON.stringify(data))
+
         cameraSetting(data);
         useIRCameraSupport(true);
         enableIRPreview(false);
@@ -230,6 +230,6 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         backgroundColor: '#DDDDDD',
         padding: 10,
-    },
+    }
 
-});
+})

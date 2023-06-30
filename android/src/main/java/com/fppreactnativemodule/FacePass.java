@@ -81,11 +81,15 @@ import com.q_zheng.QZhengIFManager;
 import com.q_zheng.QZGpio;
 import com.example.yfaceapi.GPIOManager;
 import com.fppreactnativemodule.utils.FileUtil;
+import com.facebook.react.modules.core.PermissionListener;
+import com.facebook.react.modules.core.PermissionAwareActivity;
+
 import static com.fppreactnativemodule.utils.Helper.getSerialNumber;
+import com.facebook.react.bridge.Promise;
 
 @ReactModule(name = FacePass.NAME)
 public class FacePass extends ReactContextBaseJavaModule
-    implements LifecycleEventListener, ActivityEventListener {
+    implements LifecycleEventListener, ActivityEventListener, PermissionListener  {
   public static final String NAME = "FacePass";
   private final ReactApplicationContext context;
   Activity activity = getCurrentActivity();
@@ -125,6 +129,9 @@ public class FacePass extends ReactContextBaseJavaModule
   private boolean ageGenderEnabledGlobal;
   private Callback pickerSuccessCallback;
   private Callback pickerCancelCallback;
+  private Callback initSuccessCallback;
+  private Callback initFailCallback;
+
   RequestQueue requestQueue;
 
   private boolean hasPermission() {
@@ -141,13 +148,15 @@ public class FacePass extends ReactContextBaseJavaModule
 
   private void requestPermission() {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-      Activity currentActivity = getCurrentActivity();
-      currentActivity.requestPermissions(Permission, PERMISSIONS_REQUEST);
-
+      PermissionAwareActivity currentActivity = (PermissionAwareActivity) getCurrentActivity();
+      currentActivity.requestPermissions(Permission, PERMISSIONS_REQUEST,this);
+      Log.v("TESTING1","TEST");
     }
   }
+  @Override
+  public boolean onRequestPermissionsResult(int requestCode,  String[] permissions, int[] grantResults) {
+         Log.v("TESTING2","TEST");
 
-  public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
     if (requestCode == PERMISSIONS_REQUEST) {
       boolean granted = true;
       for (int result : grantResults) {
@@ -155,6 +164,8 @@ public class FacePass extends ReactContextBaseJavaModule
           granted = false;
       }
       if (!granted) {
+              Log.v("TESTING3","TEST");
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
           if (!activity.shouldShowRequestPermissionRationale(PERMISSION_CAMERA)
               || !activity.shouldShowRequestPermissionRationale(PERMISSION_READ_STORAGE)
@@ -164,9 +175,12 @@ public class FacePass extends ReactContextBaseJavaModule
             Toast.makeText(context.getApplicationContext(), "需要开启摄像头网络文件存储权限", Toast.LENGTH_SHORT).show();
           }
       } else {
+              Log.v("TESTING4","TEST");
+
         initFacePassSDK();
       }
     }
+  return true;
   }
 
   private void adaptFrameLayout() {
@@ -305,6 +319,11 @@ public class FacePass extends ReactContextBaseJavaModule
         SettingVar.cameraFacingFront = settings.optBoolean("cameraFacingFront", false);
       } catch (JSONException e) {
         Log.d("JSONERROR", e.toString());
+              SettingVar.isSettingAvailable = false;
+      SettingVar.isCross = false;
+      SettingVar.faceRotation = 270;
+      SettingVar.cameraPreviewRotation = 90;
+      SettingVar.cameraFacingFront = true;
       }
     } else {
       Log.v("Settings", "SETTING is null");
@@ -326,7 +345,7 @@ public class FacePass extends ReactContextBaseJavaModule
   }
 
   @ReactMethod
-  public void initData(String parameter) {
+  public void initData(String parameter,Callback success,Callback fail) {
     if (!hasPermission()) {
       requestPermission();
     } else {
@@ -334,7 +353,8 @@ public class FacePass extends ReactContextBaseJavaModule
     }
     // initFacePassSDK();
     Activity activity = getCurrentActivity();
-
+    initSuccessCallback = success;
+    initFailCallback = fail;
     if (!parameter.isEmpty() && parameter != "" && parameter != null) {
       try {
         JSONObject parameters = new JSONObject(parameter);
@@ -367,6 +387,10 @@ public class FacePass extends ReactContextBaseJavaModule
 
       } catch (JSONException e) {
         Log.d("JSONERROR", e.toString());
+              initFaceHandler(1, 69, 55, true, false,
+          30, 30, 30, 0.8f, 30, 210, 60,
+          100, 2, false, true, 35, 35, 35, 0.7f,
+          70, 220, 60, 100, 2);
       }
     } else {
       Log.v("PARAMETERS", "No parameter");
@@ -375,7 +399,6 @@ public class FacePass extends ReactContextBaseJavaModule
           100, 2, false, true, 35, 35, 35, 0.7f,
           70, 220, 60, 100, 2);
     }
-
   }
 
   private void initFacePassSDK() {
@@ -461,9 +484,10 @@ public class FacePass extends ReactContextBaseJavaModule
               mFacePassHandler.setAddFaceConfig(addFaceConfig);
               FacePassHandlerHolder.setMyObject(mFacePassHandler);
               SettingVar.doneInitialize = true;
+              initSuccessCallback.invoke("init success");
             } catch (FacePassException e) {
               e.printStackTrace();
-
+              initFailCallback.invoke("init fail");
               Log.d("FacePassException", e.toString());
               Log.d(DEBUG_TAG, "FacePassHandler is null");
               return;
@@ -503,11 +527,9 @@ public class FacePass extends ReactContextBaseJavaModule
   };
 
   @ReactMethod
-  public void sendDataToReactNative(String base64, String name, Float livenessScore) {
+  public void sendDataToReactNative(String faceToken) {
     WritableMap params = Arguments.createMap();
-    params.putString("image", base64);
-    params.putString("name", name);
-    params.putDouble("livenessScore", (double) livenessScore);
+    params.putString("faceToken", faceToken);
     getReactApplicationContext()
         .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
         .emit("FaceDetectedEvent", params);
@@ -782,6 +804,38 @@ public class FacePass extends ReactContextBaseJavaModule
     } catch (FacePassException e) {
       e.printStackTrace();
     }
+
+  
+  }
+
+  @ReactMethod
+  public void checkGroupExist(String groupname,Callback success, Callback failure){
+     mFacePassHandler = FacePassHandlerHolder.getMyObject();
+    if (mFacePassHandler == null) {
+      failure.invoke("FACEPASSHANDLER_NULL_ERROR");
+      return;
+    }
+    Boolean isLocalGroupExist=false;
+    try {
+      String[] localGroups = mFacePassHandler.getLocalGroups();
+      if (localGroups == null || localGroups.length == 0) {
+        failure.invoke("EMPTY_LOCAL_GROUP_ERROR");
+        return;
+      }
+      for (String group : localGroups) {
+        if (groupname.equals(group)) {
+          isLocalGroupExist=true;
+          success.invoke("LOCALGROUP_FOUND");
+        }
+      }
+      if (!isLocalGroupExist) {
+        failure.invoke("LOCAL_GROUP_NOT_FOUND");
+      }
+    } catch (
+
+    FacePassException e) {
+      e.printStackTrace();
+    }
   }
 
   @ReactMethod
@@ -886,7 +940,7 @@ public class FacePass extends ReactContextBaseJavaModule
 
   @ReactMethod
   public void elevatorAccess(String elevatorGatewayIp, String uid, String premiseId) {
-        Activity activity = getCurrentActivity();
+    Activity activity = getCurrentActivity();
 
     if (!elevatorGatewayIp.equals("")) {
       JSONObject object = new JSONObject();

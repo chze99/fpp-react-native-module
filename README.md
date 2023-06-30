@@ -50,22 +50,43 @@ DefaultPreference is the example of package in this documentation,you can freely
   
   export default function App(){
     useEffect(()=>{
-      async function init(){
-        setting = //get ur setting from storage
-        groupname= //get ur groupname from storage
-        parameter = //get ur parameter from storage
+      async function init() {
+        //DefaultPreference is the example package used to store data in this example,can choose whatever package you like
+        const setting = await DefaultPreference.get("parameters")
+        const camera = await DefaultPreference.get("settings")
 
-        //this one is example using DefaultPreference package
-        setting = await DefaultPreference.get("settings")
-
-        //Then call function to initilize,all parameter need to be in JSON format.
-        //The detail of json content need to be included for these function can refer to below
-        cameraSetting(setting);
-        initData(parameter)
-        //This one is string format
-        setDefaultGroupName(groupname);
+        //Check and create a default group if no group is exist
+        let group = "default";
+        try {
+          const success = await initData(JSON.parse(setting))
+          try {
+            const temp_group = await DefaultPreference.get("group_name")
+            if (temp_group != null) {
+              group = temp_group;
+            }
+            try {
+              const check = await checkGroupExist(group)
+            } catch (e) {
+              try {
+                const create = await createGroup(group)
+               DefaultPreference.set("group_name",group)
+              } catch (e) {
+                  //Create group error
+              }
+            }
+          } catch (e) {
+            //Get group_name error
+          }
+        } catch (e) {
+          //Init error
         }
-        init()
+        cameraSetting(JSON.parse(camera));
+        setDefaultGroupName(group);
+
+        setIsLoading(false)
+    }
+  
+    init()
     },[])
  
   }
@@ -76,6 +97,7 @@ DefaultPreference is the example of package in this documentation,you can freely
   import { StyleSheet,View,PixelRatio,UIManager,findNodeHandle,BackHandler, NativeEventEmitter } from 'react-native';
   import { useEffect,useRef } from 'react';
   import { FacePassViewManager,FacePass } from 'facepass-react-native-module';
+  import { useIsFocused } from '@react-navigation/native';
 
 ```
 
@@ -101,25 +123,22 @@ DefaultPreference is the example of package in this documentation,you can freely
   const eventEmitter = new NativeEventEmitter(FacePass);
   const ref = useRef(null);
 
-  useEffect(() => {
-    const viewId = findNodeHandle(ref.current);
-    createFragment(viewId);
-  }, []);
+    useEffect(() => {
+        const viewId = findNodeHandle(ref.current);
 
-  //example of function to destroy fragment,require to be called
-  when navigate to other screen.
-  function destroyfragment() {
-    const viewId = findNodeHandle(ref.current);
-    destroyFragment(viewId);
-    return false;
-  }
+        if (isFocused) {
+            createFragment(viewId);
+        } else {
+            destroyFragment(viewId);
+        }
+    }, [isFocused]);
+
+
 
   // Add an event listener to receive the data
   const dataListener = eventEmitter.addListener('FaceDetectedEvent', async (params) => {
     //Do something here,e.g.
-    const image = params.image;
-    const facetoken = params.name;
-    //Name= image owner name,image=image in base64
+    const facetoken = params.faceToken;
   });
 
   return (
@@ -182,9 +201,12 @@ DefaultPreference is the example of package in this documentation,you can freely
 ```sh
   try{
     const faceToken=await addFace(imagePath)
+    
     //Image path can be wherether local path or an url image
     //Here is to set the face owner name so that the app can know the face belong to who
     //"Face owner name" need to be replace with own function to get name,e.g an text field
+    //DefaultPreference is the example package used to store data in this example,can choose whatever package you like
+    
     DefaultPreference.set(faceToken, "Face owner name");
   }catch(error){
     //Error message
@@ -196,8 +218,8 @@ DefaultPreference is the example of package in this documentation,you can freely
   //faceToken is generated from addFace function
   //groupName= Name of group with that Face added
   try{
-    const successMessage=await deleteFace(faceToken, groupName)
-    await DefaultPreference.clear(faceToken);
+    const successMessage=await deleteFace("faceToken", "groupName")
+    //Then delete face from local storage if got
   }catch(error){
     //Error message
   }
@@ -207,7 +229,7 @@ DefaultPreference is the example of package in this documentation,you can freely
 ```sh
   try{
     //base64 image action,e.g. setImage(base64Image) , setImage is the useState() variable.
-    const base64Image =await getFace(faceToken)
+    const base64Image =await getFace("faceToken")
   }catch(e){
     //Error message
   }
@@ -216,7 +238,7 @@ DefaultPreference is the example of package in this documentation,you can freely
 - Bind to face to a group using faceToken and groupName
 ```sh
   try{
-      const successMessage=await bindGroup(faceToken)
+      const successMessage=await bindGroup("faceToken","groupName")
     }catch(e){
       //Error message
     }
@@ -225,7 +247,7 @@ DefaultPreference is the example of package in this documentation,you can freely
 - Get all facetoken from the provided groupname
 ```sh
   try{
-    const faceTokenListArray=await getGroupInfo(groupName)
+    const faceTokenListArray=await getGroupInfo("groupName")
   }catch(e){
     //Error message
   }
@@ -234,10 +256,19 @@ DefaultPreference is the example of package in this documentation,you can freely
 - Unbind the faceToken from provided group
 ```sh
   try{
-      const faceTokenListArray=await unbindFace(facetoken, groupName)
+      const faceTokenListArray=await unbindFace("facetoken", "groupName")
     }catch(e){
       //Error message
     }
+```
+
+- Check if group exist
+```sh
+  try{
+     const check = await checkGroupExist("groupname")
+  }catch(e){
+    //Error message
+  }
 ```
 
 - Control the light
@@ -269,6 +300,12 @@ DefaultPreference is the example of package in this documentation,you can freely
   enableIRPreview(boolean)
   //Command: true/false
 
+```
+
+- Enable temperature detection(Untested)
+```sh
+  enableTemperature(boolean)
+  //Command: true/false
 ```
 ***JSON format of Parameter for funtion***
 
@@ -311,12 +348,20 @@ DefaultPreference is the example of package in this documentation,you can freely
     FaceFaceMinThreshold: FaceFaceMinThreshold, //0-512,whole number,Default:100
     FaceRcAttributeAndOcclusionMode: FaceRcAttributeAndOcclusionMode, //whole number //0-5,Default:2
   }
-  initData(json)
 
+  try{
+  await initData(json)
+  }catch(e){
+
+  }
   //Recommended value
-  initData({
+  try{
+  await  initData({
     "rcAttributeAndOcclusionMode":1,"searchThreshold":69,"livenessThreshold":55,"livenessEnabled":false,"rgbIrLivenessEnabled":false,"poseThresholdRoll":35,"poseThresholdPitch":35,"poseThresholdYaw":35,"blurThreshold":0.8,"lowBrightnessThreshold":30,"highBrightnessThreshold":210,"brightnessSTDThreshold":80,"faceMinThreshold":100,"retryCount":2,"smileEnabled":false,"maxFaceEnabled":true,"FacePoseThresholdPitch":35,"FacePoseThresholdRoll":35,"FacePoseThresholdYaw":35,"FaceBlurThreshold":0.7,"FaceLowBrightnessThreshold":70,"FaceHighBrightnessThreshold":220,"FaceBrightnessSTDThreshold":60,"FaceFaceMinThreshold":100,"FaceRcAttributeAndOcclusionMode":2
   })
+  }catch(e){
+
+  }
 
 ```
 
@@ -342,8 +387,35 @@ DefaultPreference is the example of package in this documentation,you can freely
         
 ```
 
+- List of success/error code
+```sh
+FACEPASSHANDLER_NULL_ERROR //The face pass handler is not initialized,suggest to restart the app
+IMAGE_SELECT_CANCELED_ERROR //User cancel the image selection
+IMAGE_SELECT_FAIL_ERROR //Something wrong on image selected
+ACTIVITY_NOT_EXIST_ERROR //Cannot get the current activity
+IMAGE_NOT_EXIST_ERROR //The path does not contain image
+INVALID_IMAGE_PATH_ERROR //The passed string not a valid path
+FACE_ADDED_SUCCESSFULLY //Successfully add the face for face recognition
+NO_FACE_DETECTED_IN_IMAGE_ERROR //The provided image does not contain face
+FACE_IMAGE_QUALITY_ERROR  //The face image does not meet the required quality
+NULL_GROUPNAME_ERROR  // Group name is null
+FACE_DELETE_SUCCESS // Success to delete face
+GROUP_NAME_IS_NULL_ERROR // Null input for group name
+FACETOKEN_IS_NULL_ERROR //Empty facetoken
+BIND_GROUP_SUCCESS // Successfully bind group
+BIND_GROUP_FAILED //  Fail to bind group,probably the provided group not exist
+GROUP_NAME_NOT_EXIST_ERROR // group with the provided group name is not exist
+GET_LOCAL_GROUP_INFO_ERROR // fail to get group info,probably the provided group not exist
+FACE_UNBIND_SUCCESS // Successfully unbind the face from group
+FACE_UNBIND_FAILED // Fail to unbind face from group
+EMPTY_LOCAL_GROUP_ERROR //  No local group found
+EMPTY_GROUP_INPUT_ERROR // No group anme provided
+GROUP_CREATION_SUCCESS  //Success in group creation
+GROUP_CREATION_FAILED //Fail to create group
+GROUP_DELETION_SUCCESS //group delete success
+```
+
 ## Known Issue
-The face recognition may not working if the app is first time launch after installation/clear storage or cache.Restart of application is needed after the app granted permission.
 
 If facial recognition setting is changed,restart is require for new facial recognition setting to take affect.
 
