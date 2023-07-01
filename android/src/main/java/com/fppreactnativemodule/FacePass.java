@@ -535,6 +535,14 @@ public class FacePass extends ReactContextBaseJavaModule
         .emit("FaceDetectedEvent", params);
   }
 
+    @ReactMethod
+  public void sendStopToReactNative() {
+    WritableMap params = Arguments.createMap();
+    getReactApplicationContext()
+        .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
+        .emit("FaceDetectedEndEvent", params);
+  }
+
   @ReactMethod
   public void addListener(String eventName) {
 

@@ -946,15 +946,28 @@ public class FacePassFragment extends Fragment implements CameraManager.CameraLi
   };
 
   private ReactInstanceManager mReactInstanceManager;
-
+  public boolean detected=false;
   private void sendDataToReactNative(String faceToken) {
+    ReactInstanceManager reactInstanceManager = ((ReactApplication) getActivity().getApplication()).getReactNativeHost()
+        .getReactInstanceManager();
+    ReactContext reactContext = reactInstanceManager.getCurrentReactContext();
+    FacePass nativeModule = reactContext.getNativeModule(FacePass.class);
+    if (nativeModule != null && detected==false) {
+      FacePass myNativeModule = (FacePass) nativeModule;
+      myNativeModule.sendDataToReactNative(faceToken);
+      detected=true;
+    }
+  }
+
+    private void sendStopToReactNative() {
     ReactInstanceManager reactInstanceManager = ((ReactApplication) getActivity().getApplication()).getReactNativeHost()
         .getReactInstanceManager();
     ReactContext reactContext = reactInstanceManager.getCurrentReactContext();
     FacePass nativeModule = reactContext.getNativeModule(FacePass.class);
     if (nativeModule != null) {
       FacePass myNativeModule = (FacePass) nativeModule;
-      myNativeModule.sendDataToReactNative(faceToken);
+      myNativeModule.sendStopToReactNative();
+      detected=true;
     }
   }
 
@@ -965,13 +978,18 @@ public class FacePassFragment extends Fragment implements CameraManager.CameraLi
 
     try {
       final Bitmap bitmap = mFacePassHandler.getFaceImage(faceToken.getBytes());
-
       mAndroidHandler.post(new Runnable() {
         @Override
         public void run() {
           Log.i(DEBUG_TAG, "getFaceImageByFaceToken cache is null");
           sendDataToReactNative(faceToken);
-
+          Handler handler = new Handler();
+          handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+              sendStopToReactNative();
+            }
+            }, 2000);
         }
       });
       if (bitmap != null) {
