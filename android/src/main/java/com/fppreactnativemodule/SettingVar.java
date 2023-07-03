@@ -22,4 +22,5 @@ public class SettingVar {
     public static boolean useIRCameraSupport=true;
     public static boolean temperatureScan = false;
     public static boolean showIRPreview = false;
+    public static int recognitionDisplayTime = 2500;
 }

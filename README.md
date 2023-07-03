@@ -136,11 +136,18 @@ DefaultPreference is the example of package in this documentation,you can freely
 
 
   // Add an event listener to receive the data
+  useEffect(()=>{
   const dataListener = eventEmitter.addListener('FaceDetectedEvent', async (params) => {
     //Do something here,e.g.
     const facetoken = params.faceToken;
   });
 
+    const stopListener = eventEmitter.addListener(
+      'FaceDetectedEndEvent', async () => {
+          //Do something after recognition such as remove the result view
+      }
+    )
+  },[])
   return (
     <FacePassViewManager
       style={{
@@ -269,6 +276,12 @@ DefaultPreference is the example of package in this documentation,you can freely
   }catch(e){
     //Error message
   }
+```
+
+- Set the time to show face recogntion(Optional)
+```sh
+  setRecognitionDisplayTime(time)
+  //time= integer,in milli-second
 ```
 
 - Control the light

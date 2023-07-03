@@ -115,7 +115,7 @@ public class FacePassFragment extends Fragment implements CameraManager.CameraLi
 
   private static FacePassSDKMode SDK_MODE = FacePassSDKMode.MODE_OFFLINE;
   private static final String DEBUG_TAG = "FacePassDemo";
-  public static String group_name = "fppreactnative";
+  public static String group_name = "default";
   private static final int PERMISSIONS_REQUEST = 1;
   private static final String PERMISSION_CAMERA = Manifest.permission.CAMERA;
   private static final String PERMISSION_WRITE_STORAGE = Manifest.permission.WRITE_EXTERNAL_STORAGE;
@@ -194,7 +194,7 @@ public class FacePassFragment extends Fragment implements CameraManager.CameraLi
 
   public Boolean timeOut = false;
   public Boolean showIRPreview = false;
-
+  public int recognitionDisplayTime = 2500;
   @Override
   public void onStart() {
     super.onStart();
@@ -205,6 +205,7 @@ public class FacePassFragment extends Fragment implements CameraManager.CameraLi
     mFeedFrameIRQueue = new ArrayBlockingQueue<CameraPreviewData>(1);
     useIRCameraSupport = SettingVar.useIRCameraSupport;
     showIRPreview = SettingVar.showIRPreview;
+    recognitionDisplayTime =  SettingVar.recognitionDisplayTime;
     initAndroidHandler();
     View view = getView();
     initView(view);
@@ -427,6 +428,7 @@ public class FacePassFragment extends Fragment implements CameraManager.CameraLi
     } else {
       mFeedFrameQueue.offer(cameraPreviewData);
     }
+
     // detectQRCode(cameraPreviewData);
 
   }
@@ -661,8 +663,22 @@ public class FacePassFragment extends Fragment implements CameraManager.CameraLi
                   for (FacePassRecognitionResult result : recognizeResult) {
                     String faceToken = new String(result.faceToken);
                     if (FacePassRecognitionState.RECOGNITION_PASS == result.recognitionState) {
-                      getFaceImageByFaceToken(result.trackId, faceToken, result);
-
+                      // getFaceImageByFaceToken(result.trackId, faceToken, result);
+                      mAndroidHandler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                          Log.i(DEBUG_TAG, "getFaceImageByFaceToken cache is null");
+                          sendDataToReactNative(faceToken);
+                          Handler handler = new Handler();
+                          handler.postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+                              sendStopToReactNative();
+                            }
+                            }, recognitionDisplayTime);
+                        }
+                      });
+ 
                     }
 
                     int idx = findidx(ageGenderResult, result.trackId);
@@ -947,6 +963,7 @@ public class FacePassFragment extends Fragment implements CameraManager.CameraLi
 
   private ReactInstanceManager mReactInstanceManager;
   public boolean detected=false;
+  public int counters=0;
   private void sendDataToReactNative(String faceToken) {
     ReactInstanceManager reactInstanceManager = ((ReactApplication) getActivity().getApplication()).getReactNativeHost()
         .getReactInstanceManager();
@@ -955,6 +972,7 @@ public class FacePassFragment extends Fragment implements CameraManager.CameraLi
     if (nativeModule != null && detected==false) {
       FacePass myNativeModule = (FacePass) nativeModule;
       myNativeModule.sendDataToReactNative(faceToken);
+      counters+=1;
       detected=true;
     }
   }
@@ -964,40 +982,20 @@ public class FacePassFragment extends Fragment implements CameraManager.CameraLi
         .getReactInstanceManager();
     ReactContext reactContext = reactInstanceManager.getCurrentReactContext();
     FacePass nativeModule = reactContext.getNativeModule(FacePass.class);
-    if (nativeModule != null) {
+    if (nativeModule != null && detected==true) {
       FacePass myNativeModule = (FacePass) nativeModule;
       myNativeModule.sendStopToReactNative();
-      detected=true;
+      detected=false;
     }
   }
 
   private void getFaceImageByFaceToken(final long trackId, String faceToken, final FacePassRecognitionResult result) {
-    if (TextUtils.isEmpty(faceToken)) {
-      return;
-    }
 
-    try {
-      final Bitmap bitmap = mFacePassHandler.getFaceImage(faceToken.getBytes());
-      mAndroidHandler.post(new Runnable() {
-        @Override
-        public void run() {
-          Log.i(DEBUG_TAG, "getFaceImageByFaceToken cache is null");
-          sendDataToReactNative(faceToken);
-          Handler handler = new Handler();
-          handler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-              sendStopToReactNative();
-            }
-            }, 2000);
-        }
-      });
-      if (bitmap != null) {
-        return;
-      }
-    } catch (FacePassException e) {
-      e.printStackTrace();
-    }
+    // try {
+
+    // } catch (FacePassException e) {
+    //   e.printStackTrace();
+    // }
   }
 
   private Callback pickerSuccessCallback;

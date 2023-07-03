@@ -946,6 +946,11 @@ public class FacePass extends ReactContextBaseJavaModule
     SettingVar.showIRPreview = enable;
   }
 
+  @ReactMethod 
+  public void setRecognitionDisplayTime(int time){
+    SettingVar.recognitionDisplayTime = time;
+  }
+
   @ReactMethod
   public void elevatorAccess(String elevatorGatewayIp, String uid, String premiseId) {
     Activity activity = getCurrentActivity();
