@@ -30,28 +30,27 @@ export default function Routes() {
           <Stack.Screen name="Home2" component={Home2} />
 
           <Stack.Screen name="GroupListPage" component={GroupListPage} />
-          
+
           <Stack.Screen
             name="GroupListFacePage"
             component={GroupListFacePage}
           />
-         
+
           <Stack.Screen name="TestLightPage" component={TestLightPage} />
-          
+
           <Stack.Screen name="AddFace" component={AddFace} />
-         
+
           <Stack.Screen
             name="FaceGroupSettingScreen"
             component={FaceGroupSettingScreen}
           />
-         
+
           <Stack.Screen
             name="FacialRecognitionSettingScreen"
             component={FacialRecognitionSettingScreen}
           />
-          
+
           <Stack.Screen name="SettingScreen" component={SettingScreen} />
-       
         </Stack.Navigator>
       </NavigationContainer>
     </SafeAreaProvider>

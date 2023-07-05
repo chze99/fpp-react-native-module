@@ -95,7 +95,6 @@ export default function Home2({ navigation }) {
       'FaceDetectedEvent',
       async (params) => {
         console.log('detectd');
-        console.log('START counters3:', (counter += 1));
         if (image == null && name == null) {
           const facetoken = params.faceToken;
           const data = JSON.parse(await AsyncStorage.getItem(facetoken));
@@ -123,7 +122,6 @@ export default function Home2({ navigation }) {
     // );
   }, []);
 
-  let counter = 0;
 
   function getCurrentTime() {
     const currentTime = new Date();
@@ -168,14 +166,16 @@ export default function Home2({ navigation }) {
           </TouchableOpacity>
         </View>
         <View>
-          {testimage ?
+          {testimage ? (
             <Image
               style={{ opacity: 1, width: 70, height: 70 }}
               source={{
                 uri: 'base64/jpg,' + testimage,
               }}
             />
-            : ""}
+          ) : (
+            ''
+          )}
         </View>
         <View
           ref={faceDetectionView}
@@ -203,7 +203,6 @@ export default function Home2({ navigation }) {
             </Text>
           </View>
         </View>
-
       </View>
       <FacePassViewManager
         style={{

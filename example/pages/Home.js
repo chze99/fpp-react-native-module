@@ -42,7 +42,7 @@ export default function Home({ navigation }) {
   const faceDetectionView = useRef();
   const [image, setImage] = useState(null);
   const [name, setName] = useState(null);
-  const [testimage,settestimage] = useState(null);
+  const [testimage, settestimage] = useState(null);
   const [appState, setAppState] = useState(AppState.currentState);
   const isFocused = useIsFocused();
 
@@ -55,9 +55,7 @@ export default function Home({ navigation }) {
     if (isFocused) {
       createFragment(viewId);
     } else {
-
       destroyFragment(viewId);
-
     }
   }, [isFocused]);
 
@@ -97,10 +95,9 @@ export default function Home({ navigation }) {
       'FaceDetectedEvent',
       async (params) => {
         console.log('detected');
-        // console.log('START counters3:', (counter += 1));
         if (image == null && name == null) {
-          console.log("PARAMS",params)
-          const facetoken=params.faceToken
+          console.log('PARAMS', params);
+          const facetoken = params.faceToken;
           const data = JSON.parse(await AsyncStorage.getItem(facetoken));
           setImage(data.fileName);
           setName(data.faceName);
@@ -116,14 +113,14 @@ export default function Home({ navigation }) {
       }
     );
 
-    const unknownFaceListener= eventEmitter.addListener(
+    const unknownFaceListener = eventEmitter.addListener(
       'UnknownFaceDetectedEvent',
-      async(params) =>{
-        console.log(params)
+      async (params) => {
+        console.log(params);
         // const temp=JSON.parse(params.jsonString);
         // settestimage(temp.imd
       }
-    )
+    );
 
     return () => {
       // Clean up and remove event listeners
@@ -131,11 +128,8 @@ export default function Home({ navigation }) {
       stopListener.remove();
       unknownFaceListener.remove();
     };
-    
+  });
 
-  }, []);
-
-  let counter = 0;
 
   function getCurrentTime() {
     const currentTime = new Date();
@@ -180,14 +174,16 @@ export default function Home({ navigation }) {
           </TouchableOpacity>
         </View>
         <View>
-        {testimage?
-        <Image
-            style={{ opacity: 1, width: 70, height: 70 }}
-            source={{
-              uri: 'data:image/png;base64,' + testimage,
-            }}
-          />
-          :""}
+          {testimage ? (
+            <Image
+              style={{ opacity: 1, width: 70, height: 70 }}
+              source={{
+                uri: 'data:image/png;base64,' + testimage,
+              }}
+            />
+          ) : (
+            ''
+          )}
         </View>
         <View
           ref={faceDetectionView}
@@ -215,7 +211,6 @@ export default function Home({ navigation }) {
             </Text>
           </View>
         </View>
-
       </View>
       <FacePassViewManager
         style={{

@@ -106,7 +106,7 @@ export default function FaceMangement({ navigation }) {
         </TouchableOpacity> */}
         <TouchableOpacity
           style={{ backgroundColor: '#33b5e5', padding: 10 }}
-          onPress={() =>  navigation.navigate('Home2')}
+          onPress={() => navigation.navigate('Home2')}
         >
           <Text style={{ color: 'white' }}>home 2</Text>
         </TouchableOpacity>
