@@ -137,16 +137,53 @@ DefaultPreference is the example of package in this documentation,you can freely
 
   // Add an event listener to receive the data
   useEffect(()=>{
-  const dataListener = eventEmitter.addListener('FaceDetectedEvent', async (params) => {
-    //Do something here,e.g.
-    const facetoken = params.faceToken;
-  });
+      const dataListener = eventEmitter.addListener('FaceDetectedEvent', async (params) => {
+        //Do something here,e.g.
+        const faceToken = params.faceToken;
+        //List of data:
+          //faceToken //use to get image/as an id to recognize a person identidy
+          //trackID //ID number of tracking ,for reference
+          //searchScore //percentage it match the detected face
+          //searchThreshold //percentage required for the application to say the face match the detected face
+          //hairType //0-5,BALD, LITTLE_HAIR, SHORT_HAIR, LONG_HAIR, UNKNOWN, INVALID
+          //beardType //0-4, NO_BEARD, MOUSTACHE, WHISKER, UNKNOWN, INVALID
+          //hatType //0-4, NO_HAT, SAFETY_HELMET, OTHERS, UNKNOWN, INVALID
+          //respiratorType //0-4,  COVER_MOUTH_NOSE, COVER_MOUTH, NO_RESPIRATOR, UNKNOWN, INVALID
+          //glassesType //0-4,  NO_GLASSES, GLASSES_WITH_DARK_FRAME, GLASSES_OTHERS, UNKNOWN, INVALID
+          //skinColorType //0-4, YELLOW, WHITE, BLACK, BROWN, INVALID
+      });
 
     const stopListener = eventEmitter.addListener(
       'FaceDetectedEndEvent', async () => {
           //Do something after recognition such as remove the result view
       }
     )
+    const unknownFaceListener= eventEmitter.addListener(
+      'UnknownFaceDetectedEvent',
+      async(params) =>{
+        //Do something here,e.g.
+        const image=params.image;
+        //List of data:
+          //image //image in base64 format
+          //trackID //ID number of tracking ,for reference
+          //searchScore //percentage it match the detected face ,  //may not available if no face in local group
+          //searchThreshold //percentage required for the application to say the face match the detected face, //may not available if no face in local group
+          //hairType //0-5,BALD, LITTLE_HAIR, SHORT_HAIR, LONG_HAIR, UNKNOWN, INVALID
+          //beardType //0-4, NO_BEARD, MOUSTACHE, WHISKER, UNKNOWN, INVALID
+          //hatType //0-4, NO_HAT, SAFETY_HELMET, OTHERS, UNKNOWN, INVALID
+          //respiratorType //0-4,  COVER_MOUTH_NOSE, COVER_MOUTH, NO_RESPIRATOR, UNKNOWN, INVALID
+          //glassesType //0-4,  NO_GLASSES, GLASSES_WITH_DARK_FRAME, GLASSES_OTHERS, UNKNOWN, INVALID
+          //skinColorType //0-4, YELLOW, WHITE, BLACK, BROWN, INVALID
+      }
+    )
+
+    return () => {
+      // Clean up and remove event listeners
+      dataListener.remove();
+      stopListener.remove();
+      unknownFaceListener.remove();
+    };
+    
   },[])
   return (
     <FacePassViewManager
@@ -332,51 +369,7 @@ DefaultPreference is the example of package in this documentation,you can freely
     setDefaultGroupName("your_group_name")
 ```
 
-- initData
-```sh
-  const json = {
-    rcAttributeAndOcclusionMode: rcAttributeAndOcclusionMode, //0-5,whole number,Default:1
-    searchThreshold: searchThreshold, //0-100,Default:69
-    livenessThreshold: livenessThreshold, //0-100,Default:55
-    livenessEnabled: livenessEnabled, //true,false,Default:true
-    rgbIrLivenessEnabled: false, //Currently only can false
-    poseThresholdRoll: poseThresholdRoll, //0-90,Default:35
-    poseThresholdPitch: poseThresholdPitch, //0-90,Default:35
-    poseThresholdYaw: poseThresholdYaw, //0-90,Default:35
-    blurThreshold: blurThreshold, //0-1,Default:0.8
-    lowBrightnessThreshold: lowBrightnessThreshold, //0-255,Default:30
-    highBrightnessThreshold: highBrightnessThreshold, //0-255,Default:210
-    brightnessSTDThreshold: brightnessSTDThreshold, //0-255,Default:80
-    faceMinThreshold: faceMinThreshold, //0-512,whole number,Default:100
-    retryCount: retryCount, //1-unlimited,whole number,Default:2
-    smileEnabled: smileEnabled, //true/false,Default:false
-    maxFaceEnabled: maxFaceEnabled, //true/false,Default:true
-    FacePoseThresholdPitch: FacePoseThresholdPitch, //0-90,Default:35
-    FacePoseThresholdRoll: FacePoseThresholdRoll, //0-90,Default:35
-    FacePoseThresholdYaw: FacePoseThresholdYaw, //0-90,Default:35
-    FaceBlurThreshold: FaceBlurThreshold, //0-255,Default:0.7
-    FaceLowBrightnessThreshold: FaceLowBrightnessThreshold, //0-255,Default:70
-    FaceHighBrightnessThreshold: FaceHighBrightnessThreshold, //0-255,Default:220
-    FaceBrightnessSTDThreshold: FaceBrightnessSTDThreshold, //0-255,Default:60
-    FaceFaceMinThreshold: FaceFaceMinThreshold, //0-512,whole number,Default:100
-    FaceRcAttributeAndOcclusionMode: FaceRcAttributeAndOcclusionMode, //whole number //0-5,Default:2
-  }
 
-  try{
-  await initData(json)
-  }catch(e){
-
-  }
-  //Recommended value
-  try{
-  await  initData({
-    "rcAttributeAndOcclusionMode":1,"searchThreshold":69,"livenessThreshold":55,"livenessEnabled":false,"rgbIrLivenessEnabled":false,"poseThresholdRoll":35,"poseThresholdPitch":35,"poseThresholdYaw":35,"blurThreshold":0.8,"lowBrightnessThreshold":30,"highBrightnessThreshold":210,"brightnessSTDThreshold":80,"faceMinThreshold":100,"retryCount":2,"smileEnabled":false,"maxFaceEnabled":true,"FacePoseThresholdPitch":35,"FacePoseThresholdRoll":35,"FacePoseThresholdYaw":35,"FaceBlurThreshold":0.7,"FaceLowBrightnessThreshold":70,"FaceHighBrightnessThreshold":220,"FaceBrightnessSTDThreshold":60,"FaceFaceMinThreshold":100,"FaceRcAttributeAndOcclusionMode":2
-  })
-  }catch(e){
-
-  }
-
-```
 
 - cameraSetting();
 ```sh
@@ -421,7 +414,7 @@ GROUP_NAME_NOT_EXIST_ERROR // group with the provided group name is not exist
 GET_LOCAL_GROUP_INFO_ERROR // fail to get group info,probably the provided group not exist
 FACE_UNBIND_SUCCESS // Successfully unbind the face from group
 FACE_UNBIND_FAILED // Fail to unbind face from group
-EMPTY_LOCAL_GROUP_ERROR //  No local group found
+EMPTY_LOCAL_GROUP_ERROR //  No local group found in the application.
 EMPTY_GROUP_INPUT_ERROR // No group anme provided
 GROUP_CREATION_SUCCESS  //Success in group creation
 GROUP_CREATION_FAILED //Fail to create group

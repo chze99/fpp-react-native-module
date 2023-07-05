@@ -16,7 +16,7 @@ public class SettingVar {
     public static boolean cameraSettingOk = false;
     public static boolean iscameraNeedConfig = false;
     public static boolean isButtonInvisible = false;
-    public static String groupName = "fppreactnative";
+    public static String groupName = "default";
     public static Float searchThreshold = 80f;
     public static boolean doneInitialize=false;
     public static boolean useIRCameraSupport=true;

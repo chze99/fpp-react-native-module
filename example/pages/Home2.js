@@ -33,7 +33,7 @@ const destroyFragment = (viewId) =>
     [viewId]
   );
 
-export default function Home({ navigation }) {
+export default function Home2({ navigation }) {
   const windowwidth = Dimensions.get('window').width;
   const windowheight = Dimensions.get('window').height;
   const faceDetectionImage = useRef();
@@ -42,7 +42,7 @@ export default function Home({ navigation }) {
   const faceDetectionView = useRef();
   const [image, setImage] = useState(null);
   const [name, setName] = useState(null);
-  const [testimage,settestimage] = useState(null);
+  const [testimage, settestimage] = useState(null);
   const [appState, setAppState] = useState(AppState.currentState);
   const isFocused = useIsFocused();
 
@@ -55,9 +55,7 @@ export default function Home({ navigation }) {
     if (isFocused) {
       createFragment(viewId);
     } else {
-
       destroyFragment(viewId);
-
     }
   }, [isFocused]);
 
@@ -96,11 +94,10 @@ export default function Home({ navigation }) {
     const dataListener = eventEmitter.addListener(
       'FaceDetectedEvent',
       async (params) => {
-        console.log('detected');
-        // console.log('START counters3:', (counter += 1));
+        console.log('detectd');
+        console.log('START counters3:', (counter += 1));
         if (image == null && name == null) {
-          console.log("PARAMS",params)
-          const facetoken=params.faceToken
+          const facetoken = params.faceToken;
           const data = JSON.parse(await AsyncStorage.getItem(facetoken));
           setImage(data.fileName);
           setName(data.faceName);
@@ -115,24 +112,15 @@ export default function Home({ navigation }) {
         setName(null);
       }
     );
-
-    const unknownFaceListener= eventEmitter.addListener(
-      'UnknownFaceDetectedEvent',
-      async(params) =>{
-        console.log(params)
-        // const temp=JSON.parse(params.jsonString);
-        // settestimage(temp.imd
-      }
-    )
-
-    return () => {
-      // Clean up and remove event listeners
-      dataListener.remove();
-      stopListener.remove();
-      unknownFaceListener.remove();
-    };
-    
-
+    // const unknownListener = eventEmitter.addListener(
+    //   'UnknownFaceDetectedEvent',
+    //   async (params) => {
+    //     console.log(params)
+    //     const temp=JSON.parse(params.jsonString);
+    //     console.log('Unknown',temp );
+    //     settestimage(params.jsonString);
+    //   }
+    // );
   }, []);
 
   let counter = 0;
@@ -180,14 +168,14 @@ export default function Home({ navigation }) {
           </TouchableOpacity>
         </View>
         <View>
-        {testimage?
-        <Image
-            style={{ opacity: 1, width: 70, height: 70 }}
-            source={{
-              uri: 'data:image/png;base64,' + testimage,
-            }}
-          />
-          :""}
+          {testimage ?
+            <Image
+              style={{ opacity: 1, width: 70, height: 70 }}
+              source={{
+                uri: 'base64/jpg,' + testimage,
+              }}
+            />
+            : ""}
         </View>
         <View
           ref={faceDetectionView}

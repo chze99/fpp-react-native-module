@@ -98,6 +98,18 @@ export default function FaceMangement({ navigation }) {
         >
           <Text style={{ color: 'white' }}>Close door</Text>
         </TouchableOpacity>
+        {/* <TouchableOpacity
+          style={{ backgroundColor: '#33b5e5', padding: 10 }}
+          onPress={() =>  navigation.navigate('Home')}
+        >
+          <Text style={{ color: 'white' }}>home</Text>
+        </TouchableOpacity> */}
+        <TouchableOpacity
+          style={{ backgroundColor: '#33b5e5', padding: 10 }}
+          onPress={() =>  navigation.navigate('Home2')}
+        >
+          <Text style={{ color: 'white' }}>home 2</Text>
+        </TouchableOpacity>
         <View style={{ padding: 10 }} />
       </View>
       <View style={{ paddingVertical: 10 }} />

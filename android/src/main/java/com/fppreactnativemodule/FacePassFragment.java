@@ -43,6 +43,8 @@ import android.widget.ImageView;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 
 import com.android.volley.AuthFailureError;
 import com.android.volley.NetworkResponse;
@@ -59,6 +61,9 @@ import com.facebook.react.bridge.ReactContext;
 import com.facebook.react.bridge.Callback;
 import com.facebook.react.ReactInstanceManager;
 import com.facebook.react.ReactApplication;
+import org.json.JSONObject;
+import com.facebook.react.bridge.WritableMap;
+import com.facebook.react.bridge.Arguments;
 
 import org.json.JSONException;
 
@@ -145,16 +150,38 @@ public class FacePassFragment extends Fragment implements CameraManager.CameraLi
   public class RecognizeData {
     public byte[] message;
     public FacePassTrackOptions[] trackOpt;
-
+    public FacePassImage[] image;
+    public FacePassFace[] faceList;
     public RecognizeData(byte[] message) {
       this.message = message;
       this.trackOpt = null;
+      this.image = null;
+      this.faceList = null;
     }
 
     public RecognizeData(byte[] message, FacePassTrackOptions[] opt) {
       this.message = message;
       this.trackOpt = opt;
+      this.image = null;
+      this.faceList = null;
+
     }
+
+    public RecognizeData(byte[] message, FacePassTrackOptions[] opt,  FacePassImage[] image) {
+      this.message = message;
+      this.trackOpt = opt;
+      this.image = image;
+      this.faceList = null;
+
+    }
+
+    public RecognizeData(byte[] message, FacePassTrackOptions[] opt,  FacePassImage[] image, FacePassFace[] faceList) {
+      this.message = message;
+      this.trackOpt = opt;
+      this.image = image;
+      this.faceList = faceList;
+    }
+
   }
 
   ArrayBlockingQueue<RecognizeData> mRecognizeDataQueue;
@@ -603,7 +630,7 @@ public class FacePassFragment extends Fragment implements CameraManager.CameraLi
                   detectionResult.images[i].rcAttr.glassesType.ordinal(),
                   detectionResult.images[i].rcAttr.skinColorType.ordinal()));
             }
-            RecognizeData mRecData = new RecognizeData(detectionResult.message, trackOpts);
+            RecognizeData mRecData = new RecognizeData(detectionResult.message, trackOpts,detectionResult.images,detectionResult.faceList);
             mRecognizeDataQueue.offer(mRecData);
           }
         }
@@ -642,10 +669,12 @@ public class FacePassFragment extends Fragment implements CameraManager.CameraLi
     return result;
   }
 
+  public long lastID=-1;
+
   private class RecognizeThread extends Thread {
 
     boolean isInterrupt;
-
+    boolean unknownDetected=false;
     @Override
     public void run() {
       while (!isInterrupt) {
@@ -658,27 +687,79 @@ public class FacePassFragment extends Fragment implements CameraManager.CameraLi
             FacePassRecognitionResult[][] recognizeResultArray = mFacePassHandler.recognize(group_name,
                 recognizeData.message, 1, recognizeData.trackOpt);
             if (recognizeResultArray != null && recognizeResultArray.length > 0) {
+              // unknownDetected=false;
+              Log.d(DEBUG_TAG, "Recognized >>>>");
               for (FacePassRecognitionResult[] recognizeResult : recognizeResultArray) {
                 if (recognizeResult != null && recognizeResult.length > 0) {
+                  Log.d(DEBUG_TAG, "Recognizedssss >>>>>");
                   for (FacePassRecognitionResult result : recognizeResult) {
                     String faceToken = new String(result.faceToken);
                     if (FacePassRecognitionState.RECOGNITION_PASS == result.recognitionState) {
-                      // getFaceImageByFaceToken(result.trackId, faceToken, result);
+                      
                       mAndroidHandler.post(new Runnable() {
                         @Override
                         public void run() {
-                          Log.i(DEBUG_TAG, "getFaceImageByFaceToken cache is null");
-                          sendDataToReactNative(faceToken);
-                          Handler handler = new Handler();
-                          handler.postDelayed(new Runnable() {
-                            @Override
-                            public void run() {
-                              sendStopToReactNative();
-                            }
-                            }, recognitionDisplayTime);
+                          Log.i(DEBUG_TAG, "known ppl identified");
+                            FacePassFace passFace = recognizeData.faceList[0];
+                               WritableMap jsonObject = Arguments.createMap();
+                                jsonObject.putString("faceToken", faceToken);
+                                jsonObject.putString("trackID",Long.toString(passFace.trackId));
+                                jsonObject.putString("searchScore",String.valueOf(result.detail.searchScore));
+                                jsonObject.putString("searchThreshold",String.valueOf(result.detail.searchThreshold));
+                                jsonObject.putString("hairType",result.detail.rcAttr.hairType.toString());
+                                jsonObject.putString("beardType",result.detail.rcAttr.beardType.toString());
+                                jsonObject.putString("hatType",result.detail.rcAttr.hatType.toString());
+                                jsonObject.putString("respiratorType",result.detail.rcAttr.respiratorType.toString());
+                                jsonObject.putString("glassesType",result.detail.rcAttr.glassesType.toString());
+                                jsonObject.putString("skinColorType",result.detail.rcAttr.skinColorType.toString());                                    
+                            sendDataToReactNative(jsonObject);
+                            Handler handler = new Handler();
+                            handler.postDelayed(new Runnable() {
+                              @Override
+                              public void run() {
+                                sendStopToReactNative();
+                              }
+                              }, recognitionDisplayTime);
                         }
                       });
  
+                    }else{
+
+                    mAndroidHandler.post(new Runnable() {
+                            @Override
+                            public void run() {
+                              Log.i(DEBUG_TAG, "error no face in db");
+                              FacePassFace passFace = recognizeData.faceList[0];
+                              if(lastID!=passFace.trackId){
+                              lastID=passFace.trackId;
+                              FacePassImage passImage = recognizeData.image[0];
+                              YuvImage img = new YuvImage(passImage.image, ImageFormat.NV21, passImage.width, passImage.height, null);
+                              ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                              img.compressToJpeg(new Rect(0, 0, passImage.width, passImage.height), 80, baos);
+                              byte[] jdata = baos.toByteArray();
+                              BitmapFactory.Options bitmapFatoryOptions = new BitmapFactory.Options();
+                              bitmapFatoryOptions.inPreferredConfig = Bitmap.Config.RGB_565;
+                              Bitmap bmp = BitmapFactory.decodeByteArray(jdata, 0, jdata.length, bitmapFatoryOptions);
+                              ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+                              bmp.compress(Bitmap.CompressFormat.PNG, 100, outputStream);
+                              String base64_img= Base64.encodeToString(outputStream.toByteArray(), Base64.DEFAULT).trim().replaceAll("\n", "").replaceAll("\r", "");
+                              WritableMap jsonObject = Arguments.createMap();
+                                jsonObject.putString("image", base64_img);
+                                jsonObject.putString("trackID",Long.toString(passFace.trackId));
+                                jsonObject.putString("searchScore",String.valueOf(result.detail.searchScore));
+                                jsonObject.putString("searchThreshold",String.valueOf(result.detail.searchThreshold));
+                                jsonObject.putString("hairType",result.detail.rcAttr.hairType.toString());
+                                jsonObject.putString("beardType",result.detail.rcAttr.beardType.toString());
+                                jsonObject.putString("hatType",result.detail.rcAttr.hatType.toString());
+                                jsonObject.putString("respiratorType",result.detail.rcAttr.respiratorType.toString());
+                                jsonObject.putString("glassesType",result.detail.rcAttr.glassesType.toString());
+                                jsonObject.putString("skinColorType",result.detail.rcAttr.skinColorType.toString());                                    
+                              sendUnknownDataToReactNative(jsonObject);
+                              // unknownDetected=true;
+                        }
+                        }
+                      });   
+
                     }
 
                     int idx = findidx(ageGenderResult, result.trackId);
@@ -692,11 +773,48 @@ public class FacePassFragment extends Fragment implements CameraManager.CameraLi
                         result.detail.rcAttr.hatType.ordinal(),
                         result.detail.rcAttr.respiratorType.ordinal(),
                         result.detail.rcAttr.glassesType.ordinal(),
-                        result.detail.rcAttr.skinColorType.ordinal()));
+                        result.detail.rcAttr.skinColorType.ordinal()
+                        ));
                   }
                 }
               }
-            }
+
+            }else{
+               mAndroidHandler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                          Log.i(DEBUG_TAG, "error no face in db");
+                          FacePassFace passFace = recognizeData.faceList[0];
+                          if(lastID!=passFace.trackId){
+                          lastID=passFace.trackId;
+                          FacePassImage passImage = recognizeData.image[0];
+                          YuvImage img = new YuvImage(passImage.image, ImageFormat.NV21, passImage.width, passImage.height, null);
+                          ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                          img.compressToJpeg(new Rect(0, 0, passImage.width, passImage.height), 80, baos);
+                          byte[] jdata = baos.toByteArray();
+                          BitmapFactory.Options bitmapFatoryOptions = new BitmapFactory.Options();
+                          bitmapFatoryOptions.inPreferredConfig = Bitmap.Config.RGB_565;
+                          Bitmap bmp = BitmapFactory.decodeByteArray(jdata, 0, jdata.length, bitmapFatoryOptions);
+                          ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+                          bmp.compress(Bitmap.CompressFormat.PNG, 100, outputStream);
+                          String base64_img= Base64.encodeToString(outputStream.toByteArray(), Base64.DEFAULT).trim().replaceAll("\n", "").replaceAll("\r", "");
+                            WritableMap jsonObject = Arguments.createMap();
+                            jsonObject.putString("image", base64_img);
+                            jsonObject.putString("trackID",Long.toString(passFace.trackId));
+                            jsonObject.putString("hairType",passFace.rcAttr.hairType.toString());
+                            jsonObject.putString("beardType",passFace.rcAttr.beardType.toString());
+                            jsonObject.putString("hatType",passFace.rcAttr.hatType.toString());
+                            jsonObject.putString("respiratorType",passFace.rcAttr.respiratorType.toString());
+                            jsonObject.putString("glassesType",passFace.rcAttr.glassesType.toString());
+                            jsonObject.putString("skinColorType",passFace.rcAttr.skinColorType.toString());    
+
+                                  
+                          sendUnknownDataToReactNative(jsonObject);
+                          // unknownDetected=true;
+                        }
+                        }
+                      });            
+                      }
           }
         } catch (InterruptedException e) {
           e.printStackTrace();
@@ -964,16 +1082,30 @@ public class FacePassFragment extends Fragment implements CameraManager.CameraLi
   private ReactInstanceManager mReactInstanceManager;
   public boolean detected=false;
   public int counters=0;
-  private void sendDataToReactNative(String faceToken) {
+  private void sendDataToReactNative (WritableMap params) {
     ReactInstanceManager reactInstanceManager = ((ReactApplication) getActivity().getApplication()).getReactNativeHost()
         .getReactInstanceManager();
     ReactContext reactContext = reactInstanceManager.getCurrentReactContext();
     FacePass nativeModule = reactContext.getNativeModule(FacePass.class);
     if (nativeModule != null && detected==false) {
       FacePass myNativeModule = (FacePass) nativeModule;
-      myNativeModule.sendDataToReactNative(faceToken);
+      myNativeModule.sendDataToReactNative(params);
       counters+=1;
       detected=true;
+    }
+  }
+  public int counterss=0;
+
+    private void sendUnknownDataToReactNative(WritableMap params) {
+    ReactInstanceManager reactInstanceManager = ((ReactApplication) getActivity().getApplication()).getReactNativeHost()
+        .getReactInstanceManager();
+    ReactContext reactContext = reactInstanceManager.getCurrentReactContext();
+    FacePass nativeModule = reactContext.getNativeModule(FacePass.class);
+    if (nativeModule != null) {
+      FacePass myNativeModule = (FacePass) nativeModule;
+      myNativeModule.sendUnknownDataToReactNative(params);
+      counterss+=1;
+      Log.v("counterss",Integer.toString(counterss));
     }
   }
 
@@ -989,14 +1121,7 @@ public class FacePassFragment extends Fragment implements CameraManager.CameraLi
     }
   }
 
-  private void getFaceImageByFaceToken(final long trackId, String faceToken, final FacePassRecognitionResult result) {
 
-    // try {
-
-    // } catch (FacePassException e) {
-    //   e.printStackTrace();
-    // }
-  }
 
   private Callback pickerSuccessCallback;
   private Callback pickerCancelCallback;

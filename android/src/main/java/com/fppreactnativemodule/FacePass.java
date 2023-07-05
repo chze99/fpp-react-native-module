@@ -527,12 +527,19 @@ public class FacePass extends ReactContextBaseJavaModule
   };
 
   @ReactMethod
-  public void sendDataToReactNative(String faceToken) {
-    WritableMap params = Arguments.createMap();
-    params.putString("faceToken", faceToken);
+  public void sendDataToReactNative(WritableMap params) {
+
     getReactApplicationContext()
         .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
         .emit("FaceDetectedEvent", params);
+  }
+
+  @ReactMethod
+  public void sendUnknownDataToReactNative(WritableMap params) {
+
+    getReactApplicationContext()
+        .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
+        .emit("UnknownFaceDetectedEvent", params);
   }
 
     @ReactMethod
