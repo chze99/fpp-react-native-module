@@ -1,3 +1,4 @@
+/* eslint-disable react/react-in-jsx-scope */
 import { useEffect, useState } from 'react';
 import {
   StyleSheet,
@@ -11,6 +12,7 @@ import {
 import RadioButtons from '../components/RadioButtons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import RNRestart from 'react-native-restart';
+import { initData } from 'facepass-react-native-module';
 
 export default function FacialRecognitionSettingScreen({ navigation }) {
   //List of facial data
@@ -163,34 +165,10 @@ export default function FacialRecognitionSettingScreen({ navigation }) {
   }
   async function save() {
     const data = {
-      rcAttributeAndOcclusionMode: rcAttributeAndOcclusionMode,
       searchThreshold: searchThreshold,
-      livenessThreshold: livenessThreshold,
-      livenessEnabled: livenessEnabled,
-      rgbIrLivenessEnabled: false,
-      poseThresholdRoll: poseThresholdRoll,
-      poseThresholdPitch: poseThresholdPitch,
-      poseThresholdYaw: poseThresholdYaw,
-      blurThreshold: blurThreshold,
-      lowBrightnessThreshold: lowBrightnessThreshold,
-      highBrightnessThreshold: highBrightnessThreshold,
-      brightnessSTDThreshold: brightnessSTDThreshold,
-      faceMinThreshold: faceMinThreshold,
-      retryCount: retryCount,
-      smileEnabled: smileEnabled,
-      maxFaceEnabled: maxFaceEnabled,
-      FacePoseThresholdPitch: FacePoseThresholdPitch,
-      FacePoseThresholdRoll: FacePoseThresholdRoll,
-      FacePoseThresholdYaw: FacePoseThresholdYaw,
-      FaceBlurThreshold: FaceBlurThreshold,
-      FaceLowBrightnessThreshold: FaceLowBrightnessThreshold,
-      FaceHighBrightnessThreshold: FaceHighBrightnessThreshold,
-      FaceBrightnessSTDThreshold: FaceBrightnessSTDThreshold,
-      FaceFaceMinThreshold: FaceFaceMinThreshold,
-      FaceRcAttributeAndOcclusionMode: FaceRcAttributeAndOcclusionMode,
     };
     AsyncStorage.setItem('parameters', JSON.stringify(data));
-
+    initData(data);
     Alert.alert(
       'Attention',
       'Please restart your application for the changes to take effect',

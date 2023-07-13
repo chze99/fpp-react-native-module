@@ -14,7 +14,12 @@ import {
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useEffect, useRef, useState } from 'react';
-import { FacePassViewManager, FacePass } from 'facepass-react-native-module';
+import {
+  FacePassViewManager,
+  FacePass,
+  enableQRScan,
+  initData,
+} from 'facepass-react-native-module';
 import { useIsFocused } from '@react-navigation/native';
 function createFragment(viewId) {
   UIManager.dispatchViewManagerCommand(
@@ -90,6 +95,8 @@ export default function Home({ navigation }) {
   }, [image]);
 
   useEffect(() => {
+    enableQRScan(false);
+
     // Add an event listener to receive the data
     const dataListener = eventEmitter.addListener(
       'FaceDetectedEvent',
@@ -104,7 +111,6 @@ export default function Home({ navigation }) {
         }
       }
     );
-
     const stopListener = eventEmitter.addListener(
       'FaceDetectedEndEvent',
       async () => {
@@ -122,15 +128,21 @@ export default function Home({ navigation }) {
       }
     );
 
+    const qrDetectListener = eventEmitter.addListener(
+      'QRDetectedEvent',
+      async (params) => {
+        console.log(params);
+      }
+    );
+
     return () => {
       // Clean up and remove event listeners
       dataListener.remove();
       stopListener.remove();
       unknownFaceListener.remove();
+      qrDetectListener.remove();
     };
   });
-
-
   function getCurrentTime() {
     const currentTime = new Date();
     let hours = currentTime.getHours();

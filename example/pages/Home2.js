@@ -121,8 +121,6 @@ export default function Home2({ navigation }) {
     //   }
     // );
   }, []);
-
-
   function getCurrentTime() {
     const currentTime = new Date();
     let hours = currentTime.getHours();

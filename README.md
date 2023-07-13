@@ -2,6 +2,10 @@
 
 Face Recognition Module for React Native
 
+## Changelog
+
+See changelog.md file for detailed release notes.
+
 ## Installation
 
 ```sh
@@ -177,11 +181,19 @@ DefaultPreference is the example of package in this documentation,you can freely
       }
     )
 
+    const qrDetectListener = eventEmitter.addListener(
+      'QRDetectedEvent',
+      async (params) => {
+        console.log(params);
+      }
+    )
+
     return () => {
       // Clean up and remove event listeners
       dataListener.remove();
       stopListener.remove();
       unknownFaceListener.remove();
+      qrDetectListener.remove();
     };
     
   },[])
@@ -352,10 +364,32 @@ DefaultPreference is the example of package in this documentation,you can freely
 
 ```
 
+- Enable QR scanner
+```sh
+  enableQRScan(boolean)
+  //Command: true/false
+
+```
+
 - Enable temperature detection(Untested)
 ```sh
   enableTemperature(boolean)
   //Command: true/false
+```
+
+- Check if facepass done initialize
+```sh
+  const result=await checkDoneInitialize()
+  //Return data:Boolean of true false
+```
+
+-Release / stop facepass handler
+```sh
+  try{
+    await releaseFacePassHandler()
+  }catch(err){
+    //error message,usually because not initialized , no need to release
+  }
 ```
 ***JSON format of Parameter for funtion***
 
@@ -369,6 +403,45 @@ DefaultPreference is the example of package in this documentation,you can freely
     setDefaultGroupName("your_group_name")
 ```
 
+- initData() -> this need to be call again when want to apply new parameter
+```sh
+  const json = {
+    rcAttributeAndOcclusionMode: rcAttributeAndOcclusionMode, //0-5,whole number,Default:1
+    searchThreshold: searchThreshold, //0-100,Default:69
+    livenessThreshold: livenessThreshold, //0-100,Default:55
+    livenessEnabled: livenessEnabled, //true,false,Default:true
+    rgbIrLivenessEnabled: false, //Currently only can false
+    poseThresholdRoll: poseThresholdRoll, //0-90,Default:35
+    poseThresholdPitch: poseThresholdPitch, //0-90,Default:35
+    poseThresholdYaw: poseThresholdYaw, //0-90,Default:35
+    blurThreshold: blurThreshold, //0-1,Default:0.8
+    lowBrightnessThreshold: lowBrightnessThreshold, //0-255,Default:30
+    highBrightnessThreshold: highBrightnessThreshold, //0-255,Default:210
+    brightnessSTDThreshold: brightnessSTDThreshold, //0-255,Default:80
+    faceMinThreshold: faceMinThreshold, //0-512,whole number,Default:100
+    retryCount: retryCount, //1-unlimited,whole number,Default:2
+    smileEnabled: smileEnabled, //true/false,Default:false
+    maxFaceEnabled: maxFaceEnabled, //true/false,Default:true
+    FacePoseThresholdPitch: FacePoseThresholdPitch, //0-90,Default:35
+    FacePoseThresholdRoll: FacePoseThresholdRoll, //0-90,Default:35
+    FacePoseThresholdYaw: FacePoseThresholdYaw, //0-90,Default:35
+    FaceBlurThreshold: FaceBlurThreshold, //0-255,Default:0.7
+    FaceLowBrightnessThreshold: FaceLowBrightnessThreshold, //0-255,Default:70
+    FaceHighBrightnessThreshold: FaceHighBrightnessThreshold, //0-255,Default:220
+    FaceBrightnessSTDThreshold: FaceBrightnessSTDThreshold, //0-255,Default:60
+    FaceFaceMinThreshold: FaceFaceMinThreshold, //0-512,whole number,Default:100
+    FaceRcAttributeAndOcclusionMode: FaceRcAttributeAndOcclusionMode, //whole number //0-5,Default:2
+  }
+
+  initData(json)
+
+  //Recommended value
+  initData({
+    "rcAttributeAndOcclusionMode":1,"searchThreshold":69,"livenessThreshold":55,"livenessEnabled":false,"rgbIrLivenessEnabled":false,"poseThresholdRoll":35,"poseThresholdPitch":35,"poseThresholdYaw":35,"blurThreshold":0.8,"lowBrightnessThreshold":30,"highBrightnessThreshold":210,"brightnessSTDThreshold":80,"faceMinThreshold":100,"retryCount":2,"smileEnabled":false,"maxFaceEnabled":true,"FacePoseThresholdPitch":35,"FacePoseThresholdRoll":35,"FacePoseThresholdYaw":35,"FaceBlurThreshold":0.7,"FaceLowBrightnessThreshold":70,"FaceHighBrightnessThreshold":220,"FaceBrightnessSTDThreshold":60,"FaceFaceMinThreshold":100,"FaceRcAttributeAndOcclusionMode":2
+  })
+
+
+```
 
 
 - cameraSetting();
@@ -423,7 +496,7 @@ GROUP_DELETION_SUCCESS //group delete success
 
 ## Known Issue
 
-If facial recognition setting is changed,restart is require for new facial recognition setting to take affect.
+- Currently no
 
 ## Contributing
 

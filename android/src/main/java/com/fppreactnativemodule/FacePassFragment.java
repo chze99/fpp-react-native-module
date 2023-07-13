@@ -97,6 +97,14 @@ import mcv.facepass.types.FacePassRecognitionState;
 import mcv.facepass.types.FacePassTrackOptions;
 import com.example.yfaceapi.GPIOManager;
 import android.util.Pair;
+import com.google.android.gms.tasks.OnSuccessListener;
+
+import com.google.mlkit.vision.common.InputImage;
+import com.google.mlkit.vision.barcode.common.Barcode;
+import com.google.mlkit.vision.barcode.BarcodeScanner;
+import com.google.mlkit.vision.barcode.BarcodeScannerOptions;
+import com.google.mlkit.vision.barcode.BarcodeScanning;
+
 
 import com.fppreactnativemodule.camera.CameraManager;
 import com.fppreactnativemodule.camera.CameraPreview;
@@ -135,6 +143,7 @@ public class FacePassFragment extends Fragment implements CameraManager.CameraLi
   private CameraPreview cameraView;
   private CameraPreview mIRCameraView;
   private boolean isLocalGroupExist = false;
+  
   private FaceView faceView;
   private ScrollView scrollView;
   private static boolean cameraFacingFront = true;
@@ -194,9 +203,20 @@ public class FacePassFragment extends Fragment implements CameraManager.CameraLi
   private Handler mAndroidHandler;
   Boolean appPaused = false;
   Boolean enableLight = true;
+  Boolean qrEnable = false;
   private GPIOManager gpioManager;
   Boolean useIRCameraSupport = false;
   boolean temperatureScan = false;
+  QZhengGPIOManager QZhengGPIOInstance;
+  QZhengIFManager qZhengManager;
+  public long lastID=-1;
+    BarcodeScanner scanner;
+
+  private ReactInstanceManager mReactInstanceManager;
+  public boolean detected=false;
+  public Boolean timeOut = false;
+  public Boolean showIRPreview = false;
+  public int recognitionDisplayTime = 2500;
 
   @Override
   public void onAttach(Context context) {
@@ -219,9 +239,7 @@ public class FacePassFragment extends Fragment implements CameraManager.CameraLi
 
   }
 
-  public Boolean timeOut = false;
-  public Boolean showIRPreview = false;
-  public int recognitionDisplayTime = 2500;
+
   @Override
   public void onStart() {
     super.onStart();
@@ -233,6 +251,7 @@ public class FacePassFragment extends Fragment implements CameraManager.CameraLi
     useIRCameraSupport = SettingVar.useIRCameraSupport;
     showIRPreview = SettingVar.showIRPreview;
     recognitionDisplayTime =  SettingVar.recognitionDisplayTime;
+    qrEnable = SettingVar.qrEnable;
     initAndroidHandler();
     View view = getView();
     initView(view);
@@ -259,6 +278,12 @@ public class FacePassFragment extends Fragment implements CameraManager.CameraLi
         if (temperatureScan) {
           TemperatureService.startService(activity.getApplicationContext());
         }
+        BarcodeScannerOptions options =
+                new BarcodeScannerOptions.Builder()
+                        .setBarcodeFormats(Barcode.FORMAT_QR_CODE)
+                        .build();
+
+        scanner = BarcodeScanning.getClient(options);
 
         mFacePassHandler = FacePassHandlerHolder.getMyObject();
 
@@ -360,48 +385,8 @@ public class FacePassFragment extends Fragment implements CameraManager.CameraLi
     super.onResume();
   }
 
-  QZhengGPIOManager QZhengGPIOInstance;
-  QZhengIFManager qZhengManager;
 
-  // private void changeLight(String light) {
 
-  // // new device
-  // if (light.equals("white") && enableLight) {
-  // QZhengGPIOInstance.getGPIO(QZhengGPIOManager.GPIO_ID_LED_R).setValue(QZhengGPIOManager.GPIO_VALUE_LOW);
-  // QZhengGPIOInstance.getGPIO(QZhengGPIOManager.GPIO_ID_LED_B).setValue(QZhengGPIOManager.GPIO_VALUE_HIGH);
-  // QZhengGPIOInstance.getGPIO(QZhengGPIOManager.GPIO_ID_LED_G).setValue(QZhengGPIOManager.GPIO_VALUE_LOW);
-  // } else if (light.equals("red")) {
-  // QZhengGPIOInstance.getGPIO(QZhengGPIOManager.GPIO_ID_LED_R).setValue(QZhengGPIOManager.GPIO_VALUE_HIGH);
-  // QZhengGPIOInstance.getGPIO(QZhengGPIOManager.GPIO_ID_LED_B).setValue(QZhengGPIOManager.GPIO_VALUE_LOW);
-  // QZhengGPIOInstance.getGPIO(QZhengGPIOManager.GPIO_ID_LED_G).setValue(QZhengGPIOManager.GPIO_VALUE_LOW);
-  // } else if (light.equals("green")) {
-  // QZhengGPIOInstance.getGPIO(QZhengGPIOManager.GPIO_ID_LED_R).setValue(QZhengGPIOManager.GPIO_VALUE_LOW);
-  // QZhengGPIOInstance.getGPIO(QZhengGPIOManager.GPIO_ID_LED_B).setValue(QZhengGPIOManager.GPIO_VALUE_LOW);
-  // QZhengGPIOInstance.getGPIO(QZhengGPIOManager.GPIO_ID_LED_G).setValue(QZhengGPIOManager.GPIO_VALUE_HIGH);
-  // } else {
-  // QZhengGPIOInstance.getGPIO(QZhengGPIOManager.GPIO_ID_LED_R).setValue(QZhengGPIOManager.GPIO_VALUE_LOW);
-  // QZhengGPIOInstance.getGPIO(QZhengGPIOManager.GPIO_ID_LED_B).setValue(QZhengGPIOManager.GPIO_VALUE_LOW);
-  // QZhengGPIOInstance.getGPIO(QZhengGPIOManager.GPIO_ID_LED_G).setValue(QZhengGPIOManager.GPIO_VALUE_LOW);
-  // }
-  // // old device
-  // if (light.equals("white")) {
-  // gpioManager.pullUpWhiteLight();
-  // gpioManager.pullDownGreenLight();
-  // gpioManager.pullDownRedLight();
-  // } else if (light.equals("red")) {
-  // gpioManager.pullDownWhiteLight();
-  // gpioManager.pullDownGreenLight();
-  // gpioManager.pullUpRedLight();
-  // } else if (light.equals("green")) {
-  // gpioManager.pullDownWhiteLight();
-  // gpioManager.pullUpGreenLight();
-  // gpioManager.pullDownRedLight();
-  // } else {
-  // gpioManager.pullDownWhiteLight();
-  // gpioManager.pullDownGreenLight();
-  // gpioManager.pullDownRedLight();
-  // }
-  // }
 
   private void initAndroidHandler() {
 
@@ -455,40 +440,39 @@ public class FacePassFragment extends Fragment implements CameraManager.CameraLi
     } else {
       mFeedFrameQueue.offer(cameraPreviewData);
     }
-
-    // detectQRCode(cameraPreviewData);
-
+    if(qrEnable==true){
+    detectQRCode(cameraPreviewData);
+}
   }
 
-  // public void detectQRCode(CameraPreviewData cameraPreviewData) {
+  public void detectQRCode(CameraPreviewData cameraPreviewData) {
 
-  //   InputImage image = InputImage.fromByteArray(cameraPreviewData.nv21Data,
-  //       cameraPreviewData.width,
-  //       cameraPreviewData.height,
-  //       cameraPreviewData.rotation,
-  //       InputImage.IMAGE_FORMAT_NV21);
+    InputImage image = InputImage.fromByteArray(cameraPreviewData.nv21Data,
+        cameraPreviewData.width,
+        cameraPreviewData.height,
+        cameraPreviewData.rotation,
+        InputImage.IMAGE_FORMAT_NV21);
+    scanner.process(image)
+        .addOnSuccessListener(new OnSuccessListener<List<Barcode>>() {
+          @Override
+          public void onSuccess(List<Barcode> barcodes) {
+            for (Barcode barcode : barcodes) {
+              String uid = barcode.getRawValue();
+              // Log.d("QR counter", String.valueOf(recognitionIntervalCounter));
+              sendQRDataToReactNative(uid);
+              // if (recognitionIntervalCounter <= 0) {
+              //   if (loadedUsers.has(uid)) {
+              //     faceCheckIn(0, null, 100, 1, null, null, true, uid);
+              //   } else {
+              //     toast("No access or invalid QR code.");
+              //   }
+              //   recognitionIntervalCounter = recognitionInterval;
+              // }
+            }
+          }
+        });
 
-  //   scanner.process(image)
-  //       .addOnSuccessListener(new OnSuccessListener<List<Barcode>>() {
-  //         @Override
-  //         public void onSuccess(List<Barcode> barcodes) {
-  //           for (Barcode barcode : barcodes) {
-  //             String uid = barcode.getRawValue();
-  //             Log.d("QR counter", String.valueOf(recognitionIntervalCounter));
-  //             Log.d("QR check in", uid);
-  //             if (recognitionIntervalCounter <= 0) {
-  //               if (loadedUsers.has(uid)) {
-  //                 faceCheckIn(0, null, 100, 1, null, null, true, uid);
-  //               } else {
-  //                 toast("No access or invalid QR code.");
-  //               }
-  //               recognitionIntervalCounter = recognitionInterval;
-  //             }
-  //           }
-  //         }
-  //       });
-
-  // }
+  }
 
   public void detectBrightness(CameraPreviewData cameraPreviewData) {
     long sumY = 0;
@@ -669,7 +653,6 @@ public class FacePassFragment extends Fragment implements CameraManager.CameraLi
     return result;
   }
 
-  public long lastID=-1;
 
   private class RecognizeThread extends Thread {
 
@@ -733,18 +716,8 @@ public class FacePassFragment extends Fragment implements CameraManager.CameraLi
                               if(lastID!=passFace.trackId){
                               lastID=passFace.trackId;
                               FacePassImage passImage = recognizeData.image[0];
-                              YuvImage img = new YuvImage(passImage.image, ImageFormat.NV21, passImage.width, passImage.height, null);
-                              ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                              img.compressToJpeg(new Rect(0, 0, passImage.width, passImage.height), 80, baos);
-                              byte[] jdata = baos.toByteArray();
-                              BitmapFactory.Options bitmapFatoryOptions = new BitmapFactory.Options();
-                              bitmapFatoryOptions.inPreferredConfig = Bitmap.Config.RGB_565;
-                              Bitmap bmp = BitmapFactory.decodeByteArray(jdata, 0, jdata.length, bitmapFatoryOptions);
-                              ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-                              bmp.compress(Bitmap.CompressFormat.PNG, 100, outputStream);
-                              String base64_img= Base64.encodeToString(outputStream.toByteArray(), Base64.DEFAULT).trim().replaceAll("\n", "").replaceAll("\r", "");
                               WritableMap jsonObject = Arguments.createMap();
-                                jsonObject.putString("image", base64_img);
+                                jsonObject.putString("image", yuvToBase64(passImage));
                                 jsonObject.putString("trackID",Long.toString(passFace.trackId));
                                 jsonObject.putString("searchScore",String.valueOf(result.detail.searchScore));
                                 jsonObject.putString("searchThreshold",String.valueOf(result.detail.searchThreshold));
@@ -788,18 +761,9 @@ public class FacePassFragment extends Fragment implements CameraManager.CameraLi
                           if(lastID!=passFace.trackId){
                           lastID=passFace.trackId;
                           FacePassImage passImage = recognizeData.image[0];
-                          YuvImage img = new YuvImage(passImage.image, ImageFormat.NV21, passImage.width, passImage.height, null);
-                          ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                          img.compressToJpeg(new Rect(0, 0, passImage.width, passImage.height), 80, baos);
-                          byte[] jdata = baos.toByteArray();
-                          BitmapFactory.Options bitmapFatoryOptions = new BitmapFactory.Options();
-                          bitmapFatoryOptions.inPreferredConfig = Bitmap.Config.RGB_565;
-                          Bitmap bmp = BitmapFactory.decodeByteArray(jdata, 0, jdata.length, bitmapFatoryOptions);
-                          ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-                          bmp.compress(Bitmap.CompressFormat.PNG, 100, outputStream);
-                          String base64_img= Base64.encodeToString(outputStream.toByteArray(), Base64.DEFAULT).trim().replaceAll("\n", "").replaceAll("\r", "");
+                        
                             WritableMap jsonObject = Arguments.createMap();
-                            jsonObject.putString("image", base64_img);
+                            jsonObject.putString("image", yuvToBase64(passImage));
                             jsonObject.putString("trackID",Long.toString(passFace.trackId));
                             jsonObject.putString("hairType",passFace.rcAttr.hairType.toString());
                             jsonObject.putString("beardType",passFace.rcAttr.beardType.toString());
@@ -828,6 +792,20 @@ public class FacePassFragment extends Fragment implements CameraManager.CameraLi
     public void interrupt() {
       isInterrupt = true;
     }
+  }
+
+  public String yuvToBase64(FacePassImage image_data){
+    YuvImage img = new YuvImage(image_data.image, ImageFormat.NV21, image_data.width, image_data.height, null);
+    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    img.compressToJpeg(new Rect(0, 0, image_data.width, image_data.height), 80, baos);
+    byte[] jdata = baos.toByteArray();
+    BitmapFactory.Options bitmapFatoryOptions = new BitmapFactory.Options();
+    bitmapFatoryOptions.inPreferredConfig = Bitmap.Config.RGB_565;
+    Bitmap bmp = BitmapFactory.decodeByteArray(jdata, 0, jdata.length, bitmapFatoryOptions);
+    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+    bmp.compress(Bitmap.CompressFormat.PNG, 100, outputStream);
+    String base64_img= Base64.encodeToString(outputStream.toByteArray(), Base64.DEFAULT).trim().replaceAll("\n", "").replaceAll("\r", "");
+    return base64_img;
   }
 
   private boolean hasPermission() {
@@ -890,6 +868,7 @@ public class FacePassFragment extends Fragment implements CameraManager.CameraLi
     if (manager != null) {
       manager.release();
     }
+
     if (useIRCameraSupport) {
       if (mIRCameraManager != null) {
         mIRCameraManager.release();
@@ -988,44 +967,6 @@ public class FacePassFragment extends Fragment implements CameraManager.CameraLi
     faceView.invalidate();
   }
 
-  // public void showToast(CharSequence text, int duration, boolean isSuccess,
-  // Bitmap bitmap) {
-  // LayoutInflater inflater = (LayoutInflater) activity.getApplicationContext()
-  // .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-  // View toastView = inflater.inflate(R.layout.toast, null);
-  // LinearLayout toastLLayout = (LinearLayout)
-  // toastView.findViewById(R.id.toastll);
-  // if (toastLLayout == null) {
-  // return;
-  // }
-  // toastLLayout.getBackground().setAlpha(100);
-  // ImageView imageView = (ImageView)
-  // toastView.findViewById(R.id.toastImageView);
-  // TextView idTextView = (TextView) toastView.findViewById(R.id.toastTextView);
-  // TextView stateView = (TextView) toastView.findViewById(R.id.toastState);
-  // SpannableString s;
-  // if (isSuccess) {
-  // s = new SpannableString("Verify Success");
-  // imageView.setImageResource(R.drawable.success);
-  // } else {
-  // s = new SpannableString("Verify Failed");
-  // imageView.setImageResource(R.drawable.success);
-  // }
-  // if (bitmap != null) {
-  // imageView.setImageBitmap(bitmap);
-  // }
-  // stateView.setText(s);
-  // idTextView.setText(text);
-
-  // if (mRecoToast == null) {
-  // mRecoToast = new Toast(activity.getApplicationContext());
-  // mRecoToast.setGravity(Gravity.CENTER_VERTICAL, 0, 0);
-  // }
-  // mRecoToast.setDuration(duration);
-  // mRecoToast.setView(toastView);
-
-  // mRecoToast.show();
-  // }
 
   private static final int REQUEST_CODE_CHOOSE_PICK = 1;
 
@@ -1043,7 +984,6 @@ public class FacePassFragment extends Fragment implements CameraManager.CameraLi
               pickerCancelCallback.invoke("ImagePicker was cancelled");
             } else if (resultCode == Activity.RESULT_OK) {
               String path = "";
-
               Uri uri = data.getData();
               String[] pojo = { MediaStore.Images.Media.DATA };
               CursorLoader cursorLoader = new CursorLoader(context, uri, pojo, null, null, null);
@@ -1079,9 +1019,6 @@ public class FacePassFragment extends Fragment implements CameraManager.CameraLi
     }
   };
 
-  private ReactInstanceManager mReactInstanceManager;
-  public boolean detected=false;
-  public int counters=0;
   private void sendDataToReactNative (WritableMap params) {
     ReactInstanceManager reactInstanceManager = ((ReactApplication) getActivity().getApplication()).getReactNativeHost()
         .getReactInstanceManager();
@@ -1090,13 +1027,23 @@ public class FacePassFragment extends Fragment implements CameraManager.CameraLi
     if (nativeModule != null && detected==false) {
       FacePass myNativeModule = (FacePass) nativeModule;
       myNativeModule.sendDataToReactNative(params);
-      counters+=1;
       detected=true;
     }
   }
-  public int counterss=0;
 
-    private void sendUnknownDataToReactNative(WritableMap params) {
+  private void sendQRDataToReactNative (String content){
+        ReactInstanceManager reactInstanceManager = ((ReactApplication) getActivity().getApplication()).getReactNativeHost()
+        .getReactInstanceManager();
+    ReactContext reactContext = reactInstanceManager.getCurrentReactContext();
+    FacePass nativeModule = reactContext.getNativeModule(FacePass.class);
+    if (nativeModule != null && detected==false) {
+      FacePass myNativeModule = (FacePass) nativeModule;
+      myNativeModule.sendQRDataToReactNative(content);
+      detected=true;
+    }
+  }
+
+  private void sendUnknownDataToReactNative(WritableMap params) {
     ReactInstanceManager reactInstanceManager = ((ReactApplication) getActivity().getApplication()).getReactNativeHost()
         .getReactInstanceManager();
     ReactContext reactContext = reactInstanceManager.getCurrentReactContext();
@@ -1104,8 +1051,6 @@ public class FacePassFragment extends Fragment implements CameraManager.CameraLi
     if (nativeModule != null) {
       FacePass myNativeModule = (FacePass) nativeModule;
       myNativeModule.sendUnknownDataToReactNative(params);
-      counterss+=1;
-      Log.v("counterss",Integer.toString(counterss));
     }
   }
 

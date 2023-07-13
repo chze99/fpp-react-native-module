@@ -22,7 +22,9 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.widget.Toast;
 import android.widget.ImageView;
-
+import android.util.DisplayMetrics;
+import android.view.Display;
+import android.graphics.Point;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
@@ -45,6 +47,7 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import android.view.WindowManager;
 
 import com.facebook.react.bridge.Arguments;
 
@@ -346,6 +349,7 @@ public class FacePass extends ReactContextBaseJavaModule
 
   @ReactMethod
   public void initData(String parameter,Callback success,Callback fail) {
+
     if (!hasPermission()) {
       requestPermission();
     } else {
@@ -415,7 +419,11 @@ public class FacePass extends ReactContextBaseJavaModule
       float FacePoseThresholdRoll, float FacePoseThresholdYaw, float FaceBlurThreshold,
       float FaceLowBrightnessThreshold, float FaceHighBrightnessThreshold, float FaceBrightnessSTDThreshold,
       int FaceFaceMinThreshold, int FaceRcAttributeAndOcclusionMode) {
-
+      mFacePassHandler = FacePassHandlerHolder.getMyObject();
+      if (mFacePassHandler != null) {
+        mFacePassHandler.reset();
+        mFacePassHandler.release();
+      }
     new Thread() {
       @Override
       public void run() {
@@ -549,6 +557,14 @@ public class FacePass extends ReactContextBaseJavaModule
         .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
         .emit("FaceDetectedEndEvent", params);
   }
+
+  @ReactMethod
+  public void sendQRDataToReactNative(String params){
+        getReactApplicationContext()
+        .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
+        .emit("QRDetectedEvent", params);
+  }
+  
 
   @ReactMethod
   public void addListener(String eventName) {
@@ -952,11 +968,57 @@ public class FacePass extends ReactContextBaseJavaModule
   public void enableIRPreview(Boolean enable) {
     SettingVar.showIRPreview = enable;
   }
+  
+  @ReactMethod
+  public void enableQRScan(Boolean enable) {
+    SettingVar.qrEnable = enable;
+  }
 
   @ReactMethod 
   public void setRecognitionDisplayTime(int time){
     SettingVar.recognitionDisplayTime = time;
   }
+
+  @ReactMethod 
+  public void releaseFacePassHandler(Callback success,Callback fail){
+      mFacePassHandler = FacePassHandlerHolder.getMyObject();
+
+      if (mFacePassHandler != null) {
+        mFacePassHandler.reset();
+        mFacePassHandler.release();
+        success.invoke("FACEPASSHANDLER_RELEASED");
+      }else{
+        success.invoke("FACEPASSHANDLER_IS_NULL");
+      }
+
+  }
+
+  @ReactMethod
+  public void checkDoneInitialize(Callback success){
+    success.invoke(SettingVar.doneInitialize);
+  }
+
+  // @ReactMethod
+  // public Double getDeviceSerial(){
+  //       // WindowManager windowManager = (WindowManager) activity.getApplicationContext().getSystemService(Context.WINDOW_SERVICE);
+  //       DisplayMetrics metrics = new DisplayMetrics();
+  //       Activity activity = getCurrentActivity();
+  //       activity.getWindowManager().getDefaultDisplay().getMetrics(metrics);
+
+    
+  //       float widthPixels = metrics.widthPixels;
+  //       float heightPixels = metrics.heightPixels;
+
+  //       float xdpi = metrics.xdpi;
+  //       float ydpi = metrics.ydpi;
+
+  //       float widthInches = widthPixels / xdpi;
+  //       float heightInches = heightPixels / ydpi;
+
+  //     Log.v("PHYSICALSCREEN:",Double.toString( Math.sqrt(Math.pow(widthInches, 2) + Math.pow(heightInches, 2))));
+  //     return Math.sqrt(Math.pow(widthInches, 2) + Math.pow(heightInches, 2));
+
+  // }
 
   @ReactMethod
   public void elevatorAccess(String elevatorGatewayIp, String uid, String premiseId) {

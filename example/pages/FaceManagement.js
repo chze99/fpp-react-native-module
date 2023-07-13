@@ -1,3 +1,5 @@
+/* eslint-disable react-native/no-inline-styles */
+/* eslint-disable react/react-in-jsx-scope */
 import _ from 'lodash';
 import { useState, useEffect } from 'react';
 import { TouchableOpacity, View, Text, StyleSheet, Image } from 'react-native';
@@ -10,11 +12,18 @@ import {
   createGroup,
   restartDevice,
   controlDoor,
+  initData,
+  checkDoneInitialize,
 } from 'facepass-react-native-module';
 export default function FaceMangement({ navigation }) {
   useEffect(() => {
     console.log('test');
   }, []);
+
+  async function init() {
+    const setting = await AsyncStorage.getItem('parameters');
+    const success = await initData(JSON.parse(setting));
+  }
 
   return (
     <View>
@@ -62,6 +71,13 @@ export default function FaceMangement({ navigation }) {
 
       <TouchableOpacity
         style={styles.button}
+        onPress={async () => console.log(await checkDoneInitialize())}
+      >
+        <Text style={{ color: 'white' }}>Init</Text>
+      </TouchableOpacity>
+      <View style={{ paddingVertical: 10 }} />
+      <TouchableOpacity
+        style={styles.button}
         onPress={() => navigation.navigate('TestLightPage')}
       >
         <Text style={{ color: 'white' }}>Test Light Page</Text>
@@ -98,12 +114,12 @@ export default function FaceMangement({ navigation }) {
         >
           <Text style={{ color: 'white' }}>Close door</Text>
         </TouchableOpacity>
-        {/* <TouchableOpacity
+        <TouchableOpacity
           style={{ backgroundColor: '#33b5e5', padding: 10 }}
-          onPress={() =>  navigation.navigate('Home')}
+          onPress={() => navigation.navigate('Home')}
         >
           <Text style={{ color: 'white' }}>home</Text>
-        </TouchableOpacity> */}
+        </TouchableOpacity>
         <TouchableOpacity
           style={{ backgroundColor: '#33b5e5', padding: 10 }}
           onPress={() => navigation.navigate('Home2')}

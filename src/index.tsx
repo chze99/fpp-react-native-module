@@ -245,8 +245,33 @@ export function enableIRPreview(enable: Boolean): Promise<void> {
   return FacePassReactNativeModule.enableIRPreview(enable);
 }
 
+export function enableQRScan(enable: Boolean): Promise<void> {
+  return FacePassReactNativeModule.enableQRScan(enable);
+}
+
 export function setRecognitionDisplayTime(time: Number): Promise<void> {
   return FacePassReactNativeModule.setRecognitionDisplayTime(time);
+}
+
+export function releaseFacePassHandler(): Promise<void> {
+  return new Promise((resolve, reject) => {
+    FacePassReactNativeModule.releaseFacePassHandler(
+      (success: any) => {
+        resolve(success);
+      },
+      (fail: any) => {
+        reject(fail);
+      }
+    );
+  });
+}
+
+export function checkDoneInitialize(): Promise<void> {
+  return new Promise((resolve) => {
+    FacePassReactNativeModule.checkDoneInitialize((success: any) => {
+      resolve(success);
+    });
+  });
 }
 
 export function checkGroupExist(data: String): Promise<void> {

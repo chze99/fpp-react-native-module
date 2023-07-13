@@ -23,4 +23,5 @@ public class SettingVar {
     public static boolean temperatureScan = false;
     public static boolean showIRPreview = false;
     public static int recognitionDisplayTime = 2500;
+    public static boolean qrEnable = false;
 }

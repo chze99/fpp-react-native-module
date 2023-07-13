@@ -27,6 +27,7 @@ export default function Routes() {
 
           <Stack.Screen name="FaceManagement" component={FaceManagement} />
 
+
           <Stack.Screen name="Home2" component={Home2} />
 
           <Stack.Screen name="GroupListPage" component={GroupListPage} />
