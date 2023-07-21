@@ -14,6 +14,8 @@ import {
   controlDoor,
   initData,
   checkDoneInitialize,
+  hideNavigationBar,
+  setExposureCompensation,
 } from 'facepass-react-native-module';
 export default function FaceMangement({ navigation }) {
   useEffect(() => {
@@ -69,12 +71,6 @@ export default function FaceMangement({ navigation }) {
       </TouchableOpacity>
       <View style={{ paddingVertical: 10 }} />
 
-      <TouchableOpacity
-        style={styles.button}
-        onPress={async () => console.log(await checkDoneInitialize())}
-      >
-        <Text style={{ color: 'white' }}>Init</Text>
-      </TouchableOpacity>
       <View style={{ paddingVertical: 10 }} />
       <TouchableOpacity
         style={styles.button}
@@ -126,7 +122,37 @@ export default function FaceMangement({ navigation }) {
         >
           <Text style={{ color: 'white' }}>home 2</Text>
         </TouchableOpacity>
+
         <View style={{ padding: 10 }} />
+      </View>
+      <View
+        style={{
+          paddingVertical: 10,
+          display: 'flex',
+          flexDirection: 'row',
+          justifyContent: 'center',
+        }}
+      >
+        <TouchableOpacity
+          style={{ backgroundColor: '#33b5e5', padding: 10 }}
+          onPress={async () => hideNavigationBar(true)}
+        >
+          <Text style={{ color: 'white' }}>Off Navbar</Text>
+        </TouchableOpacity>
+        <View style={{ padding: 10 }} />
+
+        <TouchableOpacity
+          style={{ backgroundColor: '#33b5e5', padding: 10 }}
+          onPress={async () => hideNavigationBar(false)}
+        >
+          <Text style={{ color: 'white' }}>On Navbar</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={{ backgroundColor: '#33b5e5', padding: 10 }}
+          onPress={async () => setExposureCompensation(5)}
+        >
+          <Text style={{ color: 'white' }}>Change exposure</Text>
+        </TouchableOpacity>
       </View>
       <View style={{ paddingVertical: 10 }} />
     </View>

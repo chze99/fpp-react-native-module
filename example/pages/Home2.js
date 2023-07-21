@@ -43,7 +43,6 @@ export default function Home2({ navigation }) {
   const [image, setImage] = useState(null);
   const [name, setName] = useState(null);
   const [testimage, settestimage] = useState(null);
-  const [appState, setAppState] = useState(AppState.currentState);
   const isFocused = useIsFocused();
 
   const eventEmitter = new NativeEventEmitter(FacePass);
@@ -120,7 +119,7 @@ export default function Home2({ navigation }) {
     //     settestimage(params.jsonString);
     //   }
     // );
-  }, []);
+  });
   function getCurrentTime() {
     const currentTime = new Date();
     let hours = currentTime.getHours();

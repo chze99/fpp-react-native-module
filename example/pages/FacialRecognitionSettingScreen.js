@@ -165,7 +165,31 @@ export default function FacialRecognitionSettingScreen({ navigation }) {
   }
   async function save() {
     const data = {
+      rcAttributeAndOcclusionMode: rcAttributeAndOcclusionMode,
       searchThreshold: searchThreshold,
+      livenessThreshold: livenessThreshold,
+      livenessEnabled: livenessEnabled,
+      rgbIrLivenessEnabled: false,
+      poseThresholdRoll: poseThresholdRoll,
+      poseThresholdPitch: poseThresholdPitch,
+      poseThresholdYaw: poseThresholdYaw,
+      blurThreshold: blurThreshold,
+      lowBrightnessThreshold: lowBrightnessThreshold,
+      highBrightnessThreshold: highBrightnessThreshold,
+      brightnessSTDThreshold: brightnessSTDThreshold,
+      faceMinThreshold: faceMinThreshold,
+      retryCount: retryCount,
+      smileEnabled: smileEnabled,
+      maxFaceEnabled: maxFaceEnabled,
+      FacePoseThresholdPitch: FacePoseThresholdPitch,
+      FacePoseThresholdRoll: FacePoseThresholdRoll,
+      FacePoseThresholdYaw: FacePoseThresholdYaw,
+      FaceBlurThreshold: FaceBlurThreshold,
+      FaceLowBrightnessThreshold: FaceLowBrightnessThreshold,
+      FaceHighBrightnessThreshold: FaceHighBrightnessThreshold,
+      FaceBrightnessSTDThreshold: FaceBrightnessSTDThreshold,
+      FaceFaceMinThreshold: FaceFaceMinThreshold,
+      FaceRcAttributeAndOcclusionMode: FaceRcAttributeAndOcclusionMode,
     };
     AsyncStorage.setItem('parameters', JSON.stringify(data));
     initData(data);

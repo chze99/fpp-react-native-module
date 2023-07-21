@@ -17,8 +17,18 @@ Require use of any package that allow react native to save and retrieve data, th
 DefaultPreference is the example of package in this documentation,you can freely choose other package to be used
 **Android**
 
+# Important
+From version 0.1.33 onward this is required:
 
-
+-inside android/build.gradle
+```sh      
+  allprojects {
+    repositories {
+      ...
+      flatDir { dirs "$rootDir/../node_modules/facepass-react-native-module/android/libs"}
+    }
+  }
+```
 - In android/app/src/main/AndroidManifest.xml
 ```sh
   <uses-feature
@@ -27,8 +37,7 @@ DefaultPreference is the example of package in this documentation,you can freely
   <uses-permission android:name="android.permission.CAMERA" />
   <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
   <uses-permission android:name="android.permission.MOUNT_UNMOUNT_FILESYSTEMS" />
-  <uses-permission android:name=" android.permission.SYSTEM_CAMERA
-  " />
+
 ```
 
 ```sh
@@ -145,6 +154,7 @@ DefaultPreference is the example of package in this documentation,you can freely
         //Do something here,e.g.
         const faceToken = params.faceToken;
         //List of data:
+          //image //image in base64 format
           //faceToken //use to get image/as an id to recognize a person identidy
           //trackID //ID number of tracking ,for reference
           //searchScore //percentage it match the detected face
@@ -371,12 +381,23 @@ DefaultPreference is the example of package in this documentation,you can freely
 
 ```
 
+-Enable/disable hiding of navigation bar
+```sh
+  hideNavigationBar(boolean)
+  //Command: true/false
+```
+
 - Enable temperature detection(Untested)
 ```sh
   enableTemperature(boolean)
   //Command: true/false
 ```
 
+- Change exposure Compensation
+```sh
+setExposureCompensation(value)
+  //Command: 0-? depend on device
+```
 - Check if facepass done initialize
 ```sh
   const result=await checkDoneInitialize()

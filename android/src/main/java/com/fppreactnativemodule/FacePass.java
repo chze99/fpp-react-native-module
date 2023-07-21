@@ -209,7 +209,7 @@ public class FacePass extends ReactContextBaseJavaModule
         if (resultCode == -1) {
           if (pickerSuccessCallback != null) {
             if (resultCode == Activity.RESULT_CANCELED) {
-              pickerCancelCallback.invoke("IMAGE_SELECT_CANCELED_ERROR");
+              pickerCancelCallback.invoke("SELECTIMAGE: IMAGE_SELECT_CANCELED_ERROR");
             } else if (resultCode == Activity.RESULT_OK) {
               String path = "";
 
@@ -231,7 +231,7 @@ public class FacePass extends ReactContextBaseJavaModule
                 }
               }
               if (TextUtils.isEmpty(path)) {
-                pickerCancelCallback.invoke("IMAGE_SELECT_FAIL_ERROR");
+                pickerCancelCallback.invoke("SELECTIMAGE: IMAGE_SELECT_FAIL_ERROR");
                 return;
               }
               if (!TextUtils.isEmpty(path)) {
@@ -283,6 +283,10 @@ public class FacePass extends ReactContextBaseJavaModule
       QZhengGPIOInstance.getGPIO(QZhengGPIOManager.GPIO_ID_LED_R).setValue(QZhengGPIOManager.GPIO_VALUE_LOW);
       QZhengGPIOInstance.getGPIO(QZhengGPIOManager.GPIO_ID_LED_B).setValue(QZhengGPIOManager.GPIO_VALUE_HIGH);
       QZhengGPIOInstance.getGPIO(QZhengGPIOManager.GPIO_ID_LED_G).setValue(QZhengGPIOManager.GPIO_VALUE_HIGH);
+    } else if (light.equals("ir_on"))  {
+      QZhengGPIOInstance.getGPIO(QZhengGPIOManager.GPIO_ID_LED_IR).setValue(QZhengGPIOManager.GPIO_VALUE_HIGH);
+    } else if (light.equals("ir_off"))  {
+      QZhengGPIOInstance.getGPIO(QZhengGPIOManager.GPIO_ID_LED_IR).setValue(QZhengGPIOManager.GPIO_VALUE_LOW);
     } else {
       QZhengGPIOInstance.getGPIO(QZhengGPIOManager.GPIO_ID_LED_R).setValue(QZhengGPIOManager.GPIO_VALUE_LOW);
       QZhengGPIOInstance.getGPIO(QZhengGPIOManager.GPIO_ID_LED_B).setValue(QZhengGPIOManager.GPIO_VALUE_LOW);
@@ -492,10 +496,10 @@ public class FacePass extends ReactContextBaseJavaModule
               mFacePassHandler.setAddFaceConfig(addFaceConfig);
               FacePassHandlerHolder.setMyObject(mFacePassHandler);
               SettingVar.doneInitialize = true;
-              initSuccessCallback.invoke("init success");
+              initSuccessCallback.invoke("INITFACEPASS: init success");
             } catch (FacePassException e) {
               e.printStackTrace();
-              initFailCallback.invoke("init fail");
+              initFailCallback.invoke("INITFACEPASS: init fail");
               Log.d("FacePassException", e.toString());
               Log.d(DEBUG_TAG, "FacePassHandler is null");
               return;
@@ -516,7 +520,7 @@ public class FacePass extends ReactContextBaseJavaModule
   public void selectImage(Callback successCallback, Callback cancelCallback) {
     Activity currentActivity = getCurrentActivity();
     if (currentActivity == null) {
-      cancelCallback.invoke("ACTIVITY_NOT_EXIST_ERROR");
+      cancelCallback.invoke("SELECTIMAGE: ACTIVITY_NOT_EXIST_ERROR");
       return;
     }
 
@@ -581,11 +585,11 @@ public class FacePass extends ReactContextBaseJavaModule
 
     mFacePassHandler = FacePassHandlerHolder.getMyObject();
     if (mFacePassHandler == null) {
-      failure.invoke("FACEPASSHANDLER_NULL_ERROR");
+      failure.invoke("ADDFACE: FACEPASSHANDLER_NULL_ERROR");
       return;
     }
     if (TextUtils.isEmpty(imagePath)) {
-      failure.invoke("INVALID_IMAGE_PATH_ERROR");
+      failure.invoke("ADDFACE: INVALID_IMAGE_PATH_ERROR");
       return;
     }
     Bitmap bitmap;
@@ -597,7 +601,7 @@ public class FacePass extends ReactContextBaseJavaModule
       Log.v("IMAGE fail",e.toString());
       File imageFile = new File(imagePath);
       if (!imageFile.exists()) {
-        failure.invoke("IMAGE_NOT_EXIST_ERROR");
+        failure.invoke("ADDFACE: IMAGE_NOT_EXIST_ERROR");
         return;
       } else {
         bitmap = BitmapFactory.decodeFile(imagePath);
@@ -610,11 +614,11 @@ public class FacePass extends ReactContextBaseJavaModule
         if (result.result == 0) {
           success.invoke(new String(result.faceToken));
         } else if (result.result == 1) {
-          failure.invoke("NO_FACE_DETECTED_IN_IMAGE_ERROR");
+          failure.invoke("ADDFACE: NO_FACE_DETECTED_IN_IMAGE_ERROR");
           return;
 
         } else {
-          failure.invoke("FACE_IMAGE_QUALITY_ERROR");
+          failure.invoke("ADDFACE: FACE_IMAGE_QUALITY_ERROR");
           return;
 
         }
@@ -649,7 +653,7 @@ public class FacePass extends ReactContextBaseJavaModule
   public void getFace(String faceTokenEt, Callback success, Callback failure) {
     mFacePassHandler = FacePassHandlerHolder.getMyObject();
     if (mFacePassHandler == null) {
-      failure.invoke("FACEPASSHANDLER_NULL_ERROR");
+      failure.invoke("GETFACE: FACEPASSHANDLER_NULL_ERROR");
       return;
     }
     try {
@@ -671,7 +675,7 @@ public class FacePass extends ReactContextBaseJavaModule
   public void deleteFace(String faceTokenEt, String groupNameEt, Callback success, Callback failure) {
     mFacePassHandler = FacePassHandlerHolder.getMyObject();
     if (mFacePassHandler == null) {
-      failure.invoke("FACEPASSHANDLER_NULL_ERROR");
+      failure.invoke("DELETEFACE: FACEPASSHANDLER_NULL_ERROR");
       return;
     }
     boolean b = false;
@@ -681,7 +685,7 @@ public class FacePass extends ReactContextBaseJavaModule
       if (b) {
         String groupName = groupNameEt;
         if (TextUtils.isEmpty(groupName)) {
-          failure.invoke("NULL_GROUPNAME_ERROR");
+          failure.invoke("DELETEFACE: NULL_GROUPNAME_ERROR");
           return;
         }
         byte[][] faceTokens = mFacePassHandler.getLocalGroupInfo(groupName);
@@ -715,26 +719,26 @@ public class FacePass extends ReactContextBaseJavaModule
   public void bindGroup(String faceTokenEt, String groupNameEt, Callback success, Callback failure) {
     mFacePassHandler = FacePassHandlerHolder.getMyObject();
     if (mFacePassHandler == null) {
-      failure.invoke("FACEPASSHANDLER_NULL_ERROR");
+      failure.invoke("BINDGROUP: FACEPASSHANDLER_NULL_ERROR");
       return;
     }
 
     byte[] faceToken = faceTokenEt.getBytes();
     String groupName = groupNameEt;
     if (TextUtils.isEmpty(groupName)) {
-      failure.invoke("GROUP_NAME_IS_NULL_ERROR");
+      failure.invoke("BINDGROUP: GROUP_NAME_IS_NULL_ERROR");
       return;
     } else if (faceToken == null || faceToken.length == 0) {
-      failure.invoke("FACETOKEN_IS_NULL_ERROR");
+      failure.invoke("BINDGROUP: FACETOKEN_IS_NULL_ERROR");
       return;
     }
     try {
       boolean b = mFacePassHandler.bindGroup(groupName, faceToken);
       String result = b ? "success " : "failed";
       if (b) {
-        success.invoke("BIND_GROUP_SUCCESS");
+        success.invoke("BINDGROUP: BIND_GROUP_SUCCESS");
       } else {
-        failure.invoke("BIND_GROUP_FAILED");
+        failure.invoke("BINDGROUP: BIND_GROUP_FAILED");
       }
     } catch (Exception e) {
       e.printStackTrace();
@@ -748,11 +752,11 @@ public class FacePass extends ReactContextBaseJavaModule
     mFacePassHandler = FacePassHandlerHolder.getMyObject();
     List<String> faceTokenList = new ArrayList<>();
     if (mFacePassHandler == null) {
-      failure.invoke("FACEPASSHANDLER_NULL_ERROR");
+      failure.invoke("GETGROUPINFO: FACEPASSHANDLER_NULL_ERROR");
     }
     String groupName = groupNameEt;
     if (TextUtils.isEmpty(groupName)) {
-      failure.invoke("GROUP_NAME_NOT_EXIST_ERROR");
+      failure.invoke("GETGROUPINFO: GROUP_NAME_NOT_EXIST_ERROR");
     }
     try {
       byte[][] faceTokens = mFacePassHandler.getLocalGroupInfo(groupName);
@@ -780,13 +784,13 @@ public class FacePass extends ReactContextBaseJavaModule
       Callback failure) {
     mFacePassHandler = FacePassHandlerHolder.getMyObject();
     if (mFacePassHandler == null) {
-      failure.invoke("FACEPASSHANDLER_NULL_ERROR");
+      failure.invoke("UNBINDFACE: FACEPASSHANDLER_NULL_ERROR");
       return;
     }
 
     String groupName = groupNameEt;
     if (TextUtils.isEmpty(groupName)) {
-      failure.invoke("GROUP_NAME_IS_NULL_ERROR");
+      failure.invoke("UNBINDFACE: GROUP_NAME_IS_NULL_ERROR");
       return;
     }
     try {
@@ -807,7 +811,7 @@ public class FacePass extends ReactContextBaseJavaModule
         WritableArray array = Arguments.fromList(faceTokenList);
         success.invoke(array);
       } else {
-        failure.invoke("FACE_UNBIND_FAILED");
+        failure.invoke("UNBINDFACE: FACE_UNBIND_FAILED");
       }
     } catch (Exception e) {
       e.printStackTrace();
@@ -820,7 +824,7 @@ public class FacePass extends ReactContextBaseJavaModule
   public void getAllGroup(Callback success, Callback failure) {
     mFacePassHandler = FacePassHandlerHolder.getMyObject();
     if (mFacePassHandler == null) {
-      failure.invoke("FACEPASSHANDLER_NULL_ERROR");
+      failure.invoke("GETALLGROUP: FACEPASSHANDLER_NULL_ERROR");
       return;
     }
     try {
@@ -830,7 +834,7 @@ public class FacePass extends ReactContextBaseJavaModule
         WritableArray array = Arguments.fromList(data);
         success.invoke(array);
       } else {
-        failure.invoke("EMPTY_LOCAL_GROUP_ERROR");
+        failure.invoke("GETALLGROUP: EMPTY_LOCAL_GROUP_ERROR");
       }
     } catch (FacePassException e) {
       e.printStackTrace();
@@ -843,24 +847,24 @@ public class FacePass extends ReactContextBaseJavaModule
   public void checkGroupExist(String groupname,Callback success, Callback failure){
      mFacePassHandler = FacePassHandlerHolder.getMyObject();
     if (mFacePassHandler == null) {
-      failure.invoke("FACEPASSHANDLER_NULL_ERROR");
+      failure.invoke("CHECKGROUPEXIST: FACEPASSHANDLER_NULL_ERROR");
       return;
     }
     Boolean isLocalGroupExist=false;
     try {
       String[] localGroups = mFacePassHandler.getLocalGroups();
       if (localGroups == null || localGroups.length == 0) {
-        failure.invoke("EMPTY_LOCAL_GROUP_ERROR");
+        failure.invoke("CHECKGROUPEXIST: EMPTY_LOCAL_GROUP_ERROR");
         return;
       }
       for (String group : localGroups) {
         if (groupname.equals(group)) {
           isLocalGroupExist=true;
-          success.invoke("LOCALGROUP_FOUND");
+          success.invoke("CHECKGROUPEXIST: LOCALGROUP_FOUND");
         }
       }
       if (!isLocalGroupExist) {
-        failure.invoke("LOCAL_GROUP_NOT_FOUND");
+        failure.invoke("CHECKGROUPEXIST: LOCAL_GROUP_NOT_FOUND");
       }
     } catch (
 
@@ -873,12 +877,12 @@ public class FacePass extends ReactContextBaseJavaModule
   public void createGroup(String groupNameEt, Callback success, Callback failure) {
     mFacePassHandler = FacePassHandlerHolder.getMyObject();
     if (mFacePassHandler == null) {
-      failure.invoke("FACEPASSHANDLER_NULL_ERROR");
+      failure.invoke("CREATEGROUP: FACEPASSHANDLER_NULL_ERROR");
       return;
     }
     String groupName = groupNameEt;
     if (TextUtils.isEmpty(groupName)) {
-      failure.invoke("EMPTY_GROUP_INPUT_ERROR");
+      failure.invoke("CREATEGROUP: EMPTY_GROUP_INPUT_ERROR");
       return;
     }
     boolean isSuccess = false;
@@ -888,9 +892,9 @@ public class FacePass extends ReactContextBaseJavaModule
       e.printStackTrace();
     }
     if (isSuccess) {
-      success.invoke("GROUP_CREATION_SUCCESS");
+      success.invoke("CREATEGROUP: GROUP_CREATION_SUCCESS");
     } else {
-      failure.invoke("GROUP_CREATION_FAILED");
+      failure.invoke("CREATEGROUP: GROUP_CREATION_FAILED");
     }
 
   }
@@ -900,7 +904,7 @@ public class FacePass extends ReactContextBaseJavaModule
     mFacePassHandler = FacePassHandlerHolder.getMyObject();
 
     if (mFacePassHandler == null) {
-      failure.invoke("FACEPASSHANDLER_NULL_ERROR");
+      failure.invoke("DELETEGROUP: FACEPASSHANDLER_NULL_ERROR");
       return;
     }
     String groupName = groupNameEt;
@@ -921,7 +925,7 @@ public class FacePass extends ReactContextBaseJavaModule
         e.printStackTrace();
       }
     } else {
-      failure.invoke("GROUP_DELETION_FAILED");
+      failure.invoke("DELETEGROUP: GROUP_DELETION_FAILED");
     }
   }
 
@@ -965,6 +969,11 @@ public class FacePass extends ReactContextBaseJavaModule
   }
 
   @ReactMethod
+  public void setExposureCompensation(int value) {
+    SettingVar.exposureCompensation = value;
+  }
+
+  @ReactMethod
   public void enableIRPreview(Boolean enable) {
     SettingVar.showIRPreview = enable;
   }
@@ -986,9 +995,9 @@ public class FacePass extends ReactContextBaseJavaModule
       if (mFacePassHandler != null) {
         mFacePassHandler.reset();
         mFacePassHandler.release();
-        success.invoke("FACEPASSHANDLER_RELEASED");
+        success.invoke("RELEASEFACEPASS: FACEPASSHANDLER_RELEASED");
       }else{
-        success.invoke("FACEPASSHANDLER_IS_NULL");
+        success.invoke("RELEASEFACEPASS: FACEPASSHANDLER_IS_NULL");
       }
 
   }
@@ -1053,6 +1062,12 @@ public class FacePass extends ReactContextBaseJavaModule
       requestQueue.add(jsonObjectRequest);
     }
 
+  }
+
+  @ReactMethod
+  public void hideNavigationBar(Boolean bool){
+        qZhengManager = new QZhengIFManager(context);
+        qZhengManager.disableStatusBar(bool);
   }
 
   @Override

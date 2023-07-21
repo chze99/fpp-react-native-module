@@ -24,4 +24,5 @@ public class SettingVar {
     public static boolean showIRPreview = false;
     public static int recognitionDisplayTime = 2500;
     public static boolean qrEnable = false;
+    public static int exposureCompensation = 0;
 }

@@ -19,6 +19,7 @@ import com.fppreactnativemodule.SettingVar;
 
 public class CameraManager implements CameraPreview.CameraPreviewListener {
     protected boolean front = false;
+    protected int exposureCompensation = 0;
 
     protected Camera camera = null;
 
@@ -176,6 +177,13 @@ public class CameraManager implements CameraPreview.CameraPreviewListener {
                                 String.format("camera rotation: %d %d %d", degrees, info.orientation, previewRotation));
                         camera.setDisplayOrientation(previewRotation);
                         Camera.Parameters param = camera.getParameters();
+                        
+                        int minExpCom=param.getMinExposureCompensation();
+                        int maxExpCom=param.getMaxExposureCompensation();
+                        List<String> a = param.getSupportedWhiteBalance();
+
+                        param.setExposureCompensation(exposureCompensation);
+
                         if (manualHeight > 0 && manualWidth > 0
                                 && isSupportedPreviewSize(manualWidth, manualHeight, camera)) {
                             param.setPreviewSize(manualWidth, manualHeight);
@@ -240,6 +248,17 @@ public class CameraManager implements CameraPreview.CameraPreviewListener {
         this.manualHeight = height;
         this.manualWidth = width;
         this.front = front;
+        return open(windowManager);
+    }
+
+    public boolean open(WindowManager windowManager, boolean front, int width, int height, int exposureCompensation) {
+        if (state == CameraState.OPENING) {
+            return false;
+        }
+        this.manualHeight = height;
+        this.manualWidth = width;
+        this.front = front;
+        this.exposureCompensation = exposureCompensation;
         return open(windowManager);
     }
 

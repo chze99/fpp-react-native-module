@@ -253,6 +253,14 @@ export function setRecognitionDisplayTime(time: Number): Promise<void> {
   return FacePassReactNativeModule.setRecognitionDisplayTime(time);
 }
 
+export function hideNavigationBar(enable: Boolean): Promise<void> {
+  return FacePassReactNativeModule.hideNavigationBar(enable);
+}
+
+export function setExposureCompensation(value: Number): Promise<void> {
+  return FacePassReactNativeModule.setExposureCompensation(value);
+}
+
 export function releaseFacePassHandler(): Promise<void> {
   return new Promise((resolve, reject) => {
     FacePassReactNativeModule.releaseFacePassHandler(

@@ -116,6 +116,7 @@ import static com.fppreactnativemodule.utils.Helper.getSerialNumber;
 import com.q_zheng.QZhengGPIOManager;
 import com.q_zheng.QZhengIFManager;
 import com.q_zheng.QZGpio;
+import com.q_zheng.QZWiegand;
 
 public class FacePassFragment extends Fragment implements CameraManager.CameraListener, View.OnClickListener {
   private Context context;
@@ -155,6 +156,7 @@ public class FacePassFragment extends Fragment implements CameraManager.CameraLi
   int screenState = 0;
   private Toast mRecoToast;
   float faceTemperature = 0f;
+  int exposureCompensation = 0;
 
   public class RecognizeData {
     public byte[] message;
@@ -260,7 +262,15 @@ public class FacePassFragment extends Fragment implements CameraManager.CameraLi
     gpioManager = GPIOManager.getInstance(context);
     group_name = SettingVar.groupName;
     temperatureScan = SettingVar.temperatureScan;
+    exposureCompensation = SettingVar.exposureCompensation;
 
+    QZWiegand wiegand = QZWiegand.getInstance(context);
+        wiegand.startReading(new QZWiegand.QZWiegandCallBack() {
+            @Override
+            public void onNewData(byte[] data ) {
+                Log.d("WIEGAND", "wiegand new value " + data.toString());
+            }
+        });
     do {
       counter++;
       Log.v("doneInititialize", Boolean.toString(SettingVar.doneInitialize));
@@ -376,7 +386,7 @@ public class FacePassFragment extends Fragment implements CameraManager.CameraLi
     checkGroup();
     initToast();
     if (hasPermission()) {
-      manager.open(activity.getWindowManager(), false, cameraWidth, cameraHeight);
+      manager.open(activity.getWindowManager(), false, cameraWidth, cameraHeight,exposureCompensation);
       if (useIRCameraSupport) {
         mIRCameraManager.open(activity.getWindowManager(), true, cameraWidth, cameraHeight);
       }
@@ -685,6 +695,8 @@ public class FacePassFragment extends Fragment implements CameraManager.CameraLi
                           Log.i(DEBUG_TAG, "known ppl identified");
                             FacePassFace passFace = recognizeData.faceList[0];
                                WritableMap jsonObject = Arguments.createMap();
+                                FacePassImage passImage = recognizeData.image[0];
+                                jsonObject.putString("image", yuvToBase64(passImage));
                                 jsonObject.putString("faceToken", faceToken);
                                 jsonObject.putString("trackID",Long.toString(passFace.trackId));
                                 jsonObject.putString("searchScore",String.valueOf(result.detail.searchScore));

@@ -19,6 +19,7 @@ import {
   FacePass,
   enableQRScan,
   initData,
+  enableTemperature,
 } from 'facepass-react-native-module';
 import { useIsFocused } from '@react-navigation/native';
 function createFragment(viewId) {
@@ -96,6 +97,7 @@ export default function Home({ navigation }) {
 
   useEffect(() => {
     enableQRScan(false);
+    enableTemperature(true);
 
     // Add an event listener to receive the data
     const dataListener = eventEmitter.addListener(
@@ -106,7 +108,7 @@ export default function Home({ navigation }) {
           console.log('PARAMS', params);
           const facetoken = params.faceToken;
           const data = JSON.parse(await AsyncStorage.getItem(facetoken));
-          setImage(data.fileName);
+          setImage(params.image);
           setName(data.faceName);
         }
       }
@@ -211,7 +213,7 @@ export default function Home({ navigation }) {
             ref={faceDetectionImage}
             style={{ opacity: 0, width: 70, height: 70 }}
             source={{
-              uri: 'file:///' + image,
+              uri: 'data:image/png;base64,' + image,
             }}
           />
           <View style={{ display: 'flex', flexDirection: 'column' }}>
