@@ -16,13 +16,22 @@
         android:background="#ff000000"
         android:gravity="center">
 
+         <com.fppreactnativemodule.camera.CameraPreview
+            android:id="@+id/preview"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="center" />
 
         <com.fppreactnativemodule.camera.CameraPreview
-            android:id="@+id/preview"
-            android:layout_width="900px"
-            android:layout_height="900px"
-            android:layout_gravity="center_vertical" />
-
+                android:id="@+id/previewIR"
+                android:layout_width="200px"
+                android:layout_height="200px"
+                android:layout_gravity="right" />
+     <com.fppreactnativemodule.camera.CameraPreview
+                android:id="@+id/previewIRHidden"
+                android:layout_width="1px"
+                android:layout_height="1px"
+                android:layout_gravity="right" />
         <com.fppreactnativemodule.FaceView
             android:id="@+id/fcview"
             android:layout_width="wrap_content"

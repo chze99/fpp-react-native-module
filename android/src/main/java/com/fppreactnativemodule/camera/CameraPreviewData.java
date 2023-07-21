@@ -1,6 +1,5 @@
 package com.fppreactnativemodule.camera;
 
-
 public class CameraPreviewData {
     public byte[] nv21Data;
 
@@ -12,7 +11,9 @@ public class CameraPreviewData {
 
     public boolean mirror;
 
-    public CameraPreviewData(byte[] nv21Data, int width, int height, int rotation, boolean mirror) {
+    
+    public CameraPreviewData(byte[] nv21Data, int width, int height, int rotation, boolean mirror
+           ) {
         super();
         this.nv21Data = nv21Data;
         this.width = width;
@@ -20,4 +21,7 @@ public class CameraPreviewData {
         this.rotation = rotation;
         this.mirror = mirror;
     }
+
+
+
 }

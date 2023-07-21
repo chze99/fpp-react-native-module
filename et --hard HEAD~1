@@ -1,0 +1,48 @@
+*   9a7a2b1	 (refs/stash) WIP on master: 07d6632 Merge branch 'master' of https://github.com/chze99/fpp-react-native-module
+[31m|[m[32m\[m  
+[31m|[m * ad81387	 index on master: 07d6632 Merge branch 'master' of https://github.com/chze99/fpp-react-native-module
+[31m|[m[31m/[m  
+*   07d6632	 (HEAD -> master) Merge branch 'master' of https://github.com/chze99/fpp-react-native-module
+[33m|[m[34m\[m  
+* [34m|[m ec7a3da	 test: update example/fixed bug
+* [34m|[m 023ceff	 test: update example/fix bug
+* [34m|[m 1f3e09f	 test: update example/fix bug
+* [34m|[m   b987e9b	 Merge branch 'main'
+[35m|[m[36m\[m [34m\[m  
+[35m|[m * [34m\[m   86db3c5	 test: main
+[35m|[m [1;31m|[m[1;32m\[m [34m\[m  
+[35m|[m [1;31m|[m * [34m|[m 57b5d9c	 Initial commit
+[35m|[m [1;31m|[m  [34m/[m  
+[35m|[m [1;31m|[m [34m|[m * 20e7e0c	 (refs/original/refs/heads/master) test: update example/fixed bug
+[35m|[m [1;31m|[m [34m|[m * d8453d0	 test: update example/fix bug
+[35m|[m [1;31m|[m [34m|[m * ebc9dba	 test: update example/fix bug
+[35m|[m [1;31m|[m [34m|[m[34m/[m  
+[35m|[m [1;31m|[m *   cfbbf39	 (origin/master) Merge branch 'main'
+[35m|[m [1;31m|[m [35m|[m[1;35m\[m  
+[35m|[m [1;31m|[m[35m/[m [1;35m/[m  
+[35m|[m[35m/[m[1;31m|[m [1;35m|[m   
+[35m|[m [1;31m|[m *   6343063	 (origin/main, main) test: main
+[35m|[m [1;31m|[m [1;31m|[m[31m\[m  
+[35m|[m [1;31m|[m[1;31m/[m [31m/[m  
+[35m|[m [1;31m|[m * b8756a1	 Initial commit
+* [1;31m|[m e996efe	 test: update example
+* [1;31m|[m 0dbd2be	 (tag: v0.1.11) 0.1.11
+* [1;31m|[m a7d6765	 test: add temperature & elevator
+* [1;31m|[m ae34a8f	 test: add ir support
+* [1;31m|[m 48fcbc0	 test: commit before add IR camera
+* [1;31m|[m a5d81dd	 test: commit before add IR camera
+* [1;31m|[m 7c7db3e	 test: add new changes
+* [1;31m|[m 49fef49	 test: add example copy from other project
+* [1;31m|[m 74b3191	 test: change package name to facepass-react-native-module
+* [1;31m|[m 59acbd9	 test: first version
+* [1;31m|[m c4559ed	 test: make all thing react based
+* [1;31m|[m 79bd462	 test: make all thing react based
+* [1;31m|[m 0486141	 test: commit
+* [1;31m|[m 355a675	 test: remove unneccessary code/optimize code to remove usage of shared preference
+* [1;31m|[m cca90fe	 test: remove sharedpreference usage
+* [1;31m|[m fb3c05c	 test: remove unused imports
+* [1;31m|[m 29c210b	 test: test_readme
+* [1;31m|[m 6208d82	 test: test_readme
+[1;31m|[m[1;31m/[m  
+* 1e74ef0	 test: test_init
+* 9a63129	 chore: initial commit

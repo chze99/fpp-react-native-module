@@ -26,9 +26,7 @@ import java.util.Map;
 public class FacePassViewManager extends ViewGroupManager<FrameLayout> {
 
   public final int COMMAND_CREATE = 1;
-  public final int COMMAND_DESTROY = 2;
   public final int COMMAND_REMOVE = 3;
-  public final int COMMAND_NEWREMOVE = 4;
   private int propWidth;
   private int propHeight;
   final FacePassFragment myFragment = new FacePassFragment();
@@ -52,7 +50,7 @@ public class FacePassViewManager extends ViewGroupManager<FrameLayout> {
   @Nullable
   @Override
   public Map<String, Integer> getCommandsMap() {
-    return MapBuilder.of("create", COMMAND_CREATE,"destroy",COMMAND_DESTROY,"remove",COMMAND_REMOVE);
+    return MapBuilder.of("create", COMMAND_CREATE,"remove",COMMAND_REMOVE);
   }
 
 
@@ -69,9 +67,6 @@ public class FacePassViewManager extends ViewGroupManager<FrameLayout> {
     switch (commandIdInt) {
       case COMMAND_CREATE:
         createFragment(root, reactNativeViewId);
-        break;
-      case COMMAND_DESTROY:
-        destroyFragment();
         break;
       case COMMAND_REMOVE:
         removeFragment(root, reactNativeViewId);
@@ -91,9 +86,7 @@ public class FacePassViewManager extends ViewGroupManager<FrameLayout> {
     }
   }
 
-  /**
-   * Replace your React Native view with a custom fragment
-   */
+
   public void createFragment(FrameLayout root, int reactNativeViewId) {
     ViewGroup parentView = (ViewGroup) root.findViewById(reactNativeViewId);
     setupLayout(parentView);
@@ -104,10 +97,7 @@ public class FacePassViewManager extends ViewGroupManager<FrameLayout> {
             .commit();
   }
 
-  public void destroyFragment(){
-    final FacePassFragment myFragment = new FacePassFragment();
-    myFragment.onDestroy();
-  }
+
 
 
   public void removeFragment(FrameLayout root, int reactNativeViewId) {
@@ -133,7 +123,6 @@ public class FacePassViewManager extends ViewGroupManager<FrameLayout> {
    * Layout all children properly
    */
   public void manuallyLayoutChildren(View view) {
-      // propWidth and propHeight coming from react-native props
       int width = propWidth;
       int height = propHeight;
 

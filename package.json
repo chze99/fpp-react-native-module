@@ -1,7 +1,7 @@
 {
-  "name": "@chze99/fpp-react-native-module",
-  "version": "0.1.0",
-  "description": "test",
+  "name": "facepass-react-native-module",
+  "version": "0.1.34",
+  "description": "A package to use FacePass SDK in react native",
   "main": "lib/commonjs/index",
   "module": "lib/module/index",
   "types": "lib/typescript/index.d.ts",
@@ -13,6 +13,7 @@
     "android",
     "ios",
     "cpp",
+    "CHANGELOG.md",
     "*.podspec",
     "!lib/typescript/example",
     "!ios/build",
@@ -156,7 +157,5 @@
       ]
     ]
   },
-  "dependencies": {
-    "react-native-default-preference": "^1.4.4"
-  }
+  "dependencies": {}
 }

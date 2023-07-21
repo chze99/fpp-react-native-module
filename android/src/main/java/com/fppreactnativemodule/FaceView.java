@@ -13,9 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-/**
- * Created by wangjingyi on 28/03/2017.
- */
+
 
 public class FaceView extends View {
     private List<String> ids;

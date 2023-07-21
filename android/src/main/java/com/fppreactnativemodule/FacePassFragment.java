@@ -1,27 +1,14 @@
 package com.fppreactnativemodule;
 
-import android.os.Bundle;
-import android.view.LayoutInflater;
-import android.view.View;
 import android.view.ViewGroup;
-import android.graphics.Typeface;
-import android.content.SharedPreferences;
-import android.content.res.AssetManager;
 import android.widget.LinearLayout;
-import android.widget.FrameLayout;
 import androidx.fragment.app.Fragment;
-import android.view.WindowManager;
-import android.content.Context;
-import android.widget.Button;
 import android.util.Log;
 import android.util.Base64;
 
 import androidx.annotation.NonNull;
 import android.Manifest;
 import android.app.Activity;
-import android.app.AlertDialog;
-import android.app.FragmentTransaction;
-import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.CursorLoader;
 import android.content.Intent;
@@ -30,7 +17,6 @@ import android.content.res.AssetManager;
 import android.content.res.Configuration;
 import android.database.Cursor;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.ImageFormat;
 import android.graphics.Matrix;
 import android.graphics.Rect;
@@ -40,7 +26,6 @@ import android.graphics.YuvImage;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.Handler;
 import android.provider.MediaStore;
 import android.text.SpannableString;
@@ -50,20 +35,16 @@ import android.text.style.TypefaceSpan;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.LruCache;
-import android.view.Display;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.WindowManager;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.FrameLayout;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
-import android.widget.ListView;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 
 import com.android.volley.AuthFailureError;
 import com.android.volley.NetworkResponse;
@@ -73,29 +54,18 @@ import com.android.volley.VolleyLog;
 import com.android.volley.toolbox.HttpHeaderParser;
 import com.android.volley.toolbox.ImageLoader;
 import com.android.volley.toolbox.Volley;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.VolleyError;
 
-import com.facebook.react.bridge.Promise;
-import com.facebook.react.bridge.ReactApplicationContext;
-import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactContext;
-import com.facebook.react.bridge.ReactMethod;
-import com.facebook.react.bridge.ActivityEventListener;
-import com.facebook.react.bridge.BaseActivityEventListener;
-import com.facebook.react.module.annotations.ReactModule;
-import com.facebook.react.bridge.LifecycleEventListener;
 import com.facebook.react.bridge.Callback;
-import com.facebook.react.bridge.WritableMap;
-import com.facebook.react.uimanager.events.RCTEventEmitter;
-import com.facebook.react.ReactRootView;
-import com.facebook.react.bridge.Arguments;
 import com.facebook.react.ReactInstanceManager;
 import com.facebook.react.ReactApplication;
-import android.content.SharedPreferences;
-
-import android.database.sqlite.SQLiteDatabase;
-import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
+import com.facebook.react.bridge.WritableMap;
+import com.facebook.react.bridge.Arguments;
+
+import org.json.JSONException;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.entity.ContentType;
@@ -107,8 +77,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import mcv.facepass.FacePassException;
@@ -127,25 +95,41 @@ import mcv.facepass.types.FacePassRecognitionResult;
 import mcv.facepass.types.FacePassAgeGenderResult;
 import mcv.facepass.types.FacePassRecognitionState;
 import mcv.facepass.types.FacePassTrackOptions;
+import com.example.yfaceapi.GPIOManager;
+import android.util.Pair;
+import com.google.android.gms.tasks.OnSuccessListener;
 
-import  com.fppreactnativemodule.camera.CameraManager;
-import  com.fppreactnativemodule.camera.CameraPreview;
-import  com.fppreactnativemodule.camera.CameraPreviewData;
-import  com.fppreactnativemodule.utils.FileUtil;
+import com.google.mlkit.vision.common.InputImage;
+import com.google.mlkit.vision.barcode.common.Barcode;
+import com.google.mlkit.vision.barcode.BarcodeScanner;
+import com.google.mlkit.vision.barcode.BarcodeScannerOptions;
+import com.google.mlkit.vision.barcode.BarcodeScanning;
+
+
+import com.fppreactnativemodule.camera.CameraManager;
+import com.fppreactnativemodule.camera.CameraPreview;
+import com.fppreactnativemodule.camera.CameraPreviewData;
+import com.fppreactnativemodule.camera.ComplexFrameHelper;
+import com.fppreactnativemodule.utils.FileUtil;
+import static com.fppreactnativemodule.utils.Helper.getSerialNumber;
+
+import com.q_zheng.QZhengGPIOManager;
+import com.q_zheng.QZhengIFManager;
+import com.q_zheng.QZGpio;
+import com.q_zheng.QZWiegand;
 
 public class FacePassFragment extends Fragment implements CameraManager.CameraListener, View.OnClickListener {
   private Context context;
-  private FragmentTransaction currentTransaction;
   Activity activity;
 
-private enum FacePassSDKMode {
+  private enum FacePassSDKMode {
     MODE_ONLINE,
     MODE_OFFLINE
   };
+
   private static FacePassSDKMode SDK_MODE = FacePassSDKMode.MODE_OFFLINE;
   private static final String DEBUG_TAG = "FacePassDemo";
-  private static String recognize_url;
-  public static String group_name = "fppreactnative";
+  public static String group_name = "default";
   private static final int PERMISSIONS_REQUEST = 1;
   private static final String PERMISSION_CAMERA = Manifest.permission.CAMERA;
   private static final String PERMISSION_WRITE_STORAGE = Manifest.permission.WRITE_EXTERNAL_STORAGE;
@@ -156,69 +140,89 @@ private enum FacePassSDKMode {
       PERMISSION_INTERNET, PERMISSION_ACCESS_NETWORK_STATE };
   FacePassHandler mFacePassHandler;
   private CameraManager manager;
-  private TextView faceBeginTextView;
+  private CameraManager mIRCameraManager;
   private CameraPreview cameraView;
+  private CameraPreview mIRCameraView;
   private boolean isLocalGroupExist = false;
+  
   private FaceView faceView;
   private ScrollView scrollView;
   private static boolean cameraFacingFront = true;
   private int cameraRotation;
   private static final int cameraWidth = 1280;
   private static final int cameraHeight = 720;
-  private int mSecretNumber = 0;
-  private static final long CLICK_INTERVAL = 600;
-  private long mLastClickTime;
-  public String imagepath;
   private int heightPixels;
   private int widthPixels;
-  private Promise promise;
   int screenState = 0;
-  Button visible;
-  LinearLayout ll;
-  FrameLayout frameLayout;
-  private int buttonFlag = 0;
-  private Button settingButton;
-  private boolean ageGenderEnabledGlobal;
   private Toast mRecoToast;
+  float faceTemperature = 0f;
+  int exposureCompensation = 0;
+
   public class RecognizeData {
     public byte[] message;
     public FacePassTrackOptions[] trackOpt;
+    public FacePassImage[] image;
+    public FacePassFace[] faceList;
     public RecognizeData(byte[] message) {
       this.message = message;
       this.trackOpt = null;
+      this.image = null;
+      this.faceList = null;
     }
+
     public RecognizeData(byte[] message, FacePassTrackOptions[] opt) {
       this.message = message;
       this.trackOpt = opt;
+      this.image = null;
+      this.faceList = null;
+
     }
+
+    public RecognizeData(byte[] message, FacePassTrackOptions[] opt,  FacePassImage[] image) {
+      this.message = message;
+      this.trackOpt = opt;
+      this.image = image;
+      this.faceList = null;
+
+    }
+
+    public RecognizeData(byte[] message, FacePassTrackOptions[] opt,  FacePassImage[] image, FacePassFace[] faceList) {
+      this.message = message;
+      this.trackOpt = opt;
+      this.image = image;
+      this.faceList = faceList;
+    }
+
   }
+
   ArrayBlockingQueue<RecognizeData> mRecognizeDataQueue;
   ArrayBlockingQueue<CameraPreviewData> mFeedFrameQueue;
+  ArrayBlockingQueue<CameraPreviewData> mFeedFrameIRQueue;
+
   RecognizeThread mRecognizeThread;
   FeedFrameThread mFeedFrameThread;
-  private ImageView mSyncGroupBtn;
-  private AlertDialog mSyncGroupDialog;
-  private ImageView mFaceOperationBtn;
   private FaceImageCache mImageCache;
   private Handler mAndroidHandler;
-  private CameraPreviewData mCurrentImage;
-  private Button mSDKModeBtn;
-  int mId = 0;
+  Boolean appPaused = false;
+  Boolean enableLight = true;
+  Boolean qrEnable = false;
+  private GPIOManager gpioManager;
+  Boolean useIRCameraSupport = false;
+  boolean temperatureScan = false;
+  QZhengGPIOManager QZhengGPIOInstance;
+  QZhengIFManager qZhengManager;
+  public long lastID=-1;
+    BarcodeScanner scanner;
 
-
-  protected void commitNowAllowingStateLoss() {
-    if (currentTransaction != null) {
-      currentTransaction.commitNowAllowingStateLoss();
-      currentTransaction = null;
-    }
-  }
-
-
+  private ReactInstanceManager mReactInstanceManager;
+  public boolean detected=false;
+  public Boolean timeOut = false;
+  public Boolean showIRPreview = false;
+  public int recognitionDisplayTime = 2500;
 
   @Override
   public void onAttach(Context context) {
     super.onAttach(context);
-    commitNowAllowingStateLoss();
     context = context;
     activity = getActivity();
   }
@@ -235,36 +239,77 @@ private enum FacePassSDKMode {
   public void onViewCreated(View view, Bundle savedInstanceState) {
     super.onViewCreated(view, savedInstanceState);
 
-
   }
+
 
   @Override
   public void onStart() {
     super.onStart();
-    Log.v("onstart","START");
+    int counter = 0;
     mImageCache = new FaceImageCache();
     mRecognizeDataQueue = new ArrayBlockingQueue<RecognizeData>(5);
     mFeedFrameQueue = new ArrayBlockingQueue<CameraPreviewData>(1);
+    mFeedFrameIRQueue = new ArrayBlockingQueue<CameraPreviewData>(1);
+    useIRCameraSupport = SettingVar.useIRCameraSupport;
+    showIRPreview = SettingVar.showIRPreview;
+    recognitionDisplayTime =  SettingVar.recognitionDisplayTime;
+    qrEnable = SettingVar.qrEnable;
     initAndroidHandler();
     View view = getView();
     initView(view);
-    if (!hasPermission()) {
-      requestPermission();
-    } else {
-      initFacePassSDK();
-    }
-    SharedPreferences temp = activity.getSharedPreferences(
-        "fppreactnative", Context.MODE_PRIVATE);
-    group_name = temp.getString("group_name","fpp_group");
-    Log.v("groupname",group_name);
-    mFacePassHandler = FacePassHandlerHolder.getMyObject();
+    QZhengGPIOInstance = QZhengGPIOManager.getInstance(context);
+    qZhengManager = new QZhengIFManager(context);
+    gpioManager = GPIOManager.getInstance(context);
+    group_name = SettingVar.groupName;
+    temperatureScan = SettingVar.temperatureScan;
+    exposureCompensation = SettingVar.exposureCompensation;
 
-    mRecognizeThread = new RecognizeThread();
-    mRecognizeThread.start();
-    mFeedFrameThread = new FeedFrameThread();
-    mFeedFrameThread.start();
+    QZWiegand wiegand = QZWiegand.getInstance(context);
+        wiegand.startReading(new QZWiegand.QZWiegandCallBack() {
+            @Override
+            public void onNewData(byte[] data ) {
+                Log.d("WIEGAND", "wiegand new value " + data.toString());
+            }
+        });
+    do {
+      counter++;
+      Log.v("doneInititialize", Boolean.toString(SettingVar.doneInitialize));
+      Log.v("Counter", Integer.toString(counter));
+
+      if (SettingVar.doneInitialize == true) {
+
+        if (!hasPermission()) {
+          requestPermission();
+        }
+
+        if (enableLight) {
+          // changeLight("white");
+        }
+        if (temperatureScan) {
+          TemperatureService.startService(activity.getApplicationContext());
+        }
+        BarcodeScannerOptions options =
+                new BarcodeScannerOptions.Builder()
+                        .setBarcodeFormats(Barcode.FORMAT_QR_CODE)
+                        .build();
+
+        scanner = BarcodeScanning.getClient(options);
+
+        mFacePassHandler = FacePassHandlerHolder.getMyObject();
+
+        mRecognizeThread = new RecognizeThread();
+        mRecognizeThread.start();
+
+        mFeedFrameThread = new FeedFrameThread();
+        mFeedFrameThread.start();
+      }
+
+      if (counter >= 29000 && timeOut == false) {
+        toast("Initializing time out,please restart your app");
+        timeOut = true;
+      }
+    } while (SettingVar.doneInitialize == false && counter < 30000);
   }
-
 
   private void initView(View view) {
     int windowRotation = ((WindowManager) (activity.getApplicationContext().getSystemService(Context.WINDOW_SERVICE)))
@@ -280,36 +325,12 @@ private enum FacePassSDKMode {
     }
     Log.i(DEBUG_TAG, "Rotation: cameraRation: " + cameraRotation);
     cameraFacingFront = true;
-    SharedPreferences temp = activity.getSharedPreferences(
-        "fppreactnative", Context.MODE_PRIVATE);
-    String setting=temp.getString("settings","");
-      if (setting != "") {
-        try {
-          JSONObject settings = new JSONObject(setting);
-          Log.d("TAG", "impl: " + Boolean.toString(settings.getBoolean("cameraFacingFront")));
-          SettingVar.isSettingAvailable = settings.getBoolean("isSettingAvailable");
-          SettingVar.isCross = settings.getBoolean("isCross");
-          SettingVar.faceRotation = settings.getInt("faceRotation");
-          SettingVar.cameraPreviewRotation = settings.getInt("cameraPreviewRotation");
-          SettingVar.cameraFacingFront = settings.getBoolean("cameraFacingFront");
-          if (SettingVar.isSettingAvailable) {
-            cameraRotation = SettingVar.faceRotation;
-            cameraFacingFront = SettingVar.cameraFacingFront;
-          }
-        } catch (JSONException e) {
-          Log.d("JSONERROR", e.toString());
-        }
-      } else {
-        SettingVar.isSettingAvailable = false;
-        SettingVar.isCross = false;
-        SettingVar.faceRotation = 270;
-        SettingVar.cameraPreviewRotation = 90;
-        SettingVar.cameraFacingFront = true;
-        if (SettingVar.isSettingAvailable) {
-          cameraRotation = SettingVar.faceRotation;
-          cameraFacingFront = SettingVar.cameraFacingFront;
-        }
-      }
+
+    if (SettingVar.isSettingAvailable) {
+      cameraRotation = SettingVar.faceRotation;
+      cameraFacingFront = SettingVar.cameraFacingFront;
+    }
+
     Log.i(DEBUG_TAG, "Rotation: screenRotation: " + String.valueOf(windowRotation));
     Log.i(DEBUG_TAG, "Rotation: new cameraRation: " + cameraRotation);
     final int mCurrentOrientation = getResources().getConfiguration().orientation;
@@ -331,13 +352,31 @@ private enum FacePassSDKMode {
     manager = new CameraManager();
     cameraView = (CameraPreview) getView().findViewById(R.id.preview);
     manager.setPreviewDisplay(cameraView);
+    if (useIRCameraSupport) {
+      mIRCameraManager = new CameraManager();
+      if (showIRPreview) {
+        mIRCameraView = (CameraPreview) getView().findViewById(R.id.previewIR);
+      } else {
+        mIRCameraView = (CameraPreview) getView().findViewById(R.id.previewIRHidden);
+      }
+      mIRCameraManager.setPreviewDisplay(mIRCameraView);
+      mIRCameraManager.setListener(new CameraManager.CameraListener() {
+        @Override
+        public void onPictureTaken(CameraPreviewData cameraPreviewData) {
+
+          ComplexFrameHelper.addIRFrame(cameraPreviewData);
+        }
+      });
+    }
     manager.setListener(this);
-    manager.open(activity.getWindowManager(), false, cameraWidth, cameraHeight);
+
   }
 
   @Override
   public void onPause() {
     Log.v("OnPause", "Pause");
+    // changeLight("off");
+    appPaused = true;
     super.onPause();
 
   }
@@ -347,21 +386,22 @@ private enum FacePassSDKMode {
     checkGroup();
     initToast();
     if (hasPermission()) {
-      manager.open(activity.getWindowManager(), false, cameraWidth, cameraHeight);
+      manager.open(activity.getWindowManager(), false, cameraWidth, cameraHeight,exposureCompensation);
+      if (useIRCameraSupport) {
+        mIRCameraManager.open(activity.getWindowManager(), true, cameraWidth, cameraHeight);
+      }
     }
     adaptFrameLayout();
     super.onResume();
   }
 
+
+
+
   private void initAndroidHandler() {
 
     mAndroidHandler = new Handler();
 
-  }
-
-  private void initFacePassSDK() {
-    FacePassHandler.initSDK(activity.getApplicationContext());
-    Log.d("FacePassDemo", FacePassHandler.getVersion());
   }
 
   private void checkGroup() {
@@ -376,7 +416,7 @@ private enum FacePassSDKMode {
         faceView.post(new Runnable() {
           @Override
           public void run() {
-            toast("没库，请创建" + group_name + "底库");
+            toast("LocalGroup not found,Please create " + group_name + " Local Group");
           }
         });
         return;
@@ -392,7 +432,7 @@ private enum FacePassSDKMode {
 
           @Override
           public void run() {
-            toast("请创建" + group_name + "底库");
+            toast("Please create " + group_name + " Local group");
           }
         });
       }
@@ -405,8 +445,59 @@ private enum FacePassSDKMode {
 
   @Override
   public void onPictureTaken(CameraPreviewData cameraPreviewData) {
-    mFeedFrameQueue.offer(cameraPreviewData);
-    Log.i(DEBUG_TAG, "feedframe");
+    if (useIRCameraSupport) {
+      ComplexFrameHelper.addRgbFrame(cameraPreviewData);
+    } else {
+      mFeedFrameQueue.offer(cameraPreviewData);
+    }
+    if(qrEnable==true){
+    detectQRCode(cameraPreviewData);
+}
+  }
+
+  public void detectQRCode(CameraPreviewData cameraPreviewData) {
+
+    InputImage image = InputImage.fromByteArray(cameraPreviewData.nv21Data,
+        cameraPreviewData.width,
+        cameraPreviewData.height,
+        cameraPreviewData.rotation,
+        InputImage.IMAGE_FORMAT_NV21);
+    scanner.process(image)
+        .addOnSuccessListener(new OnSuccessListener<List<Barcode>>() {
+          @Override
+          public void onSuccess(List<Barcode> barcodes) {
+            for (Barcode barcode : barcodes) {
+              String uid = barcode.getRawValue();
+              // Log.d("QR counter", String.valueOf(recognitionIntervalCounter));
+              sendQRDataToReactNative(uid);
+              // if (recognitionIntervalCounter <= 0) {
+              //   if (loadedUsers.has(uid)) {
+              //     faceCheckIn(0, null, 100, 1, null, null, true, uid);
+              //   } else {
+              //     toast("No access or invalid QR code.");
+              //   }
+              //   recognitionIntervalCounter = recognitionInterval;
+              // }
+            }
+          }
+        });
+
+  }
+
+  public void detectBrightness(CameraPreviewData cameraPreviewData) {
+    long sumY = 0;
+    for (int j = 0, yp = 0; j < cameraPreviewData.height; j++) {
+      for (int i = 0; i < cameraPreviewData.width; i++, yp++) {
+        int y = (0xff & ((int) cameraPreviewData.nv21Data[yp]));
+        if (y < 0) {
+          y = 0;
+        }
+        sumY += y;
+      }
+    }
+    int brightness = (int) sumY / (cameraPreviewData.width * cameraPreviewData.height);
+
+    Log.d("brightness", String.valueOf(brightness));
   }
 
   private class FeedFrameThread extends Thread {
@@ -415,9 +506,15 @@ private enum FacePassSDKMode {
     @Override
     public void run() {
       while (!isInterrupt) {
+
+        Pair<CameraPreviewData, CameraPreviewData> framePair = null;
         CameraPreviewData cameraPreviewData = null;
         try {
-          cameraPreviewData = mFeedFrameQueue.take();
+          if (useIRCameraSupport) {
+            framePair = ComplexFrameHelper.takeComplexFrame();
+          } else {
+            cameraPreviewData = mFeedFrameQueue.take();
+          }
         } catch (InterruptedException e) {
           e.printStackTrace();
           continue;
@@ -425,20 +522,41 @@ private enum FacePassSDKMode {
         if (mFacePassHandler == null) {
           continue;
         }
-        long startTime = System.currentTimeMillis(); // 起始时间
-
+        long startTime = System.currentTimeMillis();
         FacePassImage image;
+        FacePassImage imageIR;
+
         try {
-          image = new FacePassImage(cameraPreviewData.nv21Data, cameraPreviewData.width, cameraPreviewData.height,
-              cameraRotation, FacePassImageType.NV21);
+
+          if (useIRCameraSupport) {
+
+            image = new FacePassImage(framePair.first.nv21Data, framePair.first.width, framePair.first.height,
+                cameraRotation, FacePassImageType.NV21);
+
+            imageIR = new FacePassImage(framePair.second.nv21Data, framePair.second.width, framePair.second.height,
+                cameraRotation, FacePassImageType.NV21);
+
+          } else {
+            image = new FacePassImage(cameraPreviewData.nv21Data, cameraPreviewData.width, cameraPreviewData.height,
+                cameraRotation, FacePassImageType.NV21);
+            imageIR = null;
+          }
         } catch (FacePassException e) {
           e.printStackTrace();
+          Log.v("Error FacePassImage Data", e.toString());
+
           continue;
         }
         FacePassDetectionResult detectionResult = null;
         try {
 
-          detectionResult = mFacePassHandler.feedFrame(image);
+          if (useIRCameraSupport) {
+            detectionResult = mFacePassHandler.feedFrameRGBIR(image, imageIR);
+
+          } else {
+            detectionResult = mFacePassHandler.feedFrame(image);
+
+          }
         } catch (FacePassException e) {
           e.printStackTrace();
         }
@@ -484,21 +602,16 @@ private enum FacePassSDKMode {
               if (detectionResult.images[i].rcAttr.respiratorType != FacePassRCAttribute.FacePassRespiratorType.INVALID
                   && detectionResult.images[i].rcAttr.respiratorType != FacePassRCAttribute.FacePassRespiratorType.NO_RESPIRATOR) {
                 float searchThreshold = 80f;
-              SharedPreferences temp = activity.getSharedPreferences(
-                  "fppreactnative", Context.MODE_PRIVATE);
-                String parameter=temp.getString("parameters","");
-                if(parameter!=""){
-                   try {
-                    JSONObject parameters = new JSONObject(parameter);
-                    searchThreshold = (float) parameters.getDouble("searchThreshold");
-                    }catch(JSONException e){
-                      Log.v("JSONERROR",e.toString());
-                    }
-                  } else {
-                    searchThreshold = 80f;
-                  }               
-                Log.v("searchThreshold",Float.toString(searchThreshold));
-                float livenessThreshold = -1.0f; // -1.0f will not change the liveness threshold
+
+                if (SettingVar.searchThreshold > 0) {
+
+                  searchThreshold = SettingVar.searchThreshold;
+
+                } else {
+                  searchThreshold = 80f;
+                }
+                Log.v("searchThreshold", Float.toString(searchThreshold));
+                float livenessThreshold = -1.0f;
                 trackOpts[i] = new FacePassTrackOptions(detectionResult.images[i].trackId, searchThreshold,
                     livenessThreshold);
               }
@@ -511,11 +624,14 @@ private enum FacePassSDKMode {
                   detectionResult.images[i].rcAttr.glassesType.ordinal(),
                   detectionResult.images[i].rcAttr.skinColorType.ordinal()));
             }
-            RecognizeData mRecData = new RecognizeData(detectionResult.message, trackOpts);
+            RecognizeData mRecData = new RecognizeData(detectionResult.message, trackOpts,detectionResult.images,detectionResult.faceList);
             mRecognizeDataQueue.offer(mRecData);
           }
         }
-        long endTime = System.currentTimeMillis(); 
+        if (temperatureScan) {
+          faceTemperature = TemperatureService.getTemperature();
+        }
+        long endTime = System.currentTimeMillis();
         long runTime = endTime - startTime;
         for (int i = 0; i < detectionResult.faceList.length; ++i) {
           Log.i("DEBUG_TAG",
@@ -530,7 +646,6 @@ private enum FacePassSDKMode {
     @Override
     public void interrupt() {
       isInterrupt = true;
-      // super.interrupt();
     }
 
   }
@@ -548,30 +663,87 @@ private enum FacePassSDKMode {
     return result;
   }
 
-  // recognize data
+
   private class RecognizeThread extends Thread {
 
     boolean isInterrupt;
-
+    boolean unknownDetected=false;
     @Override
     public void run() {
       while (!isInterrupt) {
         try {
           RecognizeData recognizeData = mRecognizeDataQueue.take();
           FacePassAgeGenderResult[] ageGenderResult = null;
-         
 
           if (isLocalGroupExist) {
             Log.d(DEBUG_TAG, "RecognizeData >>>>");
             FacePassRecognitionResult[][] recognizeResultArray = mFacePassHandler.recognize(group_name,
                 recognizeData.message, 1, recognizeData.trackOpt);
             if (recognizeResultArray != null && recognizeResultArray.length > 0) {
+              // unknownDetected=false;
+              Log.d(DEBUG_TAG, "Recognized >>>>");
               for (FacePassRecognitionResult[] recognizeResult : recognizeResultArray) {
                 if (recognizeResult != null && recognizeResult.length > 0) {
+                  Log.d(DEBUG_TAG, "Recognizedssss >>>>>");
                   for (FacePassRecognitionResult result : recognizeResult) {
                     String faceToken = new String(result.faceToken);
                     if (FacePassRecognitionState.RECOGNITION_PASS == result.recognitionState) {
-                      getFaceImageByFaceToken(result.trackId, faceToken, result);
+                      
+                      mAndroidHandler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                          Log.i(DEBUG_TAG, "known ppl identified");
+                            FacePassFace passFace = recognizeData.faceList[0];
+                               WritableMap jsonObject = Arguments.createMap();
+                                FacePassImage passImage = recognizeData.image[0];
+                                jsonObject.putString("image", yuvToBase64(passImage));
+                                jsonObject.putString("faceToken", faceToken);
+                                jsonObject.putString("trackID",Long.toString(passFace.trackId));
+                                jsonObject.putString("searchScore",String.valueOf(result.detail.searchScore));
+                                jsonObject.putString("searchThreshold",String.valueOf(result.detail.searchThreshold));
+                                jsonObject.putString("hairType",result.detail.rcAttr.hairType.toString());
+                                jsonObject.putString("beardType",result.detail.rcAttr.beardType.toString());
+                                jsonObject.putString("hatType",result.detail.rcAttr.hatType.toString());
+                                jsonObject.putString("respiratorType",result.detail.rcAttr.respiratorType.toString());
+                                jsonObject.putString("glassesType",result.detail.rcAttr.glassesType.toString());
+                                jsonObject.putString("skinColorType",result.detail.rcAttr.skinColorType.toString());                                    
+                            sendDataToReactNative(jsonObject);
+                            Handler handler = new Handler();
+                            handler.postDelayed(new Runnable() {
+                              @Override
+                              public void run() {
+                                sendStopToReactNative();
+                              }
+                              }, recognitionDisplayTime);
+                        }
+                      });
+ 
+                    }else{
+
+                    mAndroidHandler.post(new Runnable() {
+                            @Override
+                            public void run() {
+                              Log.i(DEBUG_TAG, "error no face in db");
+                              FacePassFace passFace = recognizeData.faceList[0];
+                              if(lastID!=passFace.trackId){
+                              lastID=passFace.trackId;
+                              FacePassImage passImage = recognizeData.image[0];
+                              WritableMap jsonObject = Arguments.createMap();
+                                jsonObject.putString("image", yuvToBase64(passImage));
+                                jsonObject.putString("trackID",Long.toString(passFace.trackId));
+                                jsonObject.putString("searchScore",String.valueOf(result.detail.searchScore));
+                                jsonObject.putString("searchThreshold",String.valueOf(result.detail.searchThreshold));
+                                jsonObject.putString("hairType",result.detail.rcAttr.hairType.toString());
+                                jsonObject.putString("beardType",result.detail.rcAttr.beardType.toString());
+                                jsonObject.putString("hatType",result.detail.rcAttr.hatType.toString());
+                                jsonObject.putString("respiratorType",result.detail.rcAttr.respiratorType.toString());
+                                jsonObject.putString("glassesType",result.detail.rcAttr.glassesType.toString());
+                                jsonObject.putString("skinColorType",result.detail.rcAttr.skinColorType.toString());                                    
+                              sendUnknownDataToReactNative(jsonObject);
+                              // unknownDetected=true;
+                        }
+                        }
+                      });   
 
                     }
 
@@ -586,11 +758,39 @@ private enum FacePassSDKMode {
                         result.detail.rcAttr.hatType.ordinal(),
                         result.detail.rcAttr.respiratorType.ordinal(),
                         result.detail.rcAttr.glassesType.ordinal(),
-                        result.detail.rcAttr.skinColorType.ordinal()));
+                        result.detail.rcAttr.skinColorType.ordinal()
+                        ));
                   }
                 }
               }
-            }
+
+            }else{
+               mAndroidHandler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                          Log.i(DEBUG_TAG, "error no face in db");
+                          FacePassFace passFace = recognizeData.faceList[0];
+                          if(lastID!=passFace.trackId){
+                          lastID=passFace.trackId;
+                          FacePassImage passImage = recognizeData.image[0];
+                        
+                            WritableMap jsonObject = Arguments.createMap();
+                            jsonObject.putString("image", yuvToBase64(passImage));
+                            jsonObject.putString("trackID",Long.toString(passFace.trackId));
+                            jsonObject.putString("hairType",passFace.rcAttr.hairType.toString());
+                            jsonObject.putString("beardType",passFace.rcAttr.beardType.toString());
+                            jsonObject.putString("hatType",passFace.rcAttr.hatType.toString());
+                            jsonObject.putString("respiratorType",passFace.rcAttr.respiratorType.toString());
+                            jsonObject.putString("glassesType",passFace.rcAttr.glassesType.toString());
+                            jsonObject.putString("skinColorType",passFace.rcAttr.skinColorType.toString());    
+
+                                  
+                          sendUnknownDataToReactNative(jsonObject);
+                          // unknownDetected=true;
+                        }
+                        }
+                      });            
+                      }
           }
         } catch (InterruptedException e) {
           e.printStackTrace();
@@ -599,10 +799,25 @@ private enum FacePassSDKMode {
         }
       }
     }
+
     @Override
     public void interrupt() {
       isInterrupt = true;
     }
+  }
+
+  public String yuvToBase64(FacePassImage image_data){
+    YuvImage img = new YuvImage(image_data.image, ImageFormat.NV21, image_data.width, image_data.height, null);
+    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    img.compressToJpeg(new Rect(0, 0, image_data.width, image_data.height), 80, baos);
+    byte[] jdata = baos.toByteArray();
+    BitmapFactory.Options bitmapFatoryOptions = new BitmapFactory.Options();
+    bitmapFatoryOptions.inPreferredConfig = Bitmap.Config.RGB_565;
+    Bitmap bmp = BitmapFactory.decodeByteArray(jdata, 0, jdata.length, bitmapFatoryOptions);
+    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+    bmp.compress(Bitmap.CompressFormat.PNG, 100, outputStream);
+    String base64_img= Base64.encodeToString(outputStream.toByteArray(), Base64.DEFAULT).trim().replaceAll("\n", "").replaceAll("\r", "");
+    return base64_img;
   }
 
   private boolean hasPermission() {
@@ -638,10 +853,10 @@ private enum FacePassSDKMode {
               || !activity.shouldShowRequestPermissionRationale(PERMISSION_WRITE_STORAGE)
               || !activity.shouldShowRequestPermissionRationale(PERMISSION_INTERNET)
               || !activity.shouldShowRequestPermissionRationale(PERMISSION_ACCESS_NETWORK_STATE)) {
-            Toast.makeText(activity.getApplicationContext(), "需要开启摄像头网络文件存储权限", Toast.LENGTH_SHORT).show();
+            Toast.makeText(activity.getApplicationContext(), "Please enable Camera,Network and File write permission",
+                Toast.LENGTH_SHORT).show();
           }
       } else {
-        initFacePassSDK();
       }
     }
   }
@@ -655,8 +870,6 @@ private enum FacePassSDKMode {
     SettingVar.isButtonInvisible = false;
   }
 
-
-
   @Override
   public void onDestroy() {
     mRecognizeThread.isInterrupt = true;
@@ -666,6 +879,12 @@ private enum FacePassSDKMode {
     mFeedFrameThread.interrupt();
     if (manager != null) {
       manager.release();
+    }
+
+    if (useIRCameraSupport) {
+      if (mIRCameraManager != null) {
+        mIRCameraManager.release();
+      }
     }
     if (mAndroidHandler != null) {
       mAndroidHandler.removeCallbacksAndMessages(null);
@@ -681,7 +900,7 @@ private enum FacePassSDKMode {
       Log.d("facefacelist",
           "width " + (face.rect.right - face.rect.left) + " height " + (face.rect.bottom - face.rect.top));
       Log.d("facefacelist", "smile " + face.smile);
-      boolean mirror = cameraFacingFront; /* 前摄像头时mirror为true */
+      boolean mirror = cameraFacingFront;
       StringBuilder faceIdString = new StringBuilder();
       faceIdString.append("ID = ").append(face.trackId);
       SpannableString faceViewString = new SpannableString(faceIdString);
@@ -760,49 +979,12 @@ private enum FacePassSDKMode {
     faceView.invalidate();
   }
 
-  public void showToast(CharSequence text, int duration, boolean isSuccess, Bitmap bitmap) {
-    LayoutInflater inflater = (LayoutInflater) activity.getApplicationContext()
-        .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-    View toastView = inflater.inflate(R.layout.toast, null);
-    LinearLayout toastLLayout = (LinearLayout) toastView.findViewById(R.id.toastll);
-    if (toastLLayout == null) {
-      return;
-    }
-    toastLLayout.getBackground().setAlpha(100);
-    ImageView imageView = (ImageView) toastView.findViewById(R.id.toastImageView);
-    TextView idTextView = (TextView) toastView.findViewById(R.id.toastTextView);
-    TextView stateView = (TextView) toastView.findViewById(R.id.toastState);
-    SpannableString s;
-    if (isSuccess) {
-      s = new SpannableString("验证成功");
-      imageView.setImageResource(R.drawable.success);
-    } else {
-      s = new SpannableString("验证失败");
-      imageView.setImageResource(R.drawable.success);
-    }
-    if (bitmap != null) {
-      imageView.setImageBitmap(bitmap);
-    }
-    stateView.setText(s);
-    idTextView.setText(text);
-
-    if (mRecoToast == null) {
-      mRecoToast = new Toast(activity.getApplicationContext());
-      mRecoToast.setGravity(Gravity.CENTER_VERTICAL, 0, 0);
-    }
-    mRecoToast.setDuration(duration);
-    mRecoToast.setView(toastView);
-
-    mRecoToast.show();
-  }
 
   private static final int REQUEST_CODE_CHOOSE_PICK = 1;
 
   public void onClick(View v) {
 
   }
-
-
 
   public void onActivityResult(Activity activity, int requestCode, int resultCode, Intent data) {
     Log.v("onActivityResult", "Called");
@@ -814,7 +996,6 @@ private enum FacePassSDKMode {
               pickerCancelCallback.invoke("ImagePicker was cancelled");
             } else if (resultCode == Activity.RESULT_OK) {
               String path = "";
-
               Uri uri = data.getData();
               String[] pojo = { MediaStore.Images.Media.DATA };
               CursorLoader cursorLoader = new CursorLoader(context, uri, pojo, null, null, null);
@@ -850,56 +1031,57 @@ private enum FacePassSDKMode {
     }
   };
 
-
-  private ReactInstanceManager mReactInstanceManager;
-
-  private void sendDataToReactNative(String base64, String name, float livenessScore) {
-    ReactInstanceManager reactInstanceManager = ((ReactApplication) getActivity().getApplication()).getReactNativeHost().getReactInstanceManager();
+  private void sendDataToReactNative (WritableMap params) {
+    ReactInstanceManager reactInstanceManager = ((ReactApplication) getActivity().getApplication()).getReactNativeHost()
+        .getReactInstanceManager();
     ReactContext reactContext = reactInstanceManager.getCurrentReactContext();
-    FacePass nativeModule =reactContext.getNativeModule(FacePass.class);
+    FacePass nativeModule = reactContext.getNativeModule(FacePass.class);
+    if (nativeModule != null && detected==false) {
+      FacePass myNativeModule = (FacePass) nativeModule;
+      myNativeModule.sendDataToReactNative(params);
+      detected=true;
+    }
+  }
+
+  private void sendQRDataToReactNative (String content){
+        ReactInstanceManager reactInstanceManager = ((ReactApplication) getActivity().getApplication()).getReactNativeHost()
+        .getReactInstanceManager();
+    ReactContext reactContext = reactInstanceManager.getCurrentReactContext();
+    FacePass nativeModule = reactContext.getNativeModule(FacePass.class);
+    if (nativeModule != null && detected==false) {
+      FacePass myNativeModule = (FacePass) nativeModule;
+      myNativeModule.sendQRDataToReactNative(content);
+      detected=true;
+    }
+  }
+
+  private void sendUnknownDataToReactNative(WritableMap params) {
+    ReactInstanceManager reactInstanceManager = ((ReactApplication) getActivity().getApplication()).getReactNativeHost()
+        .getReactInstanceManager();
+    ReactContext reactContext = reactInstanceManager.getCurrentReactContext();
+    FacePass nativeModule = reactContext.getNativeModule(FacePass.class);
     if (nativeModule != null) {
       FacePass myNativeModule = (FacePass) nativeModule;
-      myNativeModule.sendDataToReactNative(base64, name, livenessScore);
+      myNativeModule.sendUnknownDataToReactNative(params);
+    }
+  }
+
+    private void sendStopToReactNative() {
+    ReactInstanceManager reactInstanceManager = ((ReactApplication) getActivity().getApplication()).getReactNativeHost()
+        .getReactInstanceManager();
+    ReactContext reactContext = reactInstanceManager.getCurrentReactContext();
+    FacePass nativeModule = reactContext.getNativeModule(FacePass.class);
+    if (nativeModule != null && detected==true) {
+      FacePass myNativeModule = (FacePass) nativeModule;
+      myNativeModule.sendStopToReactNative();
+      detected=false;
     }
   }
 
 
-  private void getFaceImageByFaceToken(final long trackId, String faceToken, final FacePassRecognitionResult result) {
-    if (TextUtils.isEmpty(faceToken)) {
-      return;
-    }
-
-    try {
-      final Bitmap bitmap = mFacePassHandler.getFaceImage(faceToken.getBytes());
-      ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-      bitmap.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream);
-      byte[] byteArray = byteArrayOutputStream.toByteArray();
-
-      mAndroidHandler.post(new Runnable() {
-        @Override
-        public void run() {
-          Log.i(DEBUG_TAG, "getFaceImageByFaceToken cache is null");
-          String encoded = Base64.encodeToString(byteArray, Base64.DEFAULT);
-          sendDataToReactNative(encoded, faceToken, result.detail.searchScore);
-          showToast("ID = " + String.valueOf(trackId), Toast.LENGTH_SHORT, true, bitmap);
-        }
-      });
-      if (bitmap != null) {
-        return;
-      }
-    } catch (FacePassException e) {
-      e.printStackTrace();
-    }
-  }
-
-
-
-  private AlertDialog mFaceOperationDialog;
 
   private Callback pickerSuccessCallback;
   private Callback pickerCancelCallback;
-
-  
 
   private void toast(String msg) {
     Toast.makeText(activity, msg, Toast.LENGTH_SHORT).show();

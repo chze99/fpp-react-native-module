@@ -14,13 +14,7 @@ import {
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useEffect, useRef, useState } from 'react';
-import {
-  FacePassViewManager,
-  FacePass,
-  enableQRScan,
-  initData,
-  enableTemperature,
-} from 'facepass-react-native-module';
+import { FacePassViewManager, FacePass } from 'facepass-react-native-module';
 import { useIsFocused } from '@react-navigation/native';
 function createFragment(viewId) {
   UIManager.dispatchViewManagerCommand(
@@ -39,7 +33,7 @@ const destroyFragment = (viewId) =>
     [viewId]
   );
 
-export default function Home({ navigation }) {
+export default function Home2({ navigation }) {
   const windowwidth = Dimensions.get('window').width;
   const windowheight = Dimensions.get('window').height;
   const faceDetectionImage = useRef();
@@ -49,7 +43,6 @@ export default function Home({ navigation }) {
   const [image, setImage] = useState(null);
   const [name, setName] = useState(null);
   const [testimage, settestimage] = useState(null);
-  const [appState, setAppState] = useState(AppState.currentState);
   const isFocused = useIsFocused();
 
   const eventEmitter = new NativeEventEmitter(FacePass);
@@ -96,23 +89,20 @@ export default function Home({ navigation }) {
   }, [image]);
 
   useEffect(() => {
-    enableQRScan(false);
-    enableTemperature(true);
-
     // Add an event listener to receive the data
     const dataListener = eventEmitter.addListener(
       'FaceDetectedEvent',
       async (params) => {
-        console.log('detected');
+        console.log('detectd');
         if (image == null && name == null) {
-          console.log('PARAMS', params);
           const facetoken = params.faceToken;
           const data = JSON.parse(await AsyncStorage.getItem(facetoken));
-          setImage(params.image);
+          setImage(data.fileName);
           setName(data.faceName);
         }
       }
     );
+
     const stopListener = eventEmitter.addListener(
       'FaceDetectedEndEvent',
       async () => {
@@ -120,30 +110,15 @@ export default function Home({ navigation }) {
         setName(null);
       }
     );
-
-    const unknownFaceListener = eventEmitter.addListener(
-      'UnknownFaceDetectedEvent',
-      async (params) => {
-        console.log(params);
-        // const temp=JSON.parse(params.jsonString);
-        // settestimage(temp.imd
-      }
-    );
-
-    const qrDetectListener = eventEmitter.addListener(
-      'QRDetectedEvent',
-      async (params) => {
-        console.log(params);
-      }
-    );
-
-    return () => {
-      // Clean up and remove event listeners
-      dataListener.remove();
-      stopListener.remove();
-      unknownFaceListener.remove();
-      qrDetectListener.remove();
-    };
+    // const unknownListener = eventEmitter.addListener(
+    //   'UnknownFaceDetectedEvent',
+    //   async (params) => {
+    //     console.log(params)
+    //     const temp=JSON.parse(params.jsonString);
+    //     console.log('Unknown',temp );
+    //     settestimage(params.jsonString);
+    //   }
+    // );
   });
   function getCurrentTime() {
     const currentTime = new Date();
@@ -192,7 +167,7 @@ export default function Home({ navigation }) {
             <Image
               style={{ opacity: 1, width: 70, height: 70 }}
               source={{
-                uri: 'data:image/png;base64,' + testimage,
+                uri: 'base64/jpg,' + testimage,
               }}
             />
           ) : (
@@ -213,7 +188,7 @@ export default function Home({ navigation }) {
             ref={faceDetectionImage}
             style={{ opacity: 0, width: 70, height: 70 }}
             source={{
-              uri: 'data:image/png;base64,' + image,
+              uri: 'file:///' + image,
             }}
           />
           <View style={{ display: 'flex', flexDirection: 'column' }}>

@@ -53,9 +53,9 @@ Remember to add tests for your change if possible. Run the unit tests by:
 yarn test
 ```
 
-To edit the Objective-C or Swift files, open `example/ios/FppReactNativeModuleExample.xcworkspace` in XCode and find the source files at `Pods > Development Pods > fpp-react-native-module`.
+To edit the Objective-C or Swift files, open `example/ios/FacepassReactNativeModuleExample.xcworkspace` in XCode and find the source files at `Pods > Development Pods > facepass-react-native-module`.
 
-To edit the Java or Kotlin files, open `example/android` in Android studio and find the source files at `fpp-react-native-module` under `Android`.
+To edit the Java or Kotlin files, open `example/android` in Android studio and find the source files at `facepass-react-native-module` under `Android`.
 
 
 ### Commit message convention

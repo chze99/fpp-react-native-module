@@ -2,9 +2,7 @@ package com.fppreactnativemodule;
 
 import mcv.facepass.types.FacePassImageRotation;
 
-/**
- * Created by wangzhiqiang on 2017/11/22.
- */
+
 
 public class SettingVar {
     public static boolean cameraFacingFront = false;
@@ -18,4 +16,13 @@ public class SettingVar {
     public static boolean cameraSettingOk = false;
     public static boolean iscameraNeedConfig = false;
     public static boolean isButtonInvisible = false;
+    public static String groupName = "default";
+    public static Float searchThreshold = 80f;
+    public static boolean doneInitialize=false;
+    public static boolean useIRCameraSupport=true;
+    public static boolean temperatureScan = false;
+    public static boolean showIRPreview = false;
+    public static int recognitionDisplayTime = 2500;
+    public static boolean qrEnable = false;
+    public static int exposureCompensation = 0;
 }
