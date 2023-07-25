@@ -92,7 +92,7 @@ import com.facebook.react.bridge.Promise;
 
 @ReactModule(name = FacePass.NAME)
 public class FacePass extends ReactContextBaseJavaModule
-    implements LifecycleEventListener, ActivityEventListener, PermissionListener  {
+    implements LifecycleEventListener, ActivityEventListener, PermissionListener {
   public static final String NAME = "FacePass";
   private final ReactApplicationContext context;
   Activity activity = getCurrentActivity();
@@ -152,13 +152,14 @@ public class FacePass extends ReactContextBaseJavaModule
   private void requestPermission() {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
       PermissionAwareActivity currentActivity = (PermissionAwareActivity) getCurrentActivity();
-      currentActivity.requestPermissions(Permission, PERMISSIONS_REQUEST,this);
-      Log.v("TESTING1","TEST");
+      currentActivity.requestPermissions(Permission, PERMISSIONS_REQUEST, this);
+      Log.v("TESTING1", "TEST");
     }
   }
+
   @Override
-  public boolean onRequestPermissionsResult(int requestCode,  String[] permissions, int[] grantResults) {
-         Log.v("TESTING2","TEST");
+  public boolean onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+    Log.v("TESTING2", "TEST");
 
     if (requestCode == PERMISSIONS_REQUEST) {
       boolean granted = true;
@@ -167,7 +168,7 @@ public class FacePass extends ReactContextBaseJavaModule
           granted = false;
       }
       if (!granted) {
-              Log.v("TESTING3","TEST");
+        Log.v("TESTING3", "TEST");
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
           if (!activity.shouldShowRequestPermissionRationale(PERMISSION_CAMERA)
@@ -178,12 +179,12 @@ public class FacePass extends ReactContextBaseJavaModule
             Toast.makeText(context.getApplicationContext(), "需要开启摄像头网络文件存储权限", Toast.LENGTH_SHORT).show();
           }
       } else {
-              Log.v("TESTING4","TEST");
+        Log.v("TESTING4", "TEST");
 
         initFacePassSDK();
       }
     }
-  return true;
+    return true;
   }
 
   private void adaptFrameLayout() {
@@ -283,9 +284,9 @@ public class FacePass extends ReactContextBaseJavaModule
       QZhengGPIOInstance.getGPIO(QZhengGPIOManager.GPIO_ID_LED_R).setValue(QZhengGPIOManager.GPIO_VALUE_LOW);
       QZhengGPIOInstance.getGPIO(QZhengGPIOManager.GPIO_ID_LED_B).setValue(QZhengGPIOManager.GPIO_VALUE_HIGH);
       QZhengGPIOInstance.getGPIO(QZhengGPIOManager.GPIO_ID_LED_G).setValue(QZhengGPIOManager.GPIO_VALUE_HIGH);
-    } else if (light.equals("ir_on"))  {
+    } else if (light.equals("ir_on")) {
       QZhengGPIOInstance.getGPIO(QZhengGPIOManager.GPIO_ID_LED_IR).setValue(QZhengGPIOManager.GPIO_VALUE_HIGH);
-    } else if (light.equals("ir_off"))  {
+    } else if (light.equals("ir_off")) {
       QZhengGPIOInstance.getGPIO(QZhengGPIOManager.GPIO_ID_LED_IR).setValue(QZhengGPIOManager.GPIO_VALUE_LOW);
     } else {
       QZhengGPIOInstance.getGPIO(QZhengGPIOManager.GPIO_ID_LED_R).setValue(QZhengGPIOManager.GPIO_VALUE_LOW);
@@ -326,11 +327,11 @@ public class FacePass extends ReactContextBaseJavaModule
         SettingVar.cameraFacingFront = settings.optBoolean("cameraFacingFront", false);
       } catch (JSONException e) {
         Log.d("JSONERROR", e.toString());
-              SettingVar.isSettingAvailable = false;
-      SettingVar.isCross = false;
-      SettingVar.faceRotation = 270;
-      SettingVar.cameraPreviewRotation = 90;
-      SettingVar.cameraFacingFront = true;
+        SettingVar.isSettingAvailable = false;
+        SettingVar.isCross = false;
+        SettingVar.faceRotation = 270;
+        SettingVar.cameraPreviewRotation = 90;
+        SettingVar.cameraFacingFront = true;
       }
     } else {
       Log.v("Settings", "SETTING is null");
@@ -352,7 +353,7 @@ public class FacePass extends ReactContextBaseJavaModule
   }
 
   @ReactMethod
-  public void initData(String parameter,Callback success,Callback fail) {
+  public void initData(String parameter, Callback success, Callback fail) {
 
     if (!hasPermission()) {
       requestPermission();
@@ -391,21 +392,23 @@ public class FacePass extends ReactContextBaseJavaModule
             (float) parameters.optDouble("FaceHighBrightnessThreshold", 220),
             (float) parameters.optDouble("FaceBrightnessSTDThreshold", 60),
             parameters.optInt("FaceFaceMinThreshold", 100),
-            parameters.optInt("FaceRcAttributeAndOcclusionMode", 2));
+            parameters.optInt("FaceRcAttributeAndOcclusionMode", 2),
+            parameters.optInt("faceDetectMode", 0),
+            parameters.optBoolean("ageGenderEnabled", false));
 
       } catch (JSONException e) {
         Log.d("JSONERROR", e.toString());
-              initFaceHandler(1, 69, 55, true, false,
-          30, 30, 30, 0.8f, 30, 210, 60,
-          100, 2, false, true, 35, 35, 35, 0.7f,
-          70, 220, 60, 100, 2);
+        initFaceHandler(1, 69, 55, true, false,
+            30, 30, 30, 0.8f, 30, 210, 60,
+            100, 2, false, true, 35, 35, 35, 0.7f,
+            70, 220, 60, 100, 2, 0, false);
       }
     } else {
       Log.v("PARAMETERS", "No parameter");
       initFaceHandler(1, 69, 55, true, false,
           30, 30, 30, 0.8f, 30, 210, 60,
           100, 2, false, true, 35, 35, 35, 0.7f,
-          70, 220, 60, 100, 2);
+          70, 220, 60, 100, 2, 0, false);
     }
   }
 
@@ -422,12 +425,12 @@ public class FacePass extends ReactContextBaseJavaModule
       int faceMinThreshold, int retryCount, boolean smileEnabled, boolean maxFaceEnabled, float FacePoseThresholdPitch,
       float FacePoseThresholdRoll, float FacePoseThresholdYaw, float FaceBlurThreshold,
       float FaceLowBrightnessThreshold, float FaceHighBrightnessThreshold, float FaceBrightnessSTDThreshold,
-      int FaceFaceMinThreshold, int FaceRcAttributeAndOcclusionMode) {
-      mFacePassHandler = FacePassHandlerHolder.getMyObject();
-      if (mFacePassHandler != null) {
-        mFacePassHandler.reset();
-        mFacePassHandler.release();
-      }
+      int FaceFaceMinThreshold, int FaceRcAttributeAndOcclusionMode, int detectMode, boolean ageGenderEnabled) {
+    mFacePassHandler = FacePassHandlerHolder.getMyObject();
+    if (mFacePassHandler != null) {
+      mFacePassHandler.reset();
+      mFacePassHandler.release();
+    }
     new Thread() {
       @Override
       public void run() {
@@ -446,7 +449,8 @@ public class FacePass extends ReactContextBaseJavaModule
 
               config.livenessModel = FacePassModel.initModel(activity.getApplicationContext().getAssets(),
                   "liveness.CPU.rgb.G.bin");
-
+              config.rgbIrLivenessModel = FacePassModel.initModel(activity.getApplicationContext().getAssets(),
+                  "liveness.CPU.rgbir.G.bin");
               config.searchModel = FacePassModel.initModel(activity.getApplicationContext().getAssets(),
                   "feat2.arm.K.v1.0_1core.bin");
 
@@ -461,13 +465,23 @@ public class FacePass extends ReactContextBaseJavaModule
                   "attr.RC.arm.F.bin");
               config.occlusionFilterModel = FacePassModel.initModel(activity.getApplicationContext().getAssets(),
                   "attr.occlusion.arm.20201209.bin");
+              config.ageGenderModel = FacePassModel.initModel(activity.getApplicationContext().getAssets(),
+                  "attr.age_gender.arm.B.bin");
+              config.smileModel = FacePassModel.initModel(activity.getApplicationContext().getAssets(),
+                  "attr.smile.arm.200815.bin");
 
               config.rcAttributeAndOcclusionMode = rcAttributeAndOcclusionMode;
               config.searchThreshold = searchThreshold;
               config.livenessThreshold = livenessThreshold;
               config.livenessEnabled = livenessEnabled;
               config.rgbIrLivenessEnabled = rgbIrLivenessEnabled;
-              ageGenderEnabledGlobal = (config.ageGenderModel != null);
+              if (config.ageGenderModel == null) {
+                SettingVar.ageGenderEnabledGlobal = false;
+              } else {
+                SettingVar.ageGenderEnabledGlobal = ageGenderEnabled;
+              }
+              SettingVar.ageGenderEnabledGlobal = (config.ageGenderModel != null);
+              config.ageGenderEnabled = SettingVar.ageGenderEnabledGlobal;
 
               config.poseThreshold = new FacePassPose(poseThresholdRoll, poseThresholdPitch, poseThresholdYaw);
               config.blurThreshold = blurThreshold;
@@ -475,10 +489,10 @@ public class FacePass extends ReactContextBaseJavaModule
               config.highBrightnessThreshold = highBrightnessThreshold;
               config.brightnessSTDThreshold = brightnessSTDThreshold;
               config.faceMinThreshold = faceMinThreshold;
-              config.retryCount = 2;
-              config.smileEnabled = false;
-              config.maxFaceEnabled = true;
-
+              config.retryCount = retryCount;
+              config.smileEnabled = smileEnabled;
+              config.maxFaceEnabled = maxFaceEnabled;
+              config.detectMode = detectMode;
               config.fileRootPath = activity.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS).getAbsolutePath();
               mFacePassHandler = new FacePassHandler(config);
 
@@ -554,7 +568,7 @@ public class FacePass extends ReactContextBaseJavaModule
         .emit("UnknownFaceDetectedEvent", params);
   }
 
-    @ReactMethod
+  @ReactMethod
   public void sendStopToReactNative() {
     WritableMap params = Arguments.createMap();
     getReactApplicationContext()
@@ -563,12 +577,11 @@ public class FacePass extends ReactContextBaseJavaModule
   }
 
   @ReactMethod
-  public void sendQRDataToReactNative(String params){
-        getReactApplicationContext()
+  public void sendQRDataToReactNative(String params) {
+    getReactApplicationContext()
         .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
         .emit("QRDetectedEvent", params);
   }
-  
 
   @ReactMethod
   public void addListener(String eventName) {
@@ -595,10 +608,10 @@ public class FacePass extends ReactContextBaseJavaModule
     Bitmap bitmap;
     try {
       bitmap = getBitmapByUrl(imagePath);
-      Log.v("IMAGE path",imagePath.toString());
+      Log.v("IMAGE path", imagePath.toString());
 
     } catch (Exception e) {
-      Log.v("IMAGE fail",e.toString());
+      Log.v("IMAGE fail", e.toString());
       File imageFile = new File(imagePath);
       if (!imageFile.exists()) {
         failure.invoke("ADDFACE: IMAGE_NOT_EXIST_ERROR");
@@ -633,7 +646,7 @@ public class FacePass extends ReactContextBaseJavaModule
   }
 
   Bitmap getBitmapByUrl(String photoUrl) throws InterruptedException, ExecutionException, TimeoutException {
-        Activity activity = getCurrentActivity();
+    Activity activity = getCurrentActivity();
 
     RequestFuture<Bitmap> future = RequestFuture.newFuture();
     ImageRequest request = new ImageRequest(
@@ -644,8 +657,8 @@ public class FacePass extends ReactContextBaseJavaModule
         ImageView.ScaleType.CENTER,
         null,
         future);
-     requestQueue = Volley.newRequestQueue(activity.getApplicationContext());
-     requestQueue.add(request);
+    requestQueue = Volley.newRequestQueue(activity.getApplicationContext());
+    requestQueue.add(request);
     return future.get(30, TimeUnit.SECONDS);
   }
 
@@ -840,17 +853,16 @@ public class FacePass extends ReactContextBaseJavaModule
       e.printStackTrace();
     }
 
-  
   }
 
   @ReactMethod
-  public void checkGroupExist(String groupname,Callback success, Callback failure){
-     mFacePassHandler = FacePassHandlerHolder.getMyObject();
+  public void checkGroupExist(String groupname, Callback success, Callback failure) {
+    mFacePassHandler = FacePassHandlerHolder.getMyObject();
     if (mFacePassHandler == null) {
       failure.invoke("CHECKGROUPEXIST: FACEPASSHANDLER_NULL_ERROR");
       return;
     }
-    Boolean isLocalGroupExist=false;
+    Boolean isLocalGroupExist = false;
     try {
       String[] localGroups = mFacePassHandler.getLocalGroups();
       if (localGroups == null || localGroups.length == 0) {
@@ -859,7 +871,7 @@ public class FacePass extends ReactContextBaseJavaModule
       }
       for (String group : localGroups) {
         if (groupname.equals(group)) {
-          isLocalGroupExist=true;
+          isLocalGroupExist = true;
           success.invoke("CHECKGROUPEXIST: LOCALGROUP_FOUND");
         }
       }
@@ -977,55 +989,61 @@ public class FacePass extends ReactContextBaseJavaModule
   public void enableIRPreview(Boolean enable) {
     SettingVar.showIRPreview = enable;
   }
-  
+
   @ReactMethod
   public void enableQRScan(Boolean enable) {
     SettingVar.qrEnable = enable;
   }
 
-  @ReactMethod 
-  public void setRecognitionDisplayTime(int time){
+  @ReactMethod
+  public void setRecognitionDisplayTime(int time) {
     SettingVar.recognitionDisplayTime = time;
   }
 
-  @ReactMethod 
-  public void releaseFacePassHandler(Callback success,Callback fail){
-      mFacePassHandler = FacePassHandlerHolder.getMyObject();
+  @ReactMethod
+  public void pauseListener(Boolean pause) {
+    SettingVar.pauseListener = pause;
+  }
 
-      if (mFacePassHandler != null) {
-        mFacePassHandler.reset();
-        mFacePassHandler.release();
-        success.invoke("RELEASEFACEPASS: FACEPASSHANDLER_RELEASED");
-      }else{
-        success.invoke("RELEASEFACEPASS: FACEPASSHANDLER_IS_NULL");
-      }
+  @ReactMethod
+  public void releaseFacePassHandler(Callback success, Callback fail) {
+    mFacePassHandler = FacePassHandlerHolder.getMyObject();
+
+    if (mFacePassHandler != null) {
+      mFacePassHandler.reset();
+      mFacePassHandler.release();
+      success.invoke("RELEASEFACEPASS: FACEPASSHANDLER_RELEASED");
+    } else {
+      success.invoke("RELEASEFACEPASS: FACEPASSHANDLER_IS_NULL");
+    }
 
   }
 
   @ReactMethod
-  public void checkDoneInitialize(Callback success){
+  public void checkDoneInitialize(Callback success) {
     success.invoke(SettingVar.doneInitialize);
   }
 
   // @ReactMethod
   // public Double getDeviceSerial(){
-  //       // WindowManager windowManager = (WindowManager) activity.getApplicationContext().getSystemService(Context.WINDOW_SERVICE);
-  //       DisplayMetrics metrics = new DisplayMetrics();
-  //       Activity activity = getCurrentActivity();
-  //       activity.getWindowManager().getDefaultDisplay().getMetrics(metrics);
+  // // WindowManager windowManager = (WindowManager)
+  // activity.getApplicationContext().getSystemService(Context.WINDOW_SERVICE);
+  // DisplayMetrics metrics = new DisplayMetrics();
+  // Activity activity = getCurrentActivity();
+  // activity.getWindowManager().getDefaultDisplay().getMetrics(metrics);
 
-    
-  //       float widthPixels = metrics.widthPixels;
-  //       float heightPixels = metrics.heightPixels;
+  // float widthPixels = metrics.widthPixels;
+  // float heightPixels = metrics.heightPixels;
 
-  //       float xdpi = metrics.xdpi;
-  //       float ydpi = metrics.ydpi;
+  // float xdpi = metrics.xdpi;
+  // float ydpi = metrics.ydpi;
 
-  //       float widthInches = widthPixels / xdpi;
-  //       float heightInches = heightPixels / ydpi;
+  // float widthInches = widthPixels / xdpi;
+  // float heightInches = heightPixels / ydpi;
 
-  //     Log.v("PHYSICALSCREEN:",Double.toString( Math.sqrt(Math.pow(widthInches, 2) + Math.pow(heightInches, 2))));
-  //     return Math.sqrt(Math.pow(widthInches, 2) + Math.pow(heightInches, 2));
+  // Log.v("PHYSICALSCREEN:",Double.toString( Math.sqrt(Math.pow(widthInches, 2) +
+  // Math.pow(heightInches, 2))));
+  // return Math.sqrt(Math.pow(widthInches, 2) + Math.pow(heightInches, 2));
 
   // }
 
@@ -1065,9 +1083,9 @@ public class FacePass extends ReactContextBaseJavaModule
   }
 
   @ReactMethod
-  public void hideNavigationBar(Boolean bool){
-        qZhengManager = new QZhengIFManager(context);
-        qZhengManager.disableStatusBar(bool);
+  public void hideNavigationBar(Boolean bool) {
+    qZhengManager = new QZhengIFManager(context);
+    qZhengManager.disableStatusBar(bool);
   }
 
   @Override

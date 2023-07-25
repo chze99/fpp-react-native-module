@@ -412,6 +412,14 @@ setExposureCompensation(value)
     //error message,usually because not initialized , no need to release
   }
 ```
+
+-Pause/unpause face listener
+```sh
+pauseListener(boolean)
+//true=pause,false=unpause
+
+```
+
 ***JSON format of Parameter for funtion***
 
 - setDefaultGroupName()
@@ -452,13 +460,15 @@ setExposureCompensation(value)
     FaceBrightnessSTDThreshold: FaceBrightnessSTDThreshold, //0-255,Default:60
     FaceFaceMinThreshold: FaceFaceMinThreshold, //0-512,whole number,Default:100
     FaceRcAttributeAndOcclusionMode: FaceRcAttributeAndOcclusionMode, //whole number //0-5,Default:2
+    faceDetectMode:faceDetectMode,//whole number //0-2,Default:0, 0=normal mode,1=long range mode,2 = super long range mode, will affect detection speed
+    ageGenderEnabled:ageGenderEnabled, //true,false,default:false
   }
 
   initData(json)
 
   //Recommended value
   initData({
-    "rcAttributeAndOcclusionMode":1,"searchThreshold":69,"livenessThreshold":55,"livenessEnabled":false,"rgbIrLivenessEnabled":false,"poseThresholdRoll":35,"poseThresholdPitch":35,"poseThresholdYaw":35,"blurThreshold":0.8,"lowBrightnessThreshold":30,"highBrightnessThreshold":210,"brightnessSTDThreshold":80,"faceMinThreshold":100,"retryCount":2,"smileEnabled":false,"maxFaceEnabled":true,"FacePoseThresholdPitch":35,"FacePoseThresholdRoll":35,"FacePoseThresholdYaw":35,"FaceBlurThreshold":0.7,"FaceLowBrightnessThreshold":70,"FaceHighBrightnessThreshold":220,"FaceBrightnessSTDThreshold":60,"FaceFaceMinThreshold":100,"FaceRcAttributeAndOcclusionMode":2
+    "rcAttributeAndOcclusionMode":1,"searchThreshold":69,"livenessThreshold":55,"livenessEnabled":false,"rgbIrLivenessEnabled":false,"poseThresholdRoll":35,"poseThresholdPitch":35,"poseThresholdYaw":35,"blurThreshold":0.8,"lowBrightnessThreshold":30,"highBrightnessThreshold":210,"brightnessSTDThreshold":80,"faceMinThreshold":100,"retryCount":2,"smileEnabled":false,"maxFaceEnabled":true,"FacePoseThresholdPitch":35,"FacePoseThresholdRoll":35,"FacePoseThresholdYaw":35,"FaceBlurThreshold":0.7,"FaceLowBrightnessThreshold":70,"FaceHighBrightnessThreshold":220,"FaceBrightnessSTDThreshold":60,"FaceFaceMinThreshold":100,"FaceRcAttributeAndOcclusionMode":2,faceDetectMode:"0",ageGenderEnabled:false
   })
 
 

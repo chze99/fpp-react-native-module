@@ -6,6 +6,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [0.1.36] - 2023-07-25
+
+### Changed
+
+-add support of smile,age gender and rgbir liveness;
+-add faceDetectMode and ageGenderEnabled as one new parameter that can be included in initdata 
+
+
+## [0.1.35] -2023-07-24
+
+### Added
+
+-function to pause listener : pauseListener()
+
 ## [0.1.33 - 0.1.34] - 2023-07-20
 
 ### Changed

@@ -3465,10 +3465,10 @@
     "snapdragon" "^0.8.1"
     "to-regex" "^3.0.1"
 
-"facepass-react-native-module@file:../../facepass-react-native-module-0.1.32.tgz":
-  "integrity" "sha512-ZepdHyy446pfM5qmZp/YGSQdv9hPsvbtVCYNmrLA5q80JcBgktPSeDDXJP7qkPG5I5vx64i/Sm7YZasDVlGfZg=="
-  "resolved" "file:../../facepass-react-native-module-0.1.32.tgz"
-  "version" "0.1.32"
+"facepass-react-native-module@file:../../facepass-react-native-module-0.1.36.tgz":
+  "integrity" "sha512-bac1gIPbDzLbdhTLW9s6Sk0L28LHc8VZyrbrTJPyPyd3AEF6lYygqa1BDS/3hy5O43hNiMTmRAmul+iI14/TqA=="
+  "resolved" "file:../../facepass-react-native-module-0.1.36.tgz"
+  "version" "0.1.36"
 
 "fast-deep-equal@^3.1.3":
   "integrity" "sha512-f3qQ9oQy9j2AhBe/H9VC91wLmKBCCU/gDOnKNAYG5hswO7BLKj09Hc5HYNz9cGI++xlpDCIgDaitVs03ATR84Q=="

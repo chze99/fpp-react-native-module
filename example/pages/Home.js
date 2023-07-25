@@ -20,6 +20,7 @@ import {
   enableQRScan,
   initData,
   enableTemperature,
+  pauseListener,
 } from 'facepass-react-native-module';
 import { useIsFocused } from '@react-navigation/native';
 function createFragment(viewId) {
@@ -185,6 +186,22 @@ export default function Home({ navigation }) {
             }}
           >
             <Text style={{ color: 'white' }}>Setting</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.button, { maxWidth: 100 }]}
+            onPress={() => {
+              pauseListener(true);
+            }}
+          >
+            <Text style={{ color: 'white' }}>Pause</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.button, { maxWidth: 100 }]}
+            onPress={() => {
+              pauseListener(false);
+            }}
+          >
+            <Text style={{ color: 'white' }}>Unpause</Text>
           </TouchableOpacity>
         </View>
         <View>

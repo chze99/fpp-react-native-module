@@ -261,6 +261,10 @@ export function setExposureCompensation(value: Number): Promise<void> {
   return FacePassReactNativeModule.setExposureCompensation(value);
 }
 
+export function pauseListener(enable: Boolean): Promise<void> {
+  return FacePassReactNativeModule.pauseListener(enable);
+}
+
 export function releaseFacePassHandler(): Promise<void> {
   return new Promise((resolve, reject) => {
     FacePassReactNativeModule.releaseFacePassHandler(

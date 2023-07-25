@@ -25,4 +25,6 @@ public class SettingVar {
     public static int recognitionDisplayTime = 2500;
     public static boolean qrEnable = false;
     public static int exposureCompensation = 0;
+    public static boolean pauseListener = false;
+    public static boolean ageGenderEnabledGlobal = false;
 }

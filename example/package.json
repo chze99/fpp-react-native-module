@@ -17,7 +17,7 @@
     "expo-media-library": "~15.2.3",
     "expo-splash-screen": "~0.18.2",
     "expo-status-bar": "~1.4.4",
-    "facepass-react-native-module": "file:../../facepass-react-native-module-0.1.32.tgz",
+    "facepass-react-native-module": "file:../../facepass-react-native-module-0.1.36.tgz",
     "lodash": "^4.17.21",
     "react": "18.2.0",
     "react-native": "0.71.8",
