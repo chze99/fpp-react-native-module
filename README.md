@@ -301,16 +301,6 @@ From version 0.1.33 onward this is required:
   }
 ```
 
-- Get the path to face image using faceToken, return an string of path
-```sh
-  try{
-    const path =await getFacePath("faceToken")
-  }catch(e){
-    //Error message
-  }
-```
-
-
 - Bind to face to a group using faceToken and groupName
 ```sh
   try{
@@ -428,16 +418,6 @@ setExposureCompensation(value)
 pauseListener(boolean)
 //true=pause,false=unpause
 
-```
-
--Restart whole application
-```sh
-restartApplication()
-```
-
--Get device serial number
-```sh
-const SN=await getDeviceSerialNumber()
 ```
 
 ***JSON format of Parameter for funtion***

@@ -1045,7 +1045,7 @@ public class FacePassFragment extends Fragment implements CameraManager.CameraLi
         .getReactInstanceManager();
     ReactContext reactContext = reactInstanceManager.getCurrentReactContext();
     FacePass nativeModule = reactContext.getNativeModule(FacePass.class);
-    if (nativeModule != null && detected == false && SettingVar.pauseListener == false) {
+    if (nativeModule != null  && SettingVar.pauseListener == false) {
       FacePass myNativeModule = (FacePass) nativeModule;
       myNativeModule.sendDataToReactNative(params);
       detected = true;

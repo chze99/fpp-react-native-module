@@ -116,21 +116,6 @@ export function getFace(data: String): Promise<void> {
   });
 }
 
-export function getFacePath(data: String): Promise<void> {
-  console.log(data);
-  return new Promise((resolve, reject) => {
-    FacePassReactNativeModule.getFacePath(
-      data,
-      (success: any) => {
-        resolve(success);
-      },
-      (fail: any) => {
-        reject(fail);
-      }
-    );
-  });
-}
-
 export function deleteFace(
   faceToken: String,
   groupName: String
@@ -252,10 +237,6 @@ export function restartDevice(): Promise<void> {
   return FacePassReactNativeModule.restartDevice();
 }
 
-export function restartApplication(): Promise<void> {
-  return FacePassReactNativeModule.restartApplication();
-}
-
 export function enableTemperature(enable: Boolean): Promise<void> {
   return FacePassReactNativeModule.enableTemperature(enable);
 }
@@ -282,14 +263,6 @@ export function setExposureCompensation(value: Number): Promise<void> {
 
 export function pauseListener(enable: Boolean): Promise<void> {
   return FacePassReactNativeModule.pauseListener(enable);
-}
-
-export function getDeviceSerialNumber(): Promise<void> {
-  return new Promise((resolve) => {
-    FacePassReactNativeModule.getDeviceSerialNumber((success: any) => {
-      resolve(success);
-    });
-  });
 }
 
 export function releaseFacePassHandler(): Promise<void> {

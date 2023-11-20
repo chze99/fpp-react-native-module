@@ -92,8 +92,6 @@ dependencies {
      exclude module: 'httpclient'
      exclude module:'httpcore-4.4.10'
   }
-  implementation 'com.jakewharton:process-phoenix:2.1.2'
-
   implementation 'com.android.volley:volley:1.2.1'
   implementation 'com.android.support:appcompat-v7:25.3.1'
   implementation 'com.android.support.constraint:constraint-layout:1.0.2'
