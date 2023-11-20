@@ -1,6 +1,6 @@
 {
   "name": "facepass-react-native-module",
-  "version": "0.1.36",
+  "version": "0.1.42",
   "description": "A package to use FacePass SDK in react native",
   "main": "lib/commonjs/index",
   "module": "lib/module/index",

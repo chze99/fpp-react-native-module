@@ -406,7 +406,6 @@ public class FacePassFragment extends Fragment implements CameraManager.CameraLi
     try {
       String[] localGroups = mFacePassHandler.getLocalGroups();
       isLocalGroupExist = false;
-      Log.v("LocalGroups", localGroups.toString());
       if (localGroups == null || localGroups.length == 0) {
         faceView.post(new Runnable() {
           @Override
@@ -1075,17 +1074,33 @@ public class FacePassFragment extends Fragment implements CameraManager.CameraLi
     }
   }
 
+
   private void sendStopToReactNative() {
-    ReactInstanceManager reactInstanceManager = ((ReactApplication) getActivity().getApplication()).getReactNativeHost()
-        .getReactInstanceManager();
-    ReactContext reactContext = reactInstanceManager.getCurrentReactContext();
-    FacePass nativeModule = reactContext.getNativeModule(FacePass.class);
-    if (nativeModule != null && detected == true) {
-      FacePass myNativeModule = (FacePass) nativeModule;
-      myNativeModule.sendStopToReactNative();
-      detected = false;
+    if (!isAdded()) {
+        return;
     }
-  }
+
+    ReactApplication reactApplication = (ReactApplication) getActivity().getApplication();
+    if (reactApplication == null) {
+        return;
+    }
+
+    ReactInstanceManager reactInstanceManager = reactApplication.getReactNativeHost().getReactInstanceManager();
+    if (reactInstanceManager == null) {
+        return;
+    }
+
+    ReactContext reactContext = reactInstanceManager.getCurrentReactContext();
+    if (reactContext == null) {
+        return;
+    }
+
+    FacePass nativeModule = reactContext.getNativeModule(FacePass.class);
+    if (nativeModule != null && detected) {
+        nativeModule.sendStopToReactNative();
+        detected = false;
+    }
+}
 
   private Callback pickerSuccessCallback;
   private Callback pickerCancelCallback;
