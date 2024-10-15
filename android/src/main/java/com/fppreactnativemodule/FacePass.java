@@ -86,6 +86,7 @@ import com.example.yfaceapi.GPIOManager;
 import com.fppreactnativemodule.utils.FileUtil;
 import com.facebook.react.modules.core.PermissionListener;
 import com.facebook.react.modules.core.PermissionAwareActivity;
+import com.jakewharton.processphoenix.ProcessPhoenix;
 
 import static com.fppreactnativemodule.utils.Helper.getSerialNumber;
 import com.facebook.react.bridge.Promise;
@@ -684,6 +685,25 @@ public class FacePass extends ReactContextBaseJavaModule
     }
   }
 
+   @ReactMethod(isBlockingSynchronousMethod = true)
+  public void getFacePath(String faceTokenEt, Callback success, Callback failure) {
+    mFacePassHandler = FacePassHandlerHolder.getMyObject();
+    if (mFacePassHandler == null) {
+      failure.invoke("GETFACEPATH: FACEPASSHANDLER_NULL_ERROR");
+      return;
+    }
+    try {
+      byte[] faceToken = faceTokenEt.getBytes();
+      String path = mFacePassHandler.getFaceImagePath(faceToken);
+     
+      success.invoke(path);
+    } catch (Exception e) {
+      e.printStackTrace();
+      failure.invoke(e.getMessage());
+      return;
+    }
+  }
+
   @ReactMethod
   public void deleteFace(String faceTokenEt, String groupNameEt, Callback success, Callback failure) {
     mFacePassHandler = FacePassHandlerHolder.getMyObject();
@@ -976,6 +996,11 @@ public class FacePass extends ReactContextBaseJavaModule
   }
 
   @ReactMethod
+  public void restartApplication(){
+    ProcessPhoenix.triggerRebirth(context);
+  }
+
+  @ReactMethod
   public void enableTemperature(Boolean enable) {
     SettingVar.temperatureScan = enable;
   }
@@ -1086,6 +1111,11 @@ public class FacePass extends ReactContextBaseJavaModule
   public void hideNavigationBar(Boolean bool) {
     qZhengManager = new QZhengIFManager(context);
     qZhengManager.disableStatusBar(bool);
+  }
+
+  @ReactMethod
+  public void getDeviceSerialNumber(Callback success) {
+    success.invoke(getSerialNumber());
   }
 
   @Override
