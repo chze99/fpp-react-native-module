@@ -148,8 +148,8 @@ public class FacePassFragment extends Fragment implements CameraManager.CameraLi
   private ScrollView scrollView;
   private static boolean cameraFacingFront = true;
   private int cameraRotation;
-  private static final int cameraWidth = 1280;
-  private static final int cameraHeight = 720;
+  private static final int cameraWidth = 320;
+  private static final int cameraHeight = 240;
   private int heightPixels;
   private int widthPixels;
   int screenState = 0;
