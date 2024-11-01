@@ -201,6 +201,7 @@ public class FacePassFragment extends Fragment implements CameraManager.CameraLi
 
   RecognizeThread mRecognizeThread;
   FeedFrameThread mFeedFrameThread;
+  ExecutorService executorService = Executors.newFixedThreadPool(3);
   private FaceImageCache mImageCache;
   private Handler mAndroidHandler;
   Boolean appPaused = false;
@@ -249,6 +250,8 @@ public class FacePassFragment extends Fragment implements CameraManager.CameraLi
     mRecognizeDataQueue = new ArrayBlockingQueue<RecognizeData>(5);
     mFeedFrameQueue = new ArrayBlockingQueue<CameraPreviewData>(1);
     mFeedFrameIRQueue = new ArrayBlockingQueue<CameraPreviewData>(1);
+
+
     useIRCameraSupport = SettingVar.useIRCameraSupport;
     showIRPreview = SettingVar.showIRPreview;
     recognitionDisplayTime = SettingVar.recognitionDisplayTime;
@@ -443,10 +446,10 @@ public class FacePassFragment extends Fragment implements CameraManager.CameraLi
       ComplexFrameHelper.addRgbFrame(cameraPreviewData);
     } else {
       mFeedFrameQueue.offer(cameraPreviewData);
+      // execute qr thread
+      executorService.execute(new QRThread(mFeedFrameQueue))
     }
-    if (qrEnable == true) {
-      detectQRCode(cameraPreviewData);
-    }
+
   }
 
   public void detectQRCode(CameraPreviewData cameraPreviewData) {
@@ -493,6 +496,25 @@ public class FacePassFragment extends Fragment implements CameraManager.CameraLi
 
     Log.d("brightness", String.valueOf(brightness));
   }
+
+  private class QRThread extends Thread {
+    private ArrayBlockingQueue<CameraPreviewData> mFeedFrameQ;
+
+    private QRThread(ArrayBlockingQueue<CameraPreviewData> mFeedFrameQueue){
+      this.mFeedFrameQ = mFeedFrameQueue;
+    }
+
+    @Override
+    public void run() {
+      try{
+        CameraPreviewData cameraPreviewData = mFeedFrameQ.take();
+        detectQRCode(cameraPreviewData);
+      }catch(InterruptedException e){
+        throw new RuntimeException(e)
+      }
+    }
+  }
+
 
   private class FeedFrameThread extends Thread {
     boolean isInterrupt;
