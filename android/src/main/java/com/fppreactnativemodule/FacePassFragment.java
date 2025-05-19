@@ -5,6 +5,9 @@ import android.widget.LinearLayout;
 import androidx.fragment.app.Fragment;
 import android.util.Log;
 import android.util.Base64;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ExecutorService;
+
 
 import androidx.annotation.NonNull;
 import android.Manifest;
@@ -116,6 +119,10 @@ import com.q_zheng.QZhengGPIOManager;
 import com.q_zheng.QZhengIFManager;
 import com.q_zheng.QZGpio;
 import com.q_zheng.QZWiegand;
+
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.*;
+
 
 public class FacePassFragment extends Fragment implements CameraManager.CameraListener, View.OnClickListener {
   private Context context;
@@ -250,8 +257,6 @@ public class FacePassFragment extends Fragment implements CameraManager.CameraLi
     mRecognizeDataQueue = new ArrayBlockingQueue<RecognizeData>(5);
     mFeedFrameQueue = new ArrayBlockingQueue<CameraPreviewData>(1);
     mFeedFrameIRQueue = new ArrayBlockingQueue<CameraPreviewData>(1);
-
-
     useIRCameraSupport = SettingVar.useIRCameraSupport;
     showIRPreview = SettingVar.showIRPreview;
     recognitionDisplayTime = SettingVar.recognitionDisplayTime;
@@ -290,19 +295,18 @@ public class FacePassFragment extends Fragment implements CameraManager.CameraLi
         if (temperatureScan) {
           TemperatureService.startService(activity.getApplicationContext());
         }
-        BarcodeScannerOptions options = new BarcodeScannerOptions.Builder()
-            .setBarcodeFormats(Barcode.FORMAT_QR_CODE)
-            .build();
+//         BarcodeScannerOptions options = new BarcodeScannerOptions.Builder()
+//             .setBarcodeFormats(Barcode.FORMAT_QR_CODE)
+//             .build();
 
-        scanner = BarcodeScanning.getClient(options);
-
+//         scanner = BarcodeScanning.getClient(options);
         mFacePassHandler = FacePassHandlerHolder.getMyObject();
 
         mRecognizeThread = new RecognizeThread();
-        mRecognizeThread.start();
+        executorService.execute(mRecognizeThread);
 
         mFeedFrameThread = new FeedFrameThread();
-        mFeedFrameThread.start();
+        executorService.execute(mFeedFrameThread);
       }
 
       if (counter >= 29000 && timeOut == false) {
@@ -446,10 +450,10 @@ public class FacePassFragment extends Fragment implements CameraManager.CameraLi
       ComplexFrameHelper.addRgbFrame(cameraPreviewData);
     } else {
       mFeedFrameQueue.offer(cameraPreviewData);
-      // execute qr thread
-      executorService.execute(new QRThread(mFeedFrameQueue))
     }
-
+//     if (qrEnable == true) {
+//       detectQRCode(cameraPreviewData);
+//     }
   }
 
   public void detectQRCode(CameraPreviewData cameraPreviewData) {
@@ -459,25 +463,25 @@ public class FacePassFragment extends Fragment implements CameraManager.CameraLi
         cameraPreviewData.height,
         cameraPreviewData.rotation,
         InputImage.IMAGE_FORMAT_NV21);
-    scanner.process(image)
-        .addOnSuccessListener(new OnSuccessListener<List<Barcode>>() {
-          @Override
-          public void onSuccess(List<Barcode> barcodes) {
-            for (Barcode barcode : barcodes) {
-              String uid = barcode.getRawValue();
-              // Log.d("QR counter", String.valueOf(recognitionIntervalCounter));
-              sendQRDataToReactNative(uid);
-              // if (recognitionIntervalCounter <= 0) {
-              // if (loadedUsers.has(uid)) {
-              // faceCheckIn(0, null, 100, 1, null, null, true, uid);
-              // } else {
-              // toast("No access or invalid QR code.");
-              // }
-              // recognitionIntervalCounter = recognitionInterval;
-              // }
-            }
-          }
-        });
+//     scanner.process(image)
+//         .addOnSuccessListener(new OnSuccessListener<List<Barcode>>() {
+//           @Override
+//           public void onSuccess(List<Barcode> barcodes) {
+//             for (Barcode barcode : barcodes) {
+//               String uid = barcode.getRawValue();
+//               // Log.d("QR counter", String.valueOf(recognitionIntervalCounter));
+//               sendQRDataToReactNative(uid);
+//               // if (recognitionIntervalCounter <= 0) {
+//               // if (loadedUsers.has(uid)) {
+//               // faceCheckIn(0, null, 100, 1, null, null, true, uid);
+//               // } else {
+//               // toast("No access or invalid QR code.");
+//               // }
+//               // recognitionIntervalCounter = recognitionInterval;
+//               // }
+//             }
+//           }
+//         });
 
   }
 
@@ -496,25 +500,6 @@ public class FacePassFragment extends Fragment implements CameraManager.CameraLi
 
     Log.d("brightness", String.valueOf(brightness));
   }
-
-  private class QRThread extends Thread {
-    private ArrayBlockingQueue<CameraPreviewData> mFeedFrameQ;
-
-    private QRThread(ArrayBlockingQueue<CameraPreviewData> mFeedFrameQueue){
-      this.mFeedFrameQ = mFeedFrameQueue;
-    }
-
-    @Override
-    public void run() {
-      try{
-        CameraPreviewData cameraPreviewData = mFeedFrameQ.take();
-        detectQRCode(cameraPreviewData);
-      }catch(InterruptedException e){
-        throw new RuntimeException(e)
-      }
-    }
-  }
-
 
   private class FeedFrameThread extends Thread {
     boolean isInterrupt;
@@ -576,24 +561,40 @@ public class FacePassFragment extends Fragment implements CameraManager.CameraLi
           e.printStackTrace();
         }
 
-        if (detectionResult == null || detectionResult.faceList.length == 0) {
-
-          getActivity().runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-              faceView.clear();
-              faceView.invalidate();
+        if (detectionResult == null) {
+            Log.e(DEBUG_TAG, "Detection result is null");
+            if (getActivity() != null) {
+                getActivity().runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        faceView.clear();
+                        faceView.invalidate();
+                    }
+                });
             }
-          });
+            return;
+        }
+
+        if (detectionResult.faceList.length == 0) {
+            if (getActivity() != null) {
+                getActivity().runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        faceView.clear();
+                        faceView.invalidate();
+                    }
+                });
+            }
         } else {
-          final FacePassFace[] bufferFaceList = detectionResult.faceList;
-          getActivity().runOnUiThread(new Runnable() {
-
-            @Override
-            public void run() {
-              showFacePassFace(bufferFaceList);
+            final FacePassFace[] bufferFaceList = detectionResult.faceList;
+            if (getActivity() != null) {
+                getActivity().runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        showFacePassFace(bufferFaceList);
+                    }
+                });
             }
-          });
         }
 
         if (SDK_MODE == FacePassSDKMode.MODE_OFFLINE) {
@@ -651,12 +652,12 @@ public class FacePassFragment extends Fragment implements CameraManager.CameraLi
         long endTime = System.currentTimeMillis();
         long runTime = endTime - startTime;
         for (int i = 0; i < detectionResult.faceList.length; ++i) {
-          Log.i("DEBUG_TAG",
-              "rect[" + i + "] = (" + detectionResult.faceList[i].rect.left + ", "
-                  + detectionResult.faceList[i].rect.top + ", " + detectionResult.faceList[i].rect.right + ", "
-                  + detectionResult.faceList[i].rect.bottom);
+          // Log.i("DEBUG_TAG",
+          //     "rect[" + i + "] = (" + detectionResult.faceList[i].rect.left + ", "
+          //         + detectionResult.faceList[i].rect.top + ", " + detectionResult.faceList[i].rect.right + ", "
+          //         + detectionResult.faceList[i].rect.bottom);
         }
-        Log.i("]time", String.format("feedfream %d ms", runTime));
+        // Log.i("]time", String.format("feedfream %d ms", runTime));
       }
     }
 

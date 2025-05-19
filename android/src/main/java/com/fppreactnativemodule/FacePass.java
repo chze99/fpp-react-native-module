@@ -91,6 +91,7 @@ import com.jakewharton.processphoenix.ProcessPhoenix;
 import static com.fppreactnativemodule.utils.Helper.getSerialNumber;
 import com.facebook.react.bridge.Promise;
 
+
 @ReactModule(name = FacePass.NAME)
 public class FacePass extends ReactContextBaseJavaModule
     implements LifecycleEventListener, ActivityEventListener, PermissionListener {
@@ -136,7 +137,6 @@ public class FacePass extends ReactContextBaseJavaModule
   private Callback initSuccessCallback;
   private Callback initFailCallback;
 
-  RequestQueue requestQueue;
 
   private boolean hasPermission() {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -432,7 +432,7 @@ public class FacePass extends ReactContextBaseJavaModule
       mFacePassHandler.reset();
       mFacePassHandler.release();
     }
-    new Thread() {
+    new Thread("FacePass-InitThread") {
       @Override
       public void run() {
         while (true
@@ -646,6 +646,9 @@ public class FacePass extends ReactContextBaseJavaModule
 
   }
 
+
+
+
   Bitmap getBitmapByUrl(String photoUrl) throws InterruptedException, ExecutionException, TimeoutException {
     Activity activity = getCurrentActivity();
 
@@ -658,8 +661,7 @@ public class FacePass extends ReactContextBaseJavaModule
         ImageView.ScaleType.CENTER,
         null,
         future);
-    requestQueue = Volley.newRequestQueue(activity.getApplicationContext());
-    requestQueue.add(request);
+    VolleySingleton.getInstance(activity).getRequestQueue().add(request);
     return future.get(30, TimeUnit.SECONDS);
   }
 
@@ -1101,8 +1103,7 @@ public class FacePass extends ReactContextBaseJavaModule
               Log.d("elevatorAccess", "Error Response : " + error.getMessage());
             }
           });
-      requestQueue = Volley.newRequestQueue(activity.getApplicationContext());
-      requestQueue.add(jsonObjectRequest);
+      VolleySingleton.getInstance(activity).getRequestQueue().add(jsonObjectRequest);
     }
 
   }
